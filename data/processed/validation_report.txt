@@ -1,0 +1,60 @@
+======================================================================
+  WALMART SALES CLASSIFICATION — DATA VALIDATION REPORT
+======================================================================
+  Dataset shape : 421,570 rows x 20 columns
+  Total checks  : 10
+  PASS          : 7
+  WARN          : 3
+  FAIL          : 0
+======================================================================
+
+[PASS] Shape / Size
+      rows: 421570
+      columns: 20
+      meets_min_rows: True
+      meets_min_cols: True
+
+[WARN] Missing Values
+      total_missing_cells: 1422431
+      overall_completeness_pct: 83.13
+      columns_with_missing: {'MarkDown2': {'missing_count': 310322, 'missing_pct': 73.61}, 'MarkDown4': {'missing_count': 286603, 'missing_pct': 67.98}, 'MarkDown3': {'missing_count': 284479, 'missing_pct': 67.48}, 'MarkDown1': {'missing_count': 270889, 'missing_pct': 64.26}, 'MarkDown5': {'missing_count': 270138, 'missing_pct': 64.08}}
+
+[PASS] Duplicates
+      full_row_duplicates: 0
+      key_duplicates_store_dept_date: 0
+
+[PASS] Data Types
+      unexpected_object_columns: ['Type']
+
+[PASS] Date Range
+      min_date: 2010-02-05
+      max_date: 2012-10-26
+      out_of_range_rows: 0
+      future_date_rows: 0
+
+[WARN] Negative Weekly_Sales
+      negative_rows: 1285
+      pct_negative: 0.305
+      min_sales_value: -4988.94
+      note: Negative values may reflect product returns — retain but flag.
+
+[WARN] Value Ranges
+      numeric_column_count: 17
+      potential_outlier_columns: ['Weekly_Sales', 'MarkDown2', 'MarkDown3', 'MarkDown4', 'MarkDown5']
+
+[PASS] Class Distribution
+      class_counts: {0: 210794, 1: 210776}
+      class_percentages: {0: 50.0, 1: 50.0}
+      imbalance_ratio: 1.0
+      is_balanced: True
+
+[PASS] FRED Coverage
+      fred_column_coverage: {'UMCSENT': {'present': True, 'null_pct': 0.0, 'min': 55.8, 'max': 82.6}, 'RSXFS': {'present': True, 'null_pct': 0.0, 'min': 302310.0, 'max': 354747.0}, 'PCE': {'present': True, 'null_pct': 0.0, 'min': 10093.4, 'max': 11137.4}}
+      all_series_present: True
+
+[PASS] Referential Integrity
+      unique_stores: 45
+      unique_depts: 81
+      issues_found: []
+
+======================================================================

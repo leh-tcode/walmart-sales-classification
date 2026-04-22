@@ -1,0 +1,236 @@
+2026-04-06 12:38:36 | INFO     | __main__:327 — ============================================================
+2026-04-06 12:38:36 | INFO     | __main__:328 — Starting Data Acquisition Pipeline
+2026-04-06 12:38:36 | INFO     | __main__:329 — ============================================================
+2026-04-06 12:38:36 | INFO     | __main__:66 — Loading Walmart Kaggle data from: data/raw
+2026-04-06 12:38:36 | INFO     | __main__:87 — Raw shapes — train: (421570, 5), stores: (45, 3), features: (8190, 12)
+2026-04-06 12:38:36 | INFO     | __main__:94 — After merging stores: (421570, 7)
+2026-04-06 12:38:36 | INFO     | __main__:104 — After merging features: 421570 rows, 16 columns
+2026-04-06 12:38:36 | INFO     | __main__:190 — Fetching 3 FRED series: ['UMCSENT', 'RSXFS', 'PCE']
+2026-04-06 12:38:36 | INFO     | __main__:148 — Fetching FRED series: UMCSENT (University of Michigan Consumer Sentiment Index)
+2026-04-06 12:38:37 | INFO     | __main__:173 — Series UMCSENT fetched: 34 observations, 0 missing
+2026-04-06 12:38:37 | INFO     | __main__:148 — Fetching FRED series: RSXFS (Advance Real Retail and Food Services Sales (Millions USD))
+2026-04-06 12:38:38 | INFO     | __main__:173 — Series RSXFS fetched: 34 observations, 0 missing
+2026-04-06 12:38:38 | INFO     | __main__:148 — Fetching FRED series: PCE (Personal Consumption Expenditures (Billions USD))
+2026-04-06 12:38:39 | INFO     | __main__:173 — Series PCE fetched: 34 observations, 0 missing
+2026-04-06 12:38:39 | INFO     | __main__:203 — FRED combined shape: (34, 4)
+2026-04-06 12:38:39 | INFO     | __main__:234 — Merging Walmart (421570 rows) with FRED (34 rows) using merge_asof
+2026-04-06 12:38:39 | INFO     | __main__:253 — Merge complete — rows before: 421570, rows after: 421570 (delta: 0)
+2026-04-06 12:38:39 | INFO     | __main__:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 12:38:39 | INFO     | __main__:297 — Target distribution — High (1): 210,776 (50.0%), Low (0): 210,794 (50.0%)
+2026-04-06 12:38:42 | INFO     | __main__:346 — Merged dataset saved to: data/processed/merged_dataset.csv (421,570 rows, 20 cols)
+2026-04-06 12:47:46 | INFO     | src.data.acquisition:327 — ============================================================
+2026-04-06 12:47:46 | INFO     | src.data.acquisition:328 — Starting Data Acquisition Pipeline
+2026-04-06 12:47:46 | INFO     | src.data.acquisition:329 — ============================================================
+2026-04-06 12:47:46 | INFO     | src.data.acquisition:66 — Loading Walmart Kaggle data from: data/raw
+2026-04-06 12:47:46 | INFO     | src.data.acquisition:87 — Raw shapes — train: (421570, 5), stores: (45, 3), features: (8190, 12)
+2026-04-06 12:47:46 | INFO     | src.data.acquisition:94 — After merging stores: (421570, 7)
+2026-04-06 12:47:46 | INFO     | src.data.acquisition:104 — After merging features: 421570 rows, 16 columns
+2026-04-06 12:47:46 | INFO     | src.data.acquisition:190 — Fetching 3 FRED series: ['UMCSENT', 'RSXFS', 'PCE']
+2026-04-06 12:47:46 | INFO     | src.data.acquisition:148 — Fetching FRED series: UMCSENT (University of Michigan Consumer Sentiment Index)
+2026-04-06 12:47:47 | INFO     | src.data.acquisition:173 — Series UMCSENT fetched: 34 observations, 0 missing
+2026-04-06 12:47:47 | INFO     | src.data.acquisition:148 — Fetching FRED series: RSXFS (Advance Real Retail and Food Services Sales (Millions USD))
+2026-04-06 12:47:48 | INFO     | src.data.acquisition:173 — Series RSXFS fetched: 34 observations, 0 missing
+2026-04-06 12:47:48 | INFO     | src.data.acquisition:148 — Fetching FRED series: PCE (Personal Consumption Expenditures (Billions USD))
+2026-04-06 12:47:49 | INFO     | src.data.acquisition:173 — Series PCE fetched: 34 observations, 0 missing
+2026-04-06 12:47:49 | INFO     | src.data.acquisition:203 — FRED combined shape: (34, 4)
+2026-04-06 12:47:49 | INFO     | src.data.acquisition:234 — Merging Walmart (421570 rows) with FRED (34 rows) using merge_asof
+2026-04-06 12:47:49 | INFO     | src.data.acquisition:253 — Merge complete — rows before: 421570, rows after: 421570 (delta: 0)
+2026-04-06 12:47:49 | INFO     | src.data.acquisition:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 12:47:49 | INFO     | src.data.acquisition:297 — Target distribution — High (1): 210,776 (50.0%), Low (0): 210,794 (50.0%)
+2026-04-06 12:47:52 | INFO     | src.data.acquisition:346 — Merged dataset saved to: data/processed/merged_dataset.csv (421,570 rows, 20 cols)
+2026-04-06 12:47:52 | INFO     | __main__:309 — ============================================================
+2026-04-06 12:47:52 | INFO     | __main__:310 — Starting Data Validation Pipeline
+2026-04-06 12:47:52 | INFO     | __main__:311 — ============================================================
+2026-04-06 12:47:52 | INFO     | __main__:39 — Shape check: 421570 rows, 20 columns — PASS
+2026-04-06 12:47:52 | INFO     | __main__:65 — Missing values: 1,422,431 cells (83.13% complete) — WARN
+2026-04-06 12:47:52 | INFO     | __main__:89 — Duplicates — full rows: 0, key (Store+Dept+Date): 0 — PASS
+2026-04-06 12:47:52 | INFO     | __main__:108 — Data types — 20 columns, 1 object dtype cols — PASS
+2026-04-06 12:47:52 | INFO     | __main__:137 — Date range: 2010-02-05 to 2012-10-26 | out-of-range: 0 | future: 0 — PASS
+2026-04-06 12:47:52 | INFO     | __main__:166 — Negative sales: 1,285 rows (0.305%) — WARN
+2026-04-06 12:47:52 | INFO     | __main__:194 — Value ranges — 17 numeric cols | potential outlier cols: ['Weekly_Sales', 'MarkDown2', 'MarkDown3', 'MarkDown4', 'MarkDown5'] — WARN
+2026-04-06 12:47:52 | INFO     | __main__:219 — Class distribution — High: 210776 (50.0%), Low: 210794 (50.0%) | ratio: 1.000 — PASS
+2026-04-06 12:47:52 | INFO     | __main__:254 — FRED coverage — all present: True — PASS
+2026-04-06 12:47:52 | INFO     | __main__:285 — Referential integrity — stores: 45, depts: 81, issues: 0 — PASS
+2026-04-06 12:47:52 | INFO     | __main__:342 — Validation complete — PASS: 7, WARN: 3, FAIL: 0
+2026-04-06 12:47:52 | INFO     | __main__:383 — Validation report saved to: data/processed/validation_report.txt
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:297 — Target distribution — High (1): 2 (33.3%), Low (0): 4 (66.7%)
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:297 — Target distribution — High (1): 2 (33.3%), Low (0): 4 (66.7%)
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:297 — Target distribution — High (1): 2 (33.3%), Low (0): 4 (66.7%)
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:297 — Target distribution — High (1): 2 (33.3%), Low (0): 4 (66.7%)
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:234 — Merging Walmart (6 rows) with FRED (3 rows) using merge_asof
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:253 — Merge complete — rows before: 6, rows after: 6 (delta: 0)
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:234 — Merging Walmart (6 rows) with FRED (3 rows) using merge_asof
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:253 — Merge complete — rows before: 6, rows after: 6 (delta: 0)
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:234 — Merging Walmart (6 rows) with FRED (3 rows) using merge_asof
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:253 — Merge complete — rows before: 6, rows after: 6 (delta: 0)
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:234 — Merging Walmart (6 rows) with FRED (3 rows) using merge_asof
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:253 — Merge complete — rows before: 6, rows after: 6 (delta: 0)
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:148 — Fetching FRED series: UMCSENT (University of Michigan Consumer Sentiment Index)
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:173 — Series UMCSENT fetched: 2 observations, 0 missing
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:148 — Fetching FRED series: UMCSENT (University of Michigan Consumer Sentiment Index)
+2026-04-06 12:48:12 | INFO     | src.data.acquisition:173 — Series UMCSENT fetched: 2 observations, 1 missing
+2026-04-06 12:48:12 | INFO     | src.validation.validator:39 — Shape check: 6000 rows, 15 columns — PASS
+2026-04-06 12:48:12 | INFO     | src.validation.validator:39 — Shape check: 100 rows, 15 columns — FAIL
+2026-04-06 12:48:12 | INFO     | src.validation.validator:39 — Shape check: 6000 rows, 3 columns — FAIL
+2026-04-06 12:48:12 | INFO     | src.validation.validator:65 — Missing values: 0 cells (100.00% complete) — PASS
+2026-04-06 12:48:13 | INFO     | src.validation.validator:65 — Missing values: 51 cells (99.94% complete) — WARN
+2026-04-06 12:48:13 | INFO     | src.validation.validator:65 — Missing values: 10 cells (99.99% complete) — WARN
+2026-04-06 12:48:13 | INFO     | src.validation.validator:89 — Duplicates — full rows: 0, key (Store+Dept+Date): 0 — PASS
+2026-04-06 12:48:13 | INFO     | src.validation.validator:89 — Duplicates — full rows: 5, key (Store+Dept+Date): 5 — WARN
+2026-04-06 12:48:13 | INFO     | src.validation.validator:137 — Date range: 2010-02-07 to 2125-01-28 | out-of-range: 5848 | future: 5156 — WARN
+2026-04-06 12:48:13 | INFO     | src.validation.validator:137 — Date range: 2005-01-01 to 2125-01-28 | out-of-range: 5849 | future: 5156 — WARN
+2026-04-06 12:48:13 | INFO     | src.validation.validator:166 — Negative sales: 0 rows (0.000%) — PASS
+2026-04-06 12:48:13 | INFO     | src.validation.validator:166 — Negative sales: 5 rows (0.083%) — WARN
+2026-04-06 12:48:13 | INFO     | src.validation.validator:219 — Class distribution — High: 3000 (50.0%), Low: 3000 (50.0%) | ratio: 1.000 — PASS
+2026-04-06 12:48:13 | INFO     | src.validation.validator:254 — FRED coverage — all present: True — PASS
+2026-04-06 12:48:13 | INFO     | src.validation.validator:254 — FRED coverage — all present: False — WARN
+2026-04-06 12:48:14 | INFO     | src.validation.validator:285 — Referential integrity — stores: 45, depts: 71, issues: 0 — PASS
+2026-04-06 12:48:14 | INFO     | src.validation.validator:285 — Referential integrity — stores: 46, depts: 71, issues: 1 — WARN
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:297 — Target distribution — High (1): 2 (33.3%), Low (0): 4 (66.7%)
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:297 — Target distribution — High (1): 2 (33.3%), Low (0): 4 (66.7%)
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:297 — Target distribution — High (1): 2 (33.3%), Low (0): 4 (66.7%)
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:297 — Target distribution — High (1): 2 (33.3%), Low (0): 4 (66.7%)
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:234 — Merging Walmart (6 rows) with FRED (3 rows) using merge_asof
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:253 — Merge complete — rows before: 6, rows after: 6 (delta: 0)
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:234 — Merging Walmart (6 rows) with FRED (3 rows) using merge_asof
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:253 — Merge complete — rows before: 6, rows after: 6 (delta: 0)
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:234 — Merging Walmart (6 rows) with FRED (3 rows) using merge_asof
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:253 — Merge complete — rows before: 6, rows after: 6 (delta: 0)
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:234 — Merging Walmart (6 rows) with FRED (3 rows) using merge_asof
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:253 — Merge complete — rows before: 6, rows after: 6 (delta: 0)
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:148 — Fetching FRED series: UMCSENT (University of Michigan Consumer Sentiment Index)
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:173 — Series UMCSENT fetched: 2 observations, 0 missing
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:148 — Fetching FRED series: UMCSENT (University of Michigan Consumer Sentiment Index)
+2026-04-06 12:49:36 | INFO     | src.data.acquisition:173 — Series UMCSENT fetched: 2 observations, 1 missing
+2026-04-06 12:49:36 | INFO     | src.validation.validator:39 — Shape check: 6000 rows, 15 columns — PASS
+2026-04-06 12:49:36 | INFO     | src.validation.validator:39 — Shape check: 100 rows, 15 columns — FAIL
+2026-04-06 12:49:36 | INFO     | src.validation.validator:39 — Shape check: 6000 rows, 3 columns — FAIL
+2026-04-06 12:49:36 | INFO     | src.validation.validator:65 — Missing values: 0 cells (100.00% complete) — PASS
+2026-04-06 12:49:37 | INFO     | src.validation.validator:65 — Missing values: 51 cells (99.94% complete) — WARN
+2026-04-06 12:49:37 | INFO     | src.validation.validator:65 — Missing values: 10 cells (99.99% complete) — WARN
+2026-04-06 12:49:37 | INFO     | src.validation.validator:89 — Duplicates — full rows: 0, key (Store+Dept+Date): 0 — PASS
+2026-04-06 12:49:37 | INFO     | src.validation.validator:89 — Duplicates — full rows: 5, key (Store+Dept+Date): 5 — WARN
+2026-04-06 12:49:37 | INFO     | src.validation.validator:137 — Date range: 2010-02-07 to 2012-10-28 | out-of-range: 0 | future: 0 — PASS
+2026-04-06 12:49:37 | INFO     | src.validation.validator:137 — Date range: 2005-01-01 to 2125-01-28 | out-of-range: 5849 | future: 5156 — WARN
+2026-04-06 12:49:37 | INFO     | src.validation.validator:166 — Negative sales: 0 rows (0.000%) — PASS
+2026-04-06 12:49:37 | INFO     | src.validation.validator:166 — Negative sales: 5 rows (0.083%) — WARN
+2026-04-06 12:49:37 | INFO     | src.validation.validator:219 — Class distribution — High: 3000 (50.0%), Low: 3000 (50.0%) | ratio: 1.000 — PASS
+2026-04-06 12:49:37 | INFO     | src.validation.validator:254 — FRED coverage — all present: True — PASS
+2026-04-06 12:49:37 | INFO     | src.validation.validator:254 — FRED coverage — all present: False — WARN
+2026-04-06 12:49:37 | INFO     | src.validation.validator:285 — Referential integrity — stores: 45, depts: 71, issues: 0 — PASS
+2026-04-06 12:49:37 | INFO     | src.validation.validator:285 — Referential integrity — stores: 46, depts: 71, issues: 1 — WARN
+2026-04-06 12:49:57 | INFO     | src.data.acquisition:327 — ============================================================
+2026-04-06 12:49:57 | INFO     | src.data.acquisition:328 — Starting Data Acquisition Pipeline
+2026-04-06 12:49:57 | INFO     | src.data.acquisition:329 — ============================================================
+2026-04-06 12:49:57 | INFO     | src.data.acquisition:66 — Loading Walmart Kaggle data from: data/raw
+2026-04-06 12:49:57 | INFO     | src.data.acquisition:87 — Raw shapes — train: (421570, 5), stores: (45, 3), features: (8190, 12)
+2026-04-06 12:49:57 | INFO     | src.data.acquisition:94 — After merging stores: (421570, 7)
+2026-04-06 12:49:57 | INFO     | src.data.acquisition:104 — After merging features: 421570 rows, 16 columns
+2026-04-06 12:49:57 | INFO     | src.data.acquisition:190 — Fetching 3 FRED series: ['UMCSENT', 'RSXFS', 'PCE']
+2026-04-06 12:49:57 | INFO     | src.data.acquisition:148 — Fetching FRED series: UMCSENT (University of Michigan Consumer Sentiment Index)
+2026-04-06 12:49:58 | INFO     | src.data.acquisition:173 — Series UMCSENT fetched: 34 observations, 0 missing
+2026-04-06 12:49:58 | INFO     | src.data.acquisition:148 — Fetching FRED series: RSXFS (Advance Real Retail and Food Services Sales (Millions USD))
+2026-04-06 12:49:58 | INFO     | src.data.acquisition:173 — Series RSXFS fetched: 34 observations, 0 missing
+2026-04-06 12:49:58 | INFO     | src.data.acquisition:148 — Fetching FRED series: PCE (Personal Consumption Expenditures (Billions USD))
+2026-04-06 12:49:59 | INFO     | src.data.acquisition:173 — Series PCE fetched: 34 observations, 0 missing
+2026-04-06 12:49:59 | INFO     | src.data.acquisition:203 — FRED combined shape: (34, 4)
+2026-04-06 12:49:59 | INFO     | src.data.acquisition:234 — Merging Walmart (421570 rows) with FRED (34 rows) using merge_asof
+2026-04-06 12:49:59 | INFO     | src.data.acquisition:253 — Merge complete — rows before: 421570, rows after: 421570 (delta: 0)
+2026-04-06 12:49:59 | INFO     | src.data.acquisition:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 12:49:59 | INFO     | src.data.acquisition:297 — Target distribution — High (1): 210,776 (50.0%), Low (0): 210,794 (50.0%)
+2026-04-06 12:50:02 | INFO     | src.data.acquisition:346 — Merged dataset saved to: data/processed/merged_dataset.csv (421,570 rows, 20 cols)
+2026-04-06 12:50:02 | INFO     | __main__:309 — ============================================================
+2026-04-06 12:50:02 | INFO     | __main__:310 — Starting Data Validation Pipeline
+2026-04-06 12:50:02 | INFO     | __main__:311 — ============================================================
+2026-04-06 12:50:02 | INFO     | __main__:39 — Shape check: 421570 rows, 20 columns — PASS
+2026-04-06 12:50:02 | INFO     | __main__:65 — Missing values: 1,422,431 cells (83.13% complete) — WARN
+2026-04-06 12:50:03 | INFO     | __main__:89 — Duplicates — full rows: 0, key (Store+Dept+Date): 0 — PASS
+2026-04-06 12:50:03 | INFO     | __main__:108 — Data types — 20 columns, 1 object dtype cols — PASS
+2026-04-06 12:50:03 | INFO     | __main__:137 — Date range: 2010-02-05 to 2012-10-26 | out-of-range: 0 | future: 0 — PASS
+2026-04-06 12:50:03 | INFO     | __main__:166 — Negative sales: 1,285 rows (0.305%) — WARN
+2026-04-06 12:50:03 | INFO     | __main__:194 — Value ranges — 17 numeric cols | potential outlier cols: ['Weekly_Sales', 'MarkDown2', 'MarkDown3', 'MarkDown4', 'MarkDown5'] — WARN
+2026-04-06 12:50:03 | INFO     | __main__:219 — Class distribution — High: 210776 (50.0%), Low: 210794 (50.0%) | ratio: 1.000 — PASS
+2026-04-06 12:50:03 | INFO     | __main__:254 — FRED coverage — all present: True — PASS
+2026-04-06 12:50:03 | INFO     | __main__:285 — Referential integrity — stores: 45, depts: 81, issues: 0 — PASS
+2026-04-06 12:50:03 | INFO     | __main__:342 — Validation complete — PASS: 7, WARN: 3, FAIL: 0
+2026-04-06 12:50:03 | INFO     | __main__:383 — Validation report saved to: data/processed/validation_report.txt
+2026-04-06 23:38:08 | INFO     | src.data.acquisition:327 — ============================================================
+2026-04-06 23:38:08 | INFO     | src.data.acquisition:328 — Starting Data Acquisition Pipeline
+2026-04-06 23:38:08 | INFO     | src.data.acquisition:329 — ============================================================
+2026-04-06 23:38:08 | INFO     | src.data.acquisition:66 — Loading Walmart Kaggle data from: data/raw
+2026-04-06 23:38:08 | INFO     | src.data.acquisition:87 — Raw shapes — train: (421570, 5), stores: (45, 3), features: (8190, 12)
+2026-04-06 23:38:08 | INFO     | src.data.acquisition:94 — After merging stores: (421570, 7)
+2026-04-06 23:38:08 | INFO     | src.data.acquisition:104 — After merging features: 421570 rows, 16 columns
+2026-04-06 23:38:08 | INFO     | src.data.acquisition:190 — Fetching 3 FRED series: ['UMCSENT', 'RSXFS', 'PCE']
+2026-04-06 23:38:08 | INFO     | src.data.acquisition:148 — Fetching FRED series: UMCSENT (University of Michigan Consumer Sentiment Index)
+2026-04-06 23:38:09 | INFO     | src.data.acquisition:173 — Series UMCSENT fetched: 34 observations, 0 missing
+2026-04-06 23:38:09 | INFO     | src.data.acquisition:148 — Fetching FRED series: RSXFS (Advance Real Retail and Food Services Sales (Millions USD))
+2026-04-06 23:38:10 | INFO     | src.data.acquisition:173 — Series RSXFS fetched: 34 observations, 0 missing
+2026-04-06 23:38:10 | INFO     | src.data.acquisition:148 — Fetching FRED series: PCE (Personal Consumption Expenditures (Billions USD))
+2026-04-06 23:38:10 | INFO     | src.data.acquisition:173 — Series PCE fetched: 34 observations, 0 missing
+2026-04-06 23:38:10 | INFO     | src.data.acquisition:203 — FRED combined shape: (34, 4)
+2026-04-06 23:38:10 | INFO     | src.data.acquisition:234 — Merging Walmart (421570 rows) with FRED (34 rows) using merge_asof
+2026-04-06 23:38:11 | INFO     | src.data.acquisition:253 — Merge complete — rows before: 421570, rows after: 421570 (delta: 0)
+2026-04-06 23:38:11 | INFO     | src.data.acquisition:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 23:38:11 | INFO     | src.data.acquisition:297 — Target distribution — High (1): 210,776 (50.0%), Low (0): 210,794 (50.0%)
+2026-04-06 23:38:14 | INFO     | src.data.acquisition:346 — Merged dataset saved to: data/processed/merged_dataset.csv (421,570 rows, 20 cols)
+2026-04-06 23:38:14 | INFO     | __main__:309 — ============================================================
+2026-04-06 23:38:14 | INFO     | __main__:310 — Starting Data Validation Pipeline
+2026-04-06 23:38:14 | INFO     | __main__:311 — ============================================================
+2026-04-06 23:38:14 | INFO     | __main__:39 — Shape check: 421570 rows, 20 columns — PASS
+2026-04-06 23:38:14 | INFO     | __main__:65 — Missing values: 1,422,431 cells (83.13% complete) — WARN
+2026-04-06 23:38:14 | INFO     | __main__:89 — Duplicates — full rows: 0, key (Store+Dept+Date): 0 — PASS
+2026-04-06 23:38:14 | INFO     | __main__:108 — Data types — 20 columns, 1 object dtype cols — PASS
+2026-04-06 23:38:14 | INFO     | __main__:137 — Date range: 2010-02-05 to 2012-10-26 | out-of-range: 0 | future: 0 — PASS
+2026-04-06 23:38:14 | INFO     | __main__:166 — Negative sales: 1,285 rows (0.305%) — WARN
+2026-04-06 23:38:14 | INFO     | __main__:194 — Value ranges — 17 numeric cols | potential outlier cols: ['Weekly_Sales', 'MarkDown2', 'MarkDown3', 'MarkDown4', 'MarkDown5'] — WARN
+2026-04-06 23:38:14 | INFO     | __main__:219 — Class distribution — High: 210776 (50.0%), Low: 210794 (50.0%) | ratio: 1.000 — PASS
+2026-04-06 23:38:14 | INFO     | __main__:254 — FRED coverage — all present: True — PASS
+2026-04-06 23:38:14 | INFO     | __main__:285 — Referential integrity — stores: 45, depts: 81, issues: 0 — PASS
+2026-04-06 23:38:14 | INFO     | __main__:342 — Validation complete — PASS: 7, WARN: 3, FAIL: 0
+2026-04-06 23:38:14 | INFO     | __main__:383 — Validation report saved to: data/processed/validation_report.txt
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:297 — Target distribution — High (1): 2 (33.3%), Low (0): 4 (66.7%)
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:297 — Target distribution — High (1): 2 (33.3%), Low (0): 4 (66.7%)
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:297 — Target distribution — High (1): 2 (33.3%), Low (0): 4 (66.7%)
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:291 — Creating store-specific median target variable: Sales_Class
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:297 — Target distribution — High (1): 2 (33.3%), Low (0): 4 (66.7%)
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:234 — Merging Walmart (6 rows) with FRED (3 rows) using merge_asof
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:253 — Merge complete — rows before: 6, rows after: 6 (delta: 0)
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:234 — Merging Walmart (6 rows) with FRED (3 rows) using merge_asof
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:253 — Merge complete — rows before: 6, rows after: 6 (delta: 0)
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:234 — Merging Walmart (6 rows) with FRED (3 rows) using merge_asof
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:253 — Merge complete — rows before: 6, rows after: 6 (delta: 0)
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:234 — Merging Walmart (6 rows) with FRED (3 rows) using merge_asof
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:253 — Merge complete — rows before: 6, rows after: 6 (delta: 0)
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:148 — Fetching FRED series: UMCSENT (University of Michigan Consumer Sentiment Index)
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:173 — Series UMCSENT fetched: 2 observations, 0 missing
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:148 — Fetching FRED series: UMCSENT (University of Michigan Consumer Sentiment Index)
+2026-04-06 23:38:25 | INFO     | src.data.acquisition:173 — Series UMCSENT fetched: 2 observations, 1 missing
+2026-04-06 23:38:25 | INFO     | src.validation.validator:39 — Shape check: 6000 rows, 15 columns — PASS
+2026-04-06 23:38:25 | INFO     | src.validation.validator:39 — Shape check: 100 rows, 15 columns — FAIL
+2026-04-06 23:38:25 | INFO     | src.validation.validator:39 — Shape check: 6000 rows, 3 columns — FAIL
+2026-04-06 23:38:25 | INFO     | src.validation.validator:65 — Missing values: 0 cells (100.00% complete) — PASS
+2026-04-06 23:38:25 | INFO     | src.validation.validator:65 — Missing values: 51 cells (99.94% complete) — WARN
+2026-04-06 23:38:25 | INFO     | src.validation.validator:65 — Missing values: 10 cells (99.99% complete) — WARN
+2026-04-06 23:38:25 | INFO     | src.validation.validator:89 — Duplicates — full rows: 0, key (Store+Dept+Date): 0 — PASS
+2026-04-06 23:38:25 | INFO     | src.validation.validator:89 — Duplicates — full rows: 5, key (Store+Dept+Date): 5 — WARN
+2026-04-06 23:38:25 | INFO     | src.validation.validator:137 — Date range: 2010-02-07 to 2012-10-28 | out-of-range: 0 | future: 0 — PASS
+2026-04-06 23:38:25 | INFO     | src.validation.validator:137 — Date range: 2005-01-01 to 2125-01-28 | out-of-range: 5849 | future: 5156 — WARN
+2026-04-06 23:38:25 | INFO     | src.validation.validator:166 — Negative sales: 0 rows (0.000%) — PASS
+2026-04-06 23:38:26 | INFO     | src.validation.validator:166 — Negative sales: 5 rows (0.083%) — WARN
+2026-04-06 23:38:26 | INFO     | src.validation.validator:219 — Class distribution — High: 3000 (50.0%), Low: 3000 (50.0%) | ratio: 1.000 — PASS
+2026-04-06 23:38:26 | INFO     | src.validation.validator:254 — FRED coverage — all present: True — PASS
+2026-04-06 23:38:26 | INFO     | src.validation.validator:254 — FRED coverage — all present: False — WARN
+2026-04-06 23:38:26 | INFO     | src.validation.validator:285 — Referential integrity — stores: 45, depts: 71, issues: 0 — PASS
+2026-04-06 23:38:26 | INFO     | src.validation.validator:285 — Referential integrity — stores: 46, depts: 71, issues: 1 — WARN
