@@ -26,6 +26,7 @@ REPORT_PATH = PROCESSED_DIR / "validation_report.txt"
 
 # ── Individual Validation Checks ──────────────────────────────────────────────
 
+
 def check_shape(df: pd.DataFrame) -> dict[str, Any]:
     """Check row and column counts meet minimum project requirements."""
     result = {
@@ -36,7 +37,12 @@ def check_shape(df: pd.DataFrame) -> dict[str, Any]:
         "meets_min_cols": len(df.columns) >= 10,
         "status": "PASS" if (len(df) >= 5000 and len(df.columns) >= 10) else "FAIL",
     }
-    logger.info("Shape check: {} rows, {} columns — {}", result["rows"], result["columns"], result["status"])
+    logger.info(
+        "Shape check: {} rows, {} columns — {}",
+        result["rows"],
+        result["columns"],
+        result["status"],
+    )
     return result
 
 
@@ -45,10 +51,16 @@ def check_missing_values(df: pd.DataFrame) -> dict[str, Any]:
     missing_counts = df.isna().sum()
     missing_pct = (missing_counts / len(df) * 100).round(2)
 
-    missing_summary = pd.DataFrame({
-        "missing_count": missing_counts,
-        "missing_pct": missing_pct,
-    }).query("missing_count > 0").sort_values("missing_pct", ascending=False)
+    missing_summary = (
+        pd.DataFrame(
+            {
+                "missing_count": missing_counts,
+                "missing_pct": missing_pct,
+            }
+        )
+        .query("missing_count > 0")
+        .sort_values("missing_pct", ascending=False)
+    )
 
     total_missing_cells = int(missing_counts.sum())
     total_cells = df.size
@@ -64,7 +76,9 @@ def check_missing_values(df: pd.DataFrame) -> dict[str, Any]:
 
     logger.info(
         "Missing values: {:,} cells ({:.2f}% complete) — {}",
-        total_missing_cells, overall_completeness, result["status"],
+        total_missing_cells,
+        overall_completeness,
+        result["status"],
     )
     return result
 
@@ -75,20 +89,26 @@ def check_duplicates(df: pd.DataFrame) -> dict[str, Any]:
     A duplicate in this dataset means same Store + Dept + Date.
     """
     full_dups = df.duplicated().sum()
-    key_dups = df.duplicated(subset=["Store", "Dept", "Date"]).sum() if all(
-        c in df.columns for c in ["Store", "Dept", "Date"]
-    ) else None
+    key_dups = (
+        df.duplicated(subset=["Store", "Dept", "Date"]).sum()
+        if all(c in df.columns for c in ["Store", "Dept", "Date"])
+        else None
+    )
 
     result = {
         "check": "Duplicates",
         "full_row_duplicates": int(full_dups),
-        "key_duplicates_store_dept_date": int(key_dups) if key_dups is not None else "N/A",
+        "key_duplicates_store_dept_date": (
+            int(key_dups) if key_dups is not None else "N/A"
+        ),
         "status": "PASS" if full_dups == 0 else "WARN",
     }
 
     logger.info(
         "Duplicates — full rows: {}, key (Store+Dept+Date): {} — {}",
-        full_dups, key_dups, result["status"],
+        full_dups,
+        key_dups,
+        result["status"],
     )
     return result
 
@@ -107,7 +127,9 @@ def check_data_types(df: pd.DataFrame) -> dict[str, Any]:
 
     logger.info(
         "Data types — {} columns, {} object dtype cols — {}",
-        len(dtype_map), len(object_cols), result["status"],
+        len(dtype_map),
+        len(object_cols),
+        result["status"],
     )
     return result
 
@@ -115,7 +137,11 @@ def check_data_types(df: pd.DataFrame) -> dict[str, Any]:
 def check_date_range(df: pd.DataFrame) -> dict[str, Any]:
     """Validate that Date column is within expected Walmart range (2010–2012)."""
     if "Date" not in df.columns:
-        return {"check": "Date Range", "status": "SKIP", "reason": "No Date column found"}
+        return {
+            "check": "Date Range",
+            "status": "SKIP",
+            "reason": "No Date column found",
+        }
 
     min_date = df["Date"].min()
     max_date = df["Date"].max()
@@ -136,8 +162,10 @@ def check_date_range(df: pd.DataFrame) -> dict[str, Any]:
 
     logger.info(
         "Date range: {} to {} | out-of-range: {} | future: {} — {}",
-        result["min_date"], result["max_date"],
-        result["out_of_range_rows"], result["future_date_rows"],
+        result["min_date"],
+        result["max_date"],
+        result["out_of_range_rows"],
+        result["future_date_rows"],
         result["status"],
     )
     return result
@@ -149,7 +177,11 @@ def check_negative_sales(df: pd.DataFrame) -> dict[str, Any]:
     Negative sales can legitimately occur due to returns but should be documented.
     """
     if "Weekly_Sales" not in df.columns:
-        return {"check": "Negative Sales", "status": "SKIP", "reason": "No Weekly_Sales column"}
+        return {
+            "check": "Negative Sales",
+            "status": "SKIP",
+            "reason": "No Weekly_Sales column",
+        }
 
     negative_rows = df[df["Weekly_Sales"] < 0]
     pct_negative = round(100 * len(negative_rows) / len(df), 3)
@@ -165,7 +197,9 @@ def check_negative_sales(df: pd.DataFrame) -> dict[str, Any]:
 
     logger.info(
         "Negative sales: {:,} rows ({:.3f}%) — {}",
-        len(negative_rows), pct_negative, result["status"],
+        len(negative_rows),
+        pct_negative,
+        result["status"],
     )
     return result
 
@@ -193,7 +227,9 @@ def check_value_ranges(df: pd.DataFrame) -> dict[str, Any]:
 
     logger.info(
         "Value ranges — {} numeric cols | potential outlier cols: {} — {}",
-        len(numeric_df.columns), outlier_flags, result["status"],
+        len(numeric_df.columns),
+        outlier_flags,
+        result["status"],
     )
     return result
 
@@ -201,7 +237,11 @@ def check_value_ranges(df: pd.DataFrame) -> dict[str, Any]:
 def check_class_distribution(df: pd.DataFrame) -> dict[str, Any]:
     """Check the distribution of the binary classification target Sales_Class."""
     if "Sales_Class" not in df.columns:
-        return {"check": "Class Distribution", "status": "SKIP", "reason": "Target not yet created"}
+        return {
+            "check": "Class Distribution",
+            "status": "SKIP",
+            "reason": "Target not yet created",
+        }
 
     dist = df["Sales_Class"].value_counts()
     pct = (df["Sales_Class"].value_counts(normalize=True) * 100).round(2)
@@ -218,9 +258,12 @@ def check_class_distribution(df: pd.DataFrame) -> dict[str, Any]:
 
     logger.info(
         "Class distribution — High: {} ({:.1f}%), Low: {} ({:.1f}%) | ratio: {:.3f} — {}",
-        dist.get(1, 0), pct.get(1, 0),
-        dist.get(0, 0), pct.get(0, 0),
-        imbalance_ratio, result["status"],
+        dist.get(1, 0),
+        pct.get(1, 0),
+        dist.get(0, 0),
+        pct.get(0, 0),
+        imbalance_ratio,
+        result["status"],
     )
     return result
 
@@ -272,7 +315,9 @@ def check_referential_integrity(df: pd.DataFrame) -> dict[str, Any]:
         dept_ids = df["Dept"].unique()
         invalid_depts = [d for d in dept_ids if not (1 <= d <= 99)]
         if invalid_depts:
-            issues.append(f"Invalid Dept IDs (out of 1–99): {len(invalid_depts)} values")
+            issues.append(
+                f"Invalid Dept IDs (out of 1–99): {len(invalid_depts)} values"
+            )
 
     result = {
         "check": "Referential Integrity",
@@ -284,13 +329,16 @@ def check_referential_integrity(df: pd.DataFrame) -> dict[str, Any]:
 
     logger.info(
         "Referential integrity — stores: {}, depts: {}, issues: {} — {}",
-        result["unique_stores"], result["unique_depts"],
-        len(issues), result["status"],
+        result["unique_stores"],
+        result["unique_depts"],
+        len(issues),
+        result["status"],
     )
     return result
 
 
 # ── Full Validation Runner ─────────────────────────────────────────────────────
+
 
 def run_validation(df: pd.DataFrame) -> dict[str, Any]:
     """
@@ -341,7 +389,9 @@ def run_validation(df: pd.DataFrame) -> dict[str, Any]:
 
     logger.info(
         "Validation complete — PASS: {}, WARN: {}, FAIL: {}",
-        pass_count, warn_count, fail_count,
+        pass_count,
+        warn_count,
+        fail_count,
     )
 
     # Save text report
@@ -358,7 +408,10 @@ def _save_text_report(report: dict) -> None:
         "=" * 70,
         "  WALMART SALES CLASSIFICATION — DATA VALIDATION REPORT",
         "=" * 70,
-        f"  Dataset shape : {report['dataset_shape']['rows']:,} rows x {report['dataset_shape']['columns']} columns",
+        (
+            f"  Dataset shape : {report['dataset_shape']['rows']:,} rows x "
+            f"{report['dataset_shape']['columns']} columns"
+        ),
         f"  Total checks  : {report['summary']['total_checks']}",
         f"  PASS          : {report['summary']['passed']}",
         f"  WARN          : {report['summary']['warnings']}",

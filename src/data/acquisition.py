@@ -46,6 +46,7 @@ WALMART_DATE_END = "2012-11-02"
 
 # ── Kaggle Data Loader ─────────────────────────────────────────────────────────
 
+
 def load_walmart_data() -> pd.DataFrame:
     """
     Load and merge the three Walmart Kaggle CSV files:
@@ -86,7 +87,9 @@ def load_walmart_data() -> pd.DataFrame:
 
     logger.info(
         "Raw shapes — train: {}, stores: {}, features: {}",
-        train_df.shape, stores_df.shape, features_df.shape,
+        train_df.shape,
+        stores_df.shape,
+        features_df.shape,
     )
 
     # Merge train + stores on Store
@@ -107,6 +110,7 @@ def load_walmart_data() -> pd.DataFrame:
 
 
 # ── FRED API Client ────────────────────────────────────────────────────────────
+
 
 def fetch_fred_series(series_id: str, retries: int = 3) -> pd.DataFrame:
     """
@@ -145,7 +149,9 @@ def fetch_fred_series(series_id: str, retries: int = 3) -> pd.DataFrame:
         "observation_end": WALMART_DATE_END,
     }
 
-    logger.info("Fetching FRED series: {} ({})", series_id, FRED_SERIES.get(series_id, ""))
+    logger.info(
+        "Fetching FRED series: {} ({})", series_id, FRED_SERIES.get(series_id, "")
+    )
 
     for attempt in range(1, retries + 1):
         try:
@@ -153,10 +159,12 @@ def fetch_fred_series(series_id: str, retries: int = 3) -> pd.DataFrame:
             response.raise_for_status()
             break
         except requests.RequestException as exc:
-            logger.warning("Attempt {}/{} failed for {}: {}", attempt, retries, series_id, exc)
+            logger.warning(
+                "Attempt {}/{} failed for {}: {}", attempt, retries, series_id, exc
+            )
             if attempt == retries:
                 raise
-            time.sleep(2 ** attempt)  # Exponential back-off
+            time.sleep(2**attempt)  # Exponential back-off
 
     observations = response.json().get("observations", [])
     if not observations:
@@ -172,7 +180,9 @@ def fetch_fred_series(series_id: str, retries: int = 3) -> pd.DataFrame:
 
     logger.info(
         "Series {} fetched: {} observations, {} missing",
-        series_id, len(df), df[series_id].isna().sum(),
+        series_id,
+        len(df),
+        df[series_id].isna().sum(),
     )
 
     return df
@@ -187,7 +197,9 @@ def fetch_all_fred_series() -> pd.DataFrame:
     pd.DataFrame
         Wide-format DataFrame indexed by Date with one column per FRED series.
     """
-    logger.info("Fetching {} FRED series: {}", len(FRED_SERIES), list(FRED_SERIES.keys()))
+    logger.info(
+        "Fetching {} FRED series: {}", len(FRED_SERIES), list(FRED_SERIES.keys())
+    )
 
     combined = None
     for series_id in FRED_SERIES:
@@ -205,6 +217,7 @@ def fetch_all_fred_series() -> pd.DataFrame:
 
 
 # ── Merge Strategy ─────────────────────────────────────────────────────────────
+
 
 def merge_walmart_fred(walmart_df: pd.DataFrame, fred_df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -233,7 +246,8 @@ def merge_walmart_fred(walmart_df: pd.DataFrame, fred_df: pd.DataFrame) -> pd.Da
     """
     logger.info(
         "Merging Walmart ({} rows) with FRED ({} rows) using merge_asof",
-        len(walmart_df), len(fred_df),
+        len(walmart_df),
+        len(fred_df),
     )
 
     # Both must be sorted by Date for merge_asof
@@ -244,7 +258,7 @@ def merge_walmart_fred(walmart_df: pd.DataFrame, fred_df: pd.DataFrame) -> pd.Da
         walmart_sorted,
         fred_sorted,
         on="Date",
-        direction="backward",   # assign the most recent past FRED value
+        direction="backward",  # assign the most recent past FRED value
     )
 
     rows_before = len(walmart_df)
@@ -252,18 +266,21 @@ def merge_walmart_fred(walmart_df: pd.DataFrame, fred_df: pd.DataFrame) -> pd.Da
 
     logger.info(
         "Merge complete — rows before: {}, rows after: {} (delta: {})",
-        rows_before, rows_after, rows_after - rows_before,
+        rows_before,
+        rows_after,
+        rows_after - rows_before,
     )
 
     # Validate no Walmart rows were dropped
-    assert rows_after == rows_before, (
-        f"Row count mismatch after merge: expected {rows_before}, got {rows_after}"
-    )
+    assert (
+        rows_after == rows_before
+    ), f"Row count mismatch after merge: expected {rows_before}, got {rows_after}"
 
     return merged
 
 
 # ── Target Variable Engineering ────────────────────────────────────────────────
+
 
 def create_target_variable(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -307,6 +324,7 @@ def create_target_variable(df: pd.DataFrame) -> pd.DataFrame:
 
 # ── Main Pipeline Entry Point ──────────────────────────────────────────────────
 
+
 def run_acquisition_pipeline() -> pd.DataFrame:
     """
     Execute the full data acquisition and integration pipeline.
@@ -343,7 +361,11 @@ def run_acquisition_pipeline() -> pd.DataFrame:
     # Step 5: Save
     output_path = PROCESSED_DIR / "merged_dataset.csv"
     merged_df.to_csv(output_path, index=False)
-    logger.info("Merged dataset saved to: {} ({:,} rows, {} cols)", output_path, *merged_df.shape)
+    logger.info(
+        "Merged dataset saved to: {} ({:,} rows, {} cols)",
+        output_path,
+        *merged_df.shape,
+    )
 
     return merged_df
 
