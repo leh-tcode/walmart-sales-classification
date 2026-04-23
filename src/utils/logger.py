@@ -1,8 +1,3 @@
-"""
-Centralized logging configuration using Loguru.
-All modules import `logger` from here for consistent log formatting.
-"""
-
 import sys
 from pathlib import Path
 from loguru import logger
@@ -10,10 +5,8 @@ from loguru import logger
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
 
-# Remove default handler
 logger.remove()
 
-# Console handler — INFO and above
 logger.add(
     sys.stdout,
     level="INFO",
@@ -26,7 +19,6 @@ logger.add(
     colorize=True,
 )
 
-# File handler — DEBUG and above, rotating daily
 logger.add(
     LOG_DIR / "pipeline.log",
     level="DEBUG",

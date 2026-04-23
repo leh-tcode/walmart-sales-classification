@@ -1,20 +1,7 @@
-"""
-Data Acquisition Module
-=======================
-Handles loading Walmart Kaggle CSVs and fetching FRED macroeconomic
-indicators via the FRED REST API.
-
-Sources
--------
-1. Kaggle  : Walmart Store Sales Forecasting
-             https://www.kaggle.com/competitions/walmart-recruiting-store-sales-forecasting/data
-2. FRED API: St. Louis Federal Reserve Economic Data
-             https://fred.stlouisfed.org/docs/api/fred/
-"""
-
 import os
 import time
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 import requests
@@ -22,18 +9,18 @@ from dotenv import load_dotenv
 
 from src.utils.logger import logger
 
-# ── Environment ────────────────────────────────────────────────────────────────
 load_dotenv()
 
 FRED_API_KEY: str = os.getenv("FRED_API_KEY", "")
 RAW_DIR = Path(os.getenv("RAW_DATA_DIR", "data/raw"))
 PROCESSED_DIR = Path(os.getenv("PROCESSED_DATA_DIR", "data/processed"))
 PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+INTERMEDIATE_DIR = PROCESSED_DIR / "intermediate"
+INTERMEDIATE_DIR.mkdir(parents=True, exist_ok=True)
+INTEGRATION_REPORT_PATH = PROCESSED_DIR / "integration_report.txt"
 
-# ── Constants ──────────────────────────────────────────────────────────────────
 FRED_BASE_URL = "https://api.stlouisfed.org/fred/series/observations"
 
-# FRED series to pull — all relevant to retail spending 2010–2012
 FRED_SERIES: dict[str, str] = {
     "UMCSENT": "University of Michigan Consumer Sentiment Index",
     "RSXFS": "Advance Real Retail and Food Services Sales (Millions USD)",
@@ -44,26 +31,117 @@ WALMART_DATE_START = "2010-02-05"
 WALMART_DATE_END = "2012-11-02"
 
 
-# ── Kaggle Data Loader ─────────────────────────────────────────────────────────
+def _save_intermediate(df: pd.DataFrame, filename: str) -> Path:
+    path = INTERMEDIATE_DIR / filename
+    df.to_csv(path, index=False)
+    logger.info("Saved intermediate dataset: {} ({:,} rows, {} cols)", path, *df.shape)
+    return path
 
 
-def load_walmart_data() -> pd.DataFrame:
-    """
-    Load and merge the three Walmart Kaggle CSV files:
-      - train.csv      : weekly sales per store/department
-      - stores.csv     : store type and size metadata
-      - features.csv   : external features (temperature, fuel price, CPI, etc.)
+def _log_standard_merge(
+    left_df: pd.DataFrame,
+    right_df: pd.DataFrame,
+    merged_df: pd.DataFrame,
+    *,
+    step_name: str,
+    keys: list[str],
+    right_added_cols: list[str],
+    indicator_col: str,
+    strategy: str,
+) -> dict[str, Any]:
+    rows_before = len(left_df)
+    rows_after = len(merged_df)
+    unmatched_left_rows = int((merged_df[indicator_col] == "left_only").sum())
 
-    Returns
-    -------
-    pd.DataFrame
-        Merged Walmart DataFrame with parsed dates.
+    rows_with_any_new_nulls = 0
+    null_introduced_by_column: dict[str, int] = {}
+    for col in right_added_cols:
+        if col in merged_df.columns:
+            null_count = int(merged_df[col].isna().sum())
+            null_introduced_by_column[col] = null_count
 
-    Raises
-    ------
-    FileNotFoundError
-        If any of the three required CSV files are missing from data/raw/.
-    """
+    if right_added_cols:
+        rows_with_any_new_nulls = int(merged_df[right_added_cols].isna().any(axis=1).sum())
+
+    logger.info(
+        "{} — rows before: {:,}, rows after: {:,}, delta: {:+,}",
+        step_name,
+        rows_before,
+        rows_after,
+        rows_after - rows_before,
+    )
+    logger.info(
+        "{} — unmatched left rows: {:,}, rows with nulls in added cols: {:,}",
+        step_name,
+        unmatched_left_rows,
+        rows_with_any_new_nulls,
+    )
+
+    return {
+        "step": step_name,
+        "left_rows": rows_before,
+        "right_rows": len(right_df),
+        "output_rows": rows_after,
+        "keys": keys,
+        "strategy": strategy,
+        "unmatched_left_rows": unmatched_left_rows,
+        "rows_with_any_new_nulls": rows_with_any_new_nulls,
+        "null_introduced_by_column": null_introduced_by_column,
+    }
+
+
+def _save_integration_report(report: dict[str, Any]) -> None:
+    lines = [
+        "=" * 80,
+        "WALMART SALES CLASSIFICATION — DATA ACQUISITION & INTEGRATION REPORT",
+        "=" * 80,
+        "",
+        "SOURCES:",
+        "1) Kaggle Walmart Store Sales Forecasting (train.csv, stores.csv, features.csv)",
+        "2) FRED API series: UMCSENT, RSXFS, PCE",
+        "",
+        "MERGE STRATEGY (EXACT):",
+        "- Step 1: LEFT JOIN train + stores on key [Store]",
+        "- Step 2: LEFT JOIN (step1) + features on keys [Store, Date]",
+        "- Step 3: AS-OF BACKWARD merge weekly Walmart with monthly FRED on [Date]",
+        "  Each Walmart row receives the most recent previous FRED observation",
+        "  to avoid look-ahead bias.",
+        "",
+    ]
+
+    for merge in report.get("merge_steps", []):
+        lines.extend([
+            f"[{merge['step']}]",
+            f"  strategy                 : {merge['strategy']}",
+            f"  keys                     : {merge['keys']}",
+            f"  left rows                : {merge['left_rows']:,}",
+            f"  right rows               : {merge['right_rows']:,}",
+            f"  output rows              : {merge['output_rows']:,}",
+            f"  unmatched left rows      : {merge['unmatched_left_rows']:,}",
+            f"  rows with new nulls      : {merge['rows_with_any_new_nulls']:,}",
+            f"  nulls by added column    : {merge['null_introduced_by_column']}",
+            "",
+        ])
+
+    lines.extend([
+        "INTERMEDIATE DATASETS SAVED:",
+    ])
+    for artifact in report.get("artifacts", []):
+        lines.append(f"- {artifact}")
+
+    lines.extend([
+        "",
+        f"FINAL DATASET: {report.get('final_output', 'N/A')}",
+        "=" * 80,
+    ])
+
+    with open(INTEGRATION_REPORT_PATH, "w") as f:
+        f.write("\n".join(lines))
+
+    logger.info("Integration report saved to: {}", INTEGRATION_REPORT_PATH)
+
+
+def load_walmart_data(merge_report: dict[str, Any] | None = None) -> pd.DataFrame:
     logger.info("Loading Walmart Kaggle data from: {}", RAW_DIR)
 
     required_files = {
@@ -80,61 +158,71 @@ def load_walmart_data() -> pd.DataFrame:
                 f"walmart-recruiting-store-sales-forecasting/data"
             )
 
-    # Load individual files
     train_df = pd.read_csv(required_files["train"], parse_dates=["Date"])
     stores_df = pd.read_csv(required_files["stores"])
     features_df = pd.read_csv(required_files["features"], parse_dates=["Date"])
 
     logger.info(
         "Raw shapes — train: {}, stores: {}, features: {}",
-        train_df.shape,
-        stores_df.shape,
-        features_df.shape,
+        train_df.shape, stores_df.shape, features_df.shape,
     )
 
-    # Merge train + stores on Store
-    df = train_df.merge(stores_df, on="Store", how="left")
-    logger.info("After merging stores: {}", df.shape)
+    merge_indicator = "_merge_stores"
+    df = train_df.merge(stores_df, on="Store", how="left", indicator=merge_indicator)
 
-    # Merge with features on Store + Date
-    df = df.merge(features_df, on=["Store", "Date"], how="left", suffixes=("", "_feat"))
+    store_added_cols = [c for c in stores_df.columns if c not in {"Store"}]
+    store_merge_stats = _log_standard_merge(
+        train_df,
+        stores_df,
+        df,
+        step_name="Merge 1 — train + stores",
+        keys=["Store"],
+        right_added_cols=store_added_cols,
+        indicator_col=merge_indicator,
+        strategy="left",
+    )
+    df.drop(columns=[merge_indicator], inplace=True)
+    _save_intermediate(df, "walmart_train_stores_merged.csv")
+    train_stores_df = df.copy()
 
-    # Drop duplicate IsHoliday column introduced by features merge
+    merge_indicator = "_merge_features"
+    df = df.merge(
+        features_df,
+        on=["Store", "Date"],
+        how="left",
+        suffixes=("", "_feat"),
+        indicator=merge_indicator,
+    )
+
     holiday_cols = [c for c in df.columns if c.startswith("IsHoliday")]
     if len(holiday_cols) > 1:
         df.drop(columns=["IsHoliday_feat"], inplace=True, errors="ignore")
 
     logger.info("After merging features: {} rows, {} columns", *df.shape)
 
+    feature_added_cols = [
+        col for col in features_df.columns if col not in {"Store", "Date", "IsHoliday"}
+    ]
+    feature_merge_stats = _log_standard_merge(
+        train_stores_df,
+        features_df,
+        df,
+        step_name="Merge 2 — (train+stores) + features",
+        keys=["Store", "Date"],
+        right_added_cols=feature_added_cols,
+        indicator_col=merge_indicator,
+        strategy="left",
+    )
+    df.drop(columns=[merge_indicator], inplace=True)
+    _save_intermediate(df, "walmart_internal_merged.csv")
+
+    if merge_report is not None:
+        merge_report.setdefault("merge_steps", []).extend([store_merge_stats, feature_merge_stats])
+
     return df
 
 
-# ── FRED API Client ────────────────────────────────────────────────────────────
-
-
 def fetch_fred_series(series_id: str, retries: int = 3) -> pd.DataFrame:
-    """
-    Fetch a single FRED time series as a DataFrame.
-
-    Parameters
-    ----------
-    series_id : str
-        FRED series identifier (e.g., 'UMCSENT').
-    retries : int
-        Number of retry attempts on network failure.
-
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with columns ['Date', series_id] filtered to Walmart date range.
-
-    Raises
-    ------
-    EnvironmentError
-        If FRED_API_KEY is not set.
-    requests.HTTPError
-        If the API returns a non-200 status code.
-    """
     if not FRED_API_KEY or FRED_API_KEY == "your_fred_api_key_here":
         raise EnvironmentError(
             "FRED_API_KEY is not set. Please add it to your .env file.\n"
@@ -149,9 +237,7 @@ def fetch_fred_series(series_id: str, retries: int = 3) -> pd.DataFrame:
         "observation_end": WALMART_DATE_END,
     }
 
-    logger.info(
-        "Fetching FRED series: {} ({})", series_id, FRED_SERIES.get(series_id, "")
-    )
+    logger.info("Fetching FRED series: {} ({})", series_id, FRED_SERIES.get(series_id, ""))
 
     for attempt in range(1, retries + 1):
         try:
@@ -159,12 +245,10 @@ def fetch_fred_series(series_id: str, retries: int = 3) -> pd.DataFrame:
             response.raise_for_status()
             break
         except requests.RequestException as exc:
-            logger.warning(
-                "Attempt {}/{} failed for {}: {}", attempt, retries, series_id, exc
-            )
+            logger.warning("Attempt {}/{} failed for {}: {}", attempt, retries, series_id, exc)
             if attempt == retries:
                 raise
-            time.sleep(2**attempt)  # Exponential back-off
+            time.sleep(2 ** attempt)
 
     observations = response.json().get("observations", [])
     if not observations:
@@ -175,31 +259,18 @@ def fetch_fred_series(series_id: str, retries: int = 3) -> pd.DataFrame:
     df.rename(columns={"date": "Date", "value": series_id}, inplace=True)
     df["Date"] = pd.to_datetime(df["Date"])
 
-    # FRED uses '.' for missing values — replace with NaN
     df[series_id] = pd.to_numeric(df[series_id], errors="coerce")
 
     logger.info(
         "Series {} fetched: {} observations, {} missing",
-        series_id,
-        len(df),
-        df[series_id].isna().sum(),
+        series_id, len(df), df[series_id].isna().sum(),
     )
 
     return df
 
 
 def fetch_all_fred_series() -> pd.DataFrame:
-    """
-    Fetch all configured FRED series and combine into a single monthly DataFrame.
-
-    Returns
-    -------
-    pd.DataFrame
-        Wide-format DataFrame indexed by Date with one column per FRED series.
-    """
-    logger.info(
-        "Fetching {} FRED series: {}", len(FRED_SERIES), list(FRED_SERIES.keys())
-    )
+    logger.info("Fetching {} FRED series: {}", len(FRED_SERIES), list(FRED_SERIES.keys()))
 
     combined = None
     for series_id in FRED_SERIES:
@@ -213,44 +284,20 @@ def fetch_all_fred_series() -> pd.DataFrame:
     combined.reset_index(drop=True, inplace=True)
 
     logger.info("FRED combined shape: {}", combined.shape)
+    _save_intermediate(combined, "fred_combined.csv")
     return combined
 
 
-# ── Merge Strategy ─────────────────────────────────────────────────────────────
-
-
-def merge_walmart_fred(walmart_df: pd.DataFrame, fred_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Merge weekly Walmart data with monthly FRED data using pd.merge_asof().
-
-    Strategy
-    --------
-    Since FRED data is monthly (first of month) and Walmart data is weekly,
-    we use a backward merge: each Walmart week is assigned the economic value
-    from the most recent preceding FRED observation date.
-
-    This correctly reflects the information available to a retailer at that
-    point in time (no look-ahead bias).
-
-    Parameters
-    ----------
-    walmart_df : pd.DataFrame
-        Merged Walmart DataFrame with 'Date' column.
-    fred_df : pd.DataFrame
-        FRED macroeconomic DataFrame with 'Date' column.
-
-    Returns
-    -------
-    pd.DataFrame
-        Merged DataFrame with FRED columns appended to Walmart rows.
-    """
+def merge_walmart_fred(
+    walmart_df: pd.DataFrame,
+    fred_df: pd.DataFrame,
+    merge_report: dict[str, Any] | None = None,
+) -> pd.DataFrame:
     logger.info(
         "Merging Walmart ({} rows) with FRED ({} rows) using merge_asof",
-        len(walmart_df),
-        len(fred_df),
+        len(walmart_df), len(fred_df),
     )
 
-    # Both must be sorted by Date for merge_asof
     walmart_sorted = walmart_df.sort_values("Date").reset_index(drop=True)
     fred_sorted = fred_df.sort_values("Date").reset_index(drop=True)
 
@@ -258,7 +305,7 @@ def merge_walmart_fred(walmart_df: pd.DataFrame, fred_df: pd.DataFrame) -> pd.Da
         walmart_sorted,
         fred_sorted,
         on="Date",
-        direction="backward",  # assign the most recent past FRED value
+        direction="backward",
     )
 
     rows_before = len(walmart_df)
@@ -266,45 +313,50 @@ def merge_walmart_fred(walmart_df: pd.DataFrame, fred_df: pd.DataFrame) -> pd.Da
 
     logger.info(
         "Merge complete — rows before: {}, rows after: {} (delta: {})",
-        rows_before,
-        rows_after,
-        rows_after - rows_before,
+        rows_before, rows_after, rows_after - rows_before,
     )
 
-    # Validate no Walmart rows were dropped
-    assert (
-        rows_after == rows_before
-    ), f"Row count mismatch after merge: expected {rows_before}, got {rows_after}"
+    fred_cols = [c for c in fred_df.columns if c != "Date"]
+    unmatched_rows = int(merged[fred_cols].isna().all(axis=1).sum()) if fred_cols else 0
+    rows_with_any_fred_null = int(merged[fred_cols].isna().any(axis=1).sum()) if fred_cols else 0
+    null_introduced_by_column = {
+        col: int(merged[col].isna().sum()) for col in fred_cols if col in merged.columns
+    }
+
+    logger.info(
+        "Merge 3 — unmatched Walmart rows (no FRED match): {:,}",
+        unmatched_rows,
+    )
+    logger.info(
+        "Merge 3 — rows with nulls in any FRED column: {:,}",
+        rows_with_any_fred_null,
+    )
+
+    assert rows_after == rows_before, (
+        f"Row count mismatch after merge: expected {rows_before}, got {rows_after}"
+    )
+
+    if merge_report is not None:
+        merge_report.setdefault("merge_steps", []).append(
+            {
+                "step": "Merge 3 — Walmart + FRED (asof)",
+                "left_rows": rows_before,
+                "right_rows": len(fred_df),
+                "output_rows": rows_after,
+                "keys": ["Date"],
+                "strategy": "merge_asof(direction='backward')",
+                "unmatched_left_rows": unmatched_rows,
+                "rows_with_any_new_nulls": rows_with_any_fred_null,
+                "null_introduced_by_column": null_introduced_by_column,
+            }
+        )
+
+    _save_intermediate(merged, "walmart_fred_merged.csv")
 
     return merged
 
 
-# ── Target Variable Engineering ────────────────────────────────────────────────
-
-
 def create_target_variable(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Create binary classification target: Sales_Class.
-
-    Definition
-    ----------
-    For each store, compute the store-specific median of Weekly_Sales.
-    Weeks where Weekly_Sales > store median are labelled 1 (High).
-    Weeks where Weekly_Sales <= store median are labelled 0 (Low).
-
-    This store-relative threshold avoids bias where large stores always appear
-    'High' and small stores always appear 'Low' in absolute terms.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Merged DataFrame containing 'Store' and 'Weekly_Sales' columns.
-
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with new column 'Sales_Class' (0 = Low, 1 = High).
-    """
     logger.info("Creating store-specific median target variable: Sales_Class")
 
     store_medians = df.groupby("Store")["Weekly_Sales"].transform("median")
@@ -322,50 +374,31 @@ def create_target_variable(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# ── Main Pipeline Entry Point ──────────────────────────────────────────────────
-
-
 def run_acquisition_pipeline() -> pd.DataFrame:
-    """
-    Execute the full data acquisition and integration pipeline.
-
-    Steps
-    -----
-    1. Load Walmart Kaggle CSVs (train + stores + features).
-    2. Fetch FRED macroeconomic series via REST API.
-    3. Merge weekly Walmart data with monthly FRED data using merge_asof.
-    4. Create binary target variable (store-specific median split).
-    5. Save merged dataset to data/processed/merged_dataset.csv.
-
-    Returns
-    -------
-    pd.DataFrame
-        Final merged DataFrame ready for validation and modelling.
-    """
     logger.info("=" * 60)
     logger.info("Starting Data Acquisition Pipeline")
     logger.info("=" * 60)
 
-    # Step 1: Walmart data
-    walmart_df = load_walmart_data()
+    report: dict[str, Any] = {"merge_steps": [], "artifacts": []}
 
-    # Step 2: FRED data
+    walmart_df = load_walmart_data(merge_report=report)
+    report["artifacts"].append(str(INTERMEDIATE_DIR / "walmart_train_stores_merged.csv"))
+    report["artifacts"].append(str(INTERMEDIATE_DIR / "walmart_internal_merged.csv"))
+
     fred_df = fetch_all_fred_series()
+    report["artifacts"].append(str(INTERMEDIATE_DIR / "fred_combined.csv"))
 
-    # Step 3: Merge
-    merged_df = merge_walmart_fred(walmart_df, fred_df)
+    merged_df = merge_walmart_fred(walmart_df, fred_df, merge_report=report)
+    report["artifacts"].append(str(INTERMEDIATE_DIR / "walmart_fred_merged.csv"))
 
-    # Step 4: Target variable
     merged_df = create_target_variable(merged_df)
 
-    # Step 5: Save
     output_path = PROCESSED_DIR / "merged_dataset.csv"
     merged_df.to_csv(output_path, index=False)
-    logger.info(
-        "Merged dataset saved to: {} ({:,} rows, {} cols)",
-        output_path,
-        *merged_df.shape,
-    )
+    logger.info("Merged dataset saved to: {} ({:,} rows, {} cols)", output_path, *merged_df.shape)
+
+    report["final_output"] = str(output_path)
+    _save_integration_report(report)
 
     return merged_df
 

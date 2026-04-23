@@ -44,6 +44,15 @@ make validate     # Run full validation report
 make phase1       # Run both steps sequentially
 ```
 
+### Acquisition Outputs
+After `make acquire`, the pipeline writes:
+- `data/processed/merged_dataset.csv` (final merged dataset)
+- `data/processed/integration_report.txt` (exact merge strategy + row/null diagnostics)
+- `data/processed/intermediate/walmart_train_stores_merged.csv`
+- `data/processed/intermediate/walmart_internal_merged.csv`
+- `data/processed/intermediate/fred_combined.csv`
+- `data/processed/intermediate/walmart_fred_merged.csv`
+
 ### Run Tests
 ```bash
 make test
