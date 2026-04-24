@@ -2,9 +2,10 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   lint-and-test:
@@ -30,14 +31,17 @@ jobs:
       - name: Install dependencies
         run: poetry install --with dev
 
-      - name: Lint with flake8
-        run: poetry run flake8 src/ tests/ --max-line-length=100
+      - name: Lint
+        run: make lint
 
-      - name: Check formatting with black
+      - name: Format check
         run: poetry run black --check src/ tests/
 
-      - name: Run tests with coverage
-        run: poetry run pytest tests/ --cov=src --cov-report=xml --cov-report=term-missing -v
+      - name: Tests
+        run: make test
+
+      - name: Coverage XML
+        run: poetry run pytest tests/ --cov=src --cov-report=xml -q
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v4
