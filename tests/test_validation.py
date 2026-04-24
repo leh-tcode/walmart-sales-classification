@@ -20,6 +20,11 @@ def clean_df():
         "Size": rng.integers(30000, 200000, size=n),
         "Temperature": rng.uniform(20, 90, size=n),
         "Fuel_Price": rng.uniform(2.5, 4.5, size=n),
+        "MarkDown1": rng.uniform(0, 20000, size=n),
+        "MarkDown2": rng.uniform(0, 20000, size=n),
+        "MarkDown3": rng.uniform(0, 20000, size=n),
+        "MarkDown4": rng.uniform(0, 20000, size=n),
+        "MarkDown5": rng.uniform(0, 20000, size=n),
         "CPI": rng.uniform(200, 230, size=n),
         "Unemployment": rng.uniform(5, 12, size=n),
         "UMCSENT": rng.uniform(60, 95, size=n),
@@ -50,6 +55,21 @@ class TestCheckShape:
         assert result["meets_min_cols"] is False
 
 
+class TestCheckRequiredSchema:
+
+    def test_pass_with_required_columns(self, clean_df):
+        from src.validation.validator import check_required_schema
+        result = check_required_schema(clean_df)
+        assert result["status"] == "PASS"
+
+    def test_fail_when_required_missing(self, clean_df):
+        from src.validation.validator import check_required_schema
+        df = clean_df.drop(columns=["Weekly_Sales"])
+        result = check_required_schema(df)
+        assert result["status"] == "FAIL"
+        assert "Weekly_Sales" in result["missing_required_columns"]
+
+
 class TestCheckMissingValues:
 
     def test_pass_on_complete_data(self, clean_df):
@@ -73,6 +93,25 @@ class TestCheckMissingValues:
         result = check_missing_values(df)
         assert result["total_missing_cells"] == 10
 
+
+class TestRowLevelAndSevereMissingness:
+
+    def test_row_level_missingness_warns(self, clean_df):
+        from src.validation.validator import check_row_level_missingness
+        df = clean_df.copy()
+        df.loc[0:20, "UMCSENT"] = np.nan
+        result = check_row_level_missingness(df)
+        assert result["status"] == "WARN"
+        assert result["rows_with_missing"] > 0
+
+    def test_severe_missingness_detects_columns(self, clean_df):
+        from src.validation.validator import check_severe_missingness_thresholds
+        df = clean_df.copy()
+        df.loc[:4000, "PCE"] = np.nan
+        result = check_severe_missingness_thresholds(df)
+        assert result["status"] == "WARN"
+        assert "PCE" in result["severe_columns"]
+
 class TestCheckDuplicates:
 
     def test_pass_on_unique_data(self, clean_df):
@@ -87,6 +126,22 @@ class TestCheckDuplicates:
         result = check_duplicates(df_with_dups)
         assert result["status"] == "WARN"
         assert result["full_row_duplicates"] == 5
+
+
+class TestStrictDtypes:
+
+    def test_strict_dtypes_pass(self, clean_df):
+        from src.validation.validator import check_strict_dtypes
+        result = check_strict_dtypes(clean_df)
+        assert result["status"] == "PASS"
+
+    def test_strict_dtypes_fail_on_mismatch(self, clean_df):
+        from src.validation.validator import check_strict_dtypes
+        df = clean_df.copy()
+        df["Store"] = df["Store"].astype(str)
+        result = check_strict_dtypes(df)
+        assert result["status"] == "FAIL"
+        assert "Store" in result["mismatches"]
 
 
 class TestCheckDateRange:
@@ -149,6 +204,28 @@ class TestCheckClassDistribution:
         assert result["status"] == "SKIP"
 
 
+class TestTargetAndCategoricalValidity:
+
+    def test_target_validity_pass(self, clean_df):
+        from src.validation.validator import check_target_validity
+        result = check_target_validity(clean_df)
+        assert result["status"] == "PASS"
+
+    def test_target_validity_fail_on_invalid(self, clean_df):
+        from src.validation.validator import check_target_validity
+        df = clean_df.copy()
+        df.loc[0, "Sales_Class"] = 2
+        result = check_target_validity(df)
+        assert result["status"] == "FAIL"
+
+    def test_categorical_domain_warns(self, clean_df):
+        from src.validation.validator import check_categorical_domains
+        df = clean_df.copy()
+        df.loc[0, "Type"] = "Z"
+        result = check_categorical_domains(df)
+        assert result["status"] == "WARN"
+
+
 class TestCheckFredCoverage:
 
     def test_pass_with_all_fred_cols(self, clean_df):
@@ -177,3 +254,20 @@ class TestCheckReferentialIntegrity:
         df.loc[0, "Store"] = 99
         result = check_referential_integrity(df)
         assert result["status"] == "WARN"
+
+
+class TestValidationOutputs:
+
+    def test_run_validation_writes_json_and_csv(self, clean_df, tmp_path, monkeypatch):
+        import src.validation.validator as validator
+
+        monkeypatch.setattr(validator, "PROCESSED_DIR", tmp_path)
+        monkeypatch.setattr(validator, "REPORT_PATH", tmp_path / "validation_report.txt")
+        monkeypatch.setattr(validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json")
+        monkeypatch.setattr(validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv")
+
+        validator.run_validation(clean_df)
+
+        assert (tmp_path / "validation_report.txt").exists()
+        assert (tmp_path / "validation_summary.json").exists()
+        assert (tmp_path / "validation_summary.csv").exists()

@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Any
 
@@ -8,6 +9,71 @@ from src.utils.logger import logger
 
 PROCESSED_DIR = Path("data/processed")
 REPORT_PATH = PROCESSED_DIR / "validation_report.txt"
+JSON_SUMMARY_PATH = PROCESSED_DIR / "validation_summary.json"
+CSV_SUMMARY_PATH = PROCESSED_DIR / "validation_summary.csv"
+
+REQUIRED_COLUMNS = [
+    "Store",
+    "Dept",
+    "Date",
+    "Weekly_Sales",
+    "IsHoliday",
+    "Type",
+    "Size",
+    "Temperature",
+    "Fuel_Price",
+    "MarkDown1",
+    "MarkDown2",
+    "MarkDown3",
+    "MarkDown4",
+    "MarkDown5",
+    "CPI",
+    "Unemployment",
+    "UMCSENT",
+    "RSXFS",
+    "PCE",
+    "Sales_Class",
+]
+
+STRICT_DTYPE_EXPECTATIONS = {
+    "Store": "integer",
+    "Dept": "integer",
+    "Date": "datetime",
+    "Weekly_Sales": "numeric",
+    "IsHoliday": "bool",
+    "Type": "string",
+    "Size": "integer",
+    "Temperature": "numeric",
+    "Fuel_Price": "numeric",
+    "MarkDown1": "numeric",
+    "MarkDown2": "numeric",
+    "MarkDown3": "numeric",
+    "MarkDown4": "numeric",
+    "MarkDown5": "numeric",
+    "CPI": "numeric",
+    "Unemployment": "numeric",
+    "UMCSENT": "numeric",
+    "RSXFS": "numeric",
+    "PCE": "numeric",
+    "Sales_Class": "integer",
+}
+
+SEVERE_COLUMN_MISSINGNESS_PCT = 40.0
+SEVERE_ROW_MISSINGNESS_PCT = 30.0
+
+
+def _dtype_matches(series: pd.Series, expected: str) -> bool:
+    if expected == "integer":
+        return pd.api.types.is_integer_dtype(series)
+    if expected == "numeric":
+        return pd.api.types.is_numeric_dtype(series)
+    if expected == "datetime":
+        return pd.api.types.is_datetime64_any_dtype(series)
+    if expected == "bool":
+        return pd.api.types.is_bool_dtype(series)
+    if expected == "string":
+        return pd.api.types.is_string_dtype(series) or pd.api.types.is_object_dtype(series)
+    return False
 
 def check_shape(df: pd.DataFrame) -> dict[str, Any]:
     result = {
@@ -50,6 +116,34 @@ def check_missing_values(df: pd.DataFrame) -> dict[str, Any]:
     return result
 
 
+def check_required_schema(df: pd.DataFrame) -> dict[str, Any]:
+    actual = set(df.columns)
+    required = set(REQUIRED_COLUMNS)
+    missing = sorted(required - actual)
+    extra = sorted(actual - required)
+
+    status = "PASS"
+    if missing:
+        status = "FAIL"
+    elif extra:
+        status = "WARN"
+
+    result = {
+        "check": "Required Schema",
+        "required_columns": REQUIRED_COLUMNS,
+        "missing_required_columns": missing,
+        "extra_columns": extra,
+        "status": status,
+    }
+    logger.info(
+        "Schema check — missing: {}, extra: {} — {}",
+        len(missing),
+        len(extra),
+        status,
+    )
+    return result
+
+
 def check_duplicates(df: pd.DataFrame) -> dict[str, Any]:
     full_dups = df.duplicated().sum()
     key_dups = df.duplicated(subset=["Store", "Dept", "Date"]).sum() if all(
@@ -84,6 +178,40 @@ def check_data_types(df: pd.DataFrame) -> dict[str, Any]:
     logger.info(
         "Data types — {} columns, {} object dtype cols — {}",
         len(dtype_map), len(object_cols), result["status"],
+    )
+    return result
+
+
+def check_strict_dtypes(df: pd.DataFrame) -> dict[str, Any]:
+    missing_columns = [c for c in STRICT_DTYPE_EXPECTATIONS if c not in df.columns]
+    mismatches = {}
+
+    for col, expected in STRICT_DTYPE_EXPECTATIONS.items():
+        if col not in df.columns:
+            continue
+        if not _dtype_matches(df[col], expected):
+            mismatches[col] = {
+                "expected": expected,
+                "actual": str(df[col].dtype),
+            }
+
+    status = "PASS"
+    if mismatches:
+        status = "FAIL"
+    elif missing_columns:
+        status = "WARN"
+
+    result = {
+        "check": "Strict Dtype Expectations",
+        "missing_columns": missing_columns,
+        "mismatches": mismatches,
+        "status": status,
+    }
+    logger.info(
+        "Strict dtypes — missing: {}, mismatches: {} — {}",
+        len(missing_columns),
+        len(mismatches),
+        status,
     )
     return result
 
@@ -141,6 +269,59 @@ def check_negative_sales(df: pd.DataFrame) -> dict[str, Any]:
     return result
 
 
+def check_row_level_missingness(df: pd.DataFrame) -> dict[str, Any]:
+    row_missing_counts = df.isna().sum(axis=1)
+    rows_with_missing = int((row_missing_counts > 0).sum())
+    rows_with_missing_pct = round(100 * rows_with_missing / len(df), 2)
+
+    result = {
+        "check": "Row-level Missingness",
+        "rows_with_missing": rows_with_missing,
+        "rows_with_missing_pct": rows_with_missing_pct,
+        "max_missing_cells_in_row": int(row_missing_counts.max()),
+        "p95_missing_cells_in_row": float(row_missing_counts.quantile(0.95)),
+        "status": "WARN" if rows_with_missing > 0 else "PASS",
+    }
+    logger.info(
+        "Row missingness — rows with missing: {} ({:.2f}%) — {}",
+        rows_with_missing,
+        rows_with_missing_pct,
+        result["status"],
+    )
+    return result
+
+
+def check_severe_missingness_thresholds(df: pd.DataFrame) -> dict[str, Any]:
+    col_missing_pct = (df.isna().mean() * 100).round(2)
+    severe_columns = {
+        col: float(pct)
+        for col, pct in col_missing_pct.items()
+        if pct >= SEVERE_COLUMN_MISSINGNESS_PCT
+    }
+
+    row_missing_pct = df.isna().mean(axis=1) * 100
+    severe_rows = int((row_missing_pct >= SEVERE_ROW_MISSINGNESS_PCT).sum())
+    severe_rows_pct = round(100 * severe_rows / len(df), 2)
+
+    status = "WARN" if severe_columns or severe_rows > 0 else "PASS"
+    result = {
+        "check": "Severe Missingness Thresholds",
+        "column_threshold_pct": SEVERE_COLUMN_MISSINGNESS_PCT,
+        "row_threshold_pct": SEVERE_ROW_MISSINGNESS_PCT,
+        "severe_columns": severe_columns,
+        "severe_row_count": severe_rows,
+        "severe_row_pct": severe_rows_pct,
+        "status": status,
+    }
+    logger.info(
+        "Severe missingness — severe cols: {}, severe rows: {} — {}",
+        len(severe_columns),
+        severe_rows,
+        status,
+    )
+    return result
+
+
 def check_value_ranges(df: pd.DataFrame) -> dict[str, Any]:
     numeric_df = df.select_dtypes(include=[np.number])
     stats = numeric_df.describe().round(2).to_dict()
@@ -190,6 +371,63 @@ def check_class_distribution(df: pd.DataFrame) -> dict[str, Any]:
         dist.get(0, 0), pct.get(0, 0),
         imbalance_ratio, result["status"],
     )
+    return result
+
+
+def check_target_validity(df: pd.DataFrame) -> dict[str, Any]:
+    if "Sales_Class" not in df.columns:
+        return {
+            "check": "Target Validity",
+            "status": "FAIL",
+            "reason": "Sales_Class column is missing",
+        }
+
+    null_count = int(df["Sales_Class"].isna().sum())
+    invalid_values = sorted(set(df["Sales_Class"].dropna().unique()) - {0, 1})
+
+    status = "PASS" if null_count == 0 and not invalid_values else "FAIL"
+    result = {
+        "check": "Target Validity",
+        "null_count": null_count,
+        "invalid_values": invalid_values,
+        "status": status,
+    }
+    logger.info(
+        "Target validity — nulls: {}, invalid values: {} — {}",
+        null_count,
+        len(invalid_values),
+        status,
+    )
+    return result
+
+
+def check_categorical_domains(df: pd.DataFrame) -> dict[str, Any]:
+    issues = []
+    details: dict[str, Any] = {}
+
+    if "Type" in df.columns:
+        allowed = {"A", "B", "C"}
+        invalid = sorted(set(df["Type"].dropna().astype(str).unique()) - allowed)
+        details["Type_allowed"] = sorted(allowed)
+        details["Type_invalid_values"] = invalid
+        if invalid:
+            issues.append(f"Invalid Type values: {invalid}")
+
+    if "IsHoliday" in df.columns:
+        allowed_bool = {True, False}
+        unique_vals = set(df["IsHoliday"].dropna().unique())
+        invalid_bool = sorted([v for v in unique_vals if v not in allowed_bool], key=str)
+        details["IsHoliday_invalid_values"] = invalid_bool
+        if invalid_bool:
+            issues.append(f"Invalid IsHoliday values: {invalid_bool}")
+
+    result = {
+        "check": "Categorical Domain Checks",
+        "issues": issues,
+        "details": details,
+        "status": "PASS" if not issues else "WARN",
+    }
+    logger.info("Categorical domain checks — issues: {} — {}", len(issues), result["status"])
     return result
 
 
@@ -259,16 +497,38 @@ def run_validation(df: pd.DataFrame) -> dict[str, Any]:
 
     all_checks = [
         check_shape(df),
+        check_required_schema(df),
         check_missing_values(df),
+        check_row_level_missingness(df),
+        check_severe_missingness_thresholds(df),
         check_duplicates(df),
         check_data_types(df),
+        check_strict_dtypes(df),
         check_date_range(df),
         check_negative_sales(df),
         check_value_ranges(df),
+        check_target_validity(df),
         check_class_distribution(df),
+        check_categorical_domains(df),
         check_fred_coverage(df),
         check_referential_integrity(df),
     ]
+
+    missing_snapshot = (
+        pd.DataFrame({
+            "missing_count": df.isna().sum(),
+            "missing_pct": (df.isna().mean() * 100).round(2),
+        })
+        .query("missing_count > 0")
+        .sort_values("missing_pct", ascending=False)
+        .head(10)
+        .to_dict(orient="index")
+    )
+
+    schema_snapshot = {col: str(dtype) for col, dtype in df.dtypes.items()}
+    head_snapshot = df.head(5).copy()
+    if "Date" in head_snapshot.columns:
+        head_snapshot["Date"] = head_snapshot["Date"].astype(str)
 
     pass_count = sum(1 for c in all_checks if c.get("status") == "PASS")
     warn_count = sum(1 for c in all_checks if c.get("status") == "WARN")
@@ -284,6 +544,11 @@ def run_validation(df: pd.DataFrame) -> dict[str, Any]:
             "failed": fail_count,
         },
         "checks": {c["check"]: c for c in all_checks},
+        "snapshots": {
+            "schema": schema_snapshot,
+            "top_missing_columns": missing_snapshot,
+            "sample_rows_head": head_snapshot.to_dict(orient="records"),
+        },
     }
 
     logger.info(
@@ -292,6 +557,8 @@ def run_validation(df: pd.DataFrame) -> dict[str, Any]:
     )
 
     _save_text_report(report)
+    _save_json_summary(report)
+    _save_csv_summary(report)
 
     return report
 
@@ -320,12 +587,67 @@ def _save_text_report(report: dict) -> None:
                 lines.append(f"      {k}: {v}")
         lines.append("")
 
+    lines.extend([
+        "-" * 70,
+        "VALIDATION SNAPSHOTS",
+        "-" * 70,
+        "Top missing columns:",
+    ])
+
+    top_missing = report.get("snapshots", {}).get("top_missing_columns", {})
+    if top_missing:
+        for col, stats in top_missing.items():
+            lines.append(f"  - {col}: {stats}")
+    else:
+        lines.append("  - None")
+
+    lines.extend([
+        "",
+        "Schema snapshot (column -> dtype):",
+    ])
+    schema_snapshot = report.get("snapshots", {}).get("schema", {})
+    for col, dtype in schema_snapshot.items():
+        lines.append(f"  - {col}: {dtype}")
+
+    lines.extend([
+        "",
+        "Sample rows (head):",
+    ])
+    for idx, row in enumerate(report.get("snapshots", {}).get("sample_rows_head", []), start=1):
+        lines.append(f"  [{idx}] {row}")
+
     lines.append("=" * 70)
 
     with open(REPORT_PATH, "w") as f:
         f.write("\n".join(lines))
 
     logger.info("Validation report saved to: {}", REPORT_PATH)
+
+
+def _save_json_summary(report: dict[str, Any]) -> None:
+    with open(JSON_SUMMARY_PATH, "w") as f:
+        json.dump(report, f, indent=2, default=str)
+    logger.info("Validation JSON summary saved to: {}", JSON_SUMMARY_PATH)
+
+
+def _save_csv_summary(report: dict[str, Any]) -> None:
+    rows = []
+    for check_name, check_result in report["checks"].items():
+        details = {
+            k: v
+            for k, v in check_result.items()
+            if k not in {"check", "status", "descriptive_stats", "dtype_map"}
+        }
+        rows.append(
+            {
+                "check": check_name,
+                "status": check_result.get("status", "?"),
+                "details": json.dumps(details, default=str),
+            }
+        )
+
+    pd.DataFrame(rows).to_csv(CSV_SUMMARY_PATH, index=False)
+    logger.info("Validation CSV summary saved to: {}", CSV_SUMMARY_PATH)
 
 
 if __name__ == "__main__":
