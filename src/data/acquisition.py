@@ -61,7 +61,9 @@ def _log_standard_merge(
             null_introduced_by_column[col] = null_count
 
     if right_added_cols:
-        rows_with_any_new_nulls = int(merged_df[right_added_cols].isna().any(axis=1).sum())
+        rows_with_any_new_nulls = int(
+            merged_df[right_added_cols].isna().any(axis=1).sum()
+        )
 
     logger.info(
         "{} — rows before: {:,}, rows after: {:,}, delta: {:+,}",
@@ -110,30 +112,36 @@ def _save_integration_report(report: dict[str, Any]) -> None:
     ]
 
     for merge in report.get("merge_steps", []):
-        lines.extend([
-            f"[{merge['step']}]",
-            f"  strategy                 : {merge['strategy']}",
-            f"  keys                     : {merge['keys']}",
-            f"  left rows                : {merge['left_rows']:,}",
-            f"  right rows               : {merge['right_rows']:,}",
-            f"  output rows              : {merge['output_rows']:,}",
-            f"  unmatched left rows      : {merge['unmatched_left_rows']:,}",
-            f"  rows with new nulls      : {merge['rows_with_any_new_nulls']:,}",
-            f"  nulls by added column    : {merge['null_introduced_by_column']}",
-            "",
-        ])
+        lines.extend(
+            [
+                f"[{merge['step']}]",
+                f"  strategy                 : {merge['strategy']}",
+                f"  keys                     : {merge['keys']}",
+                f"  left rows                : {merge['left_rows']:,}",
+                f"  right rows               : {merge['right_rows']:,}",
+                f"  output rows              : {merge['output_rows']:,}",
+                f"  unmatched left rows      : {merge['unmatched_left_rows']:,}",
+                f"  rows with new nulls      : {merge['rows_with_any_new_nulls']:,}",
+                f"  nulls by added column    : {merge['null_introduced_by_column']}",
+                "",
+            ]
+        )
 
-    lines.extend([
-        "INTERMEDIATE DATASETS SAVED:",
-    ])
+    lines.extend(
+        [
+            "INTERMEDIATE DATASETS SAVED:",
+        ]
+    )
     for artifact in report.get("artifacts", []):
         lines.append(f"- {artifact}")
 
-    lines.extend([
-        "",
-        f"FINAL DATASET: {report.get('final_output', 'N/A')}",
-        "=" * 80,
-    ])
+    lines.extend(
+        [
+            "",
+            f"FINAL DATASET: {report.get('final_output', 'N/A')}",
+            "=" * 80,
+        ]
+    )
 
     with open(INTEGRATION_REPORT_PATH, "w") as f:
         f.write("\n".join(lines))
@@ -164,7 +172,9 @@ def load_walmart_data(merge_report: dict[str, Any] | None = None) -> pd.DataFram
 
     logger.info(
         "Raw shapes — train: {}, stores: {}, features: {}",
-        train_df.shape, stores_df.shape, features_df.shape,
+        train_df.shape,
+        stores_df.shape,
+        features_df.shape,
     )
 
     merge_indicator = "_merge_stores"
@@ -217,7 +227,9 @@ def load_walmart_data(merge_report: dict[str, Any] | None = None) -> pd.DataFram
     _save_intermediate(df, "walmart_internal_merged.csv")
 
     if merge_report is not None:
-        merge_report.setdefault("merge_steps", []).extend([store_merge_stats, feature_merge_stats])
+        merge_report.setdefault("merge_steps", []).extend(
+            [store_merge_stats, feature_merge_stats]
+        )
 
     return df
 
@@ -237,7 +249,9 @@ def fetch_fred_series(series_id: str, retries: int = 3) -> pd.DataFrame:
         "observation_end": WALMART_DATE_END,
     }
 
-    logger.info("Fetching FRED series: {} ({})", series_id, FRED_SERIES.get(series_id, ""))
+    logger.info(
+        "Fetching FRED series: {} ({})", series_id, FRED_SERIES.get(series_id, "")
+    )
 
     for attempt in range(1, retries + 1):
         try:
@@ -245,10 +259,12 @@ def fetch_fred_series(series_id: str, retries: int = 3) -> pd.DataFrame:
             response.raise_for_status()
             break
         except requests.RequestException as exc:
-            logger.warning("Attempt {}/{} failed for {}: {}", attempt, retries, series_id, exc)
+            logger.warning(
+                "Attempt {}/{} failed for {}: {}", attempt, retries, series_id, exc
+            )
             if attempt == retries:
                 raise
-            time.sleep(2 ** attempt)
+            time.sleep(2**attempt)
 
     observations = response.json().get("observations", [])
     if not observations:
@@ -263,14 +279,18 @@ def fetch_fred_series(series_id: str, retries: int = 3) -> pd.DataFrame:
 
     logger.info(
         "Series {} fetched: {} observations, {} missing",
-        series_id, len(df), df[series_id].isna().sum(),
+        series_id,
+        len(df),
+        df[series_id].isna().sum(),
     )
 
     return df
 
 
 def fetch_all_fred_series() -> pd.DataFrame:
-    logger.info("Fetching {} FRED series: {}", len(FRED_SERIES), list(FRED_SERIES.keys()))
+    logger.info(
+        "Fetching {} FRED series: {}", len(FRED_SERIES), list(FRED_SERIES.keys())
+    )
 
     combined = None
     for series_id in FRED_SERIES:
@@ -295,7 +315,8 @@ def merge_walmart_fred(
 ) -> pd.DataFrame:
     logger.info(
         "Merging Walmart ({} rows) with FRED ({} rows) using merge_asof",
-        len(walmart_df), len(fred_df),
+        len(walmart_df),
+        len(fred_df),
     )
 
     walmart_sorted = walmart_df.sort_values("Date").reset_index(drop=True)
@@ -313,12 +334,16 @@ def merge_walmart_fred(
 
     logger.info(
         "Merge complete — rows before: {}, rows after: {} (delta: {})",
-        rows_before, rows_after, rows_after - rows_before,
+        rows_before,
+        rows_after,
+        rows_after - rows_before,
     )
 
     fred_cols = [c for c in fred_df.columns if c != "Date"]
     unmatched_rows = int(merged[fred_cols].isna().all(axis=1).sum()) if fred_cols else 0
-    rows_with_any_fred_null = int(merged[fred_cols].isna().any(axis=1).sum()) if fred_cols else 0
+    rows_with_any_fred_null = (
+        int(merged[fred_cols].isna().any(axis=1).sum()) if fred_cols else 0
+    )
     null_introduced_by_column = {
         col: int(merged[col].isna().sum()) for col in fred_cols if col in merged.columns
     }
@@ -332,9 +357,9 @@ def merge_walmart_fred(
         rows_with_any_fred_null,
     )
 
-    assert rows_after == rows_before, (
-        f"Row count mismatch after merge: expected {rows_before}, got {rows_after}"
-    )
+    assert (
+        rows_after == rows_before
+    ), f"Row count mismatch after merge: expected {rows_before}, got {rows_after}"
 
     if merge_report is not None:
         merge_report.setdefault("merge_steps", []).append(
@@ -382,7 +407,9 @@ def run_acquisition_pipeline() -> pd.DataFrame:
     report: dict[str, Any] = {"merge_steps": [], "artifacts": []}
 
     walmart_df = load_walmart_data(merge_report=report)
-    report["artifacts"].append(str(INTERMEDIATE_DIR / "walmart_train_stores_merged.csv"))
+    report["artifacts"].append(
+        str(INTERMEDIATE_DIR / "walmart_train_stores_merged.csv")
+    )
     report["artifacts"].append(str(INTERMEDIATE_DIR / "walmart_internal_merged.csv"))
 
     fred_df = fetch_all_fred_series()
@@ -395,7 +422,11 @@ def run_acquisition_pipeline() -> pd.DataFrame:
 
     output_path = PROCESSED_DIR / "merged_dataset.csv"
     merged_df.to_csv(output_path, index=False)
-    logger.info("Merged dataset saved to: {} ({:,} rows, {} cols)", output_path, *merged_df.shape)
+    logger.info(
+        "Merged dataset saved to: {} ({:,} rows, {} cols)",
+        output_path,
+        *merged_df.shape,
+    )
 
     report["final_output"] = str(output_path)
     _save_integration_report(report)
