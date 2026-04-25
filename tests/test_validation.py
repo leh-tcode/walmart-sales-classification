@@ -53,13 +53,14 @@ def _find_check(report: dict, substring: str) -> dict | None:
 # 1 ─ ACCURACY
 # ══════════════════════════════════════════════════════════════
 
+
 class TestCheckAccuracy:
 
     def test_range_violation_detected(self, clean_df):
         from src.validation.validator import check_accuracy
 
         df = clean_df.copy()
-        df.loc[0:99, "Temperature"] = 200.0 
+        df.loc[0:99, "Temperature"] = 200.0
         result = check_accuracy(df)
         chk = _find_check(result, "Temperature")
         assert chk is not None
