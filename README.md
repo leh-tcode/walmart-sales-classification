@@ -41,7 +41,8 @@ Place the following files in `data/raw/`:
 ```bash
 make acquire      # Download FRED data + merge with Walmart
 make validate     # Run full validation report
-make phase1       # Run both steps sequentially
+make preprocess   # Run preprocessing + feature engineering
+make full       # Run all steps sequentially
 ```
 
 ### Acquisition Outputs
@@ -58,13 +59,27 @@ After `make acquire`, the pipeline writes:
 make test
 ```
 
+### Preprocessing Outputs
+After `make preprocess`, the pipeline writes:
+- `data/processed/train_preprocessed.csv`
+- `data/processed/validation_preprocessed.csv`
+- `data/processed/test_preprocessed.csv`
+- `data/processed/preprocessing_summary.json`
+- `data/processed/preprocessing_summary.txt`
+
+### Preprocessing Notes
+- Time-leakage safety: **time-based split** (train → validation → test by date)
+- Leakage column dropped: `Weekly_Sales`
+- Feature engineering includes date parts (`Year`, `Month`, `Week`, `Quarter`), holiday-season flags, and lag/rolling features
+- Applies imputation, outlier capping, categorical encoding, scaling, and feature selection
+
 ## Project Structure
 ```
 walmart_sales_classification/
 ├── src/
 │   ├── data/
 │   │   ├── acquisition.py      # Kaggle loader + FRED API client
-│   │   └── merger.py           # merge_asof integration logic
+│   │   └── preprocessing.py    # Preprocessing + feature engineering pipeline
 │   ├── validation/
 │   │   └── validator.py        # Full validation report generator
 │   └── utils/

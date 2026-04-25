@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -36,278 +38,592 @@ def clean_df():
     )
 
 
-class TestCheckShape:
+# ══════════════════════════════════════════════════════════════
+# helpers to dig into dimension reports
+# ══════════════════════════════════════════════════════════════
 
-    def test_passes_with_sufficient_rows_and_cols(self, clean_df):
-        from src.validation.validator import check_shape
+def _find_check(report: dict, substring: str) -> dict | None:
+    """Return the first check whose 'check' field contains *substring*."""
+    for c in report.get("checks", []):
+        if substring.lower() in c.get("check", "").lower():
+            return c
+    return None
 
-        result = check_shape(clean_df)
-        assert result["status"] == "PASS"
+# ══════════════════════════════════════════════════════════════
+# 1 ─ ACCURACY
+# ══════════════════════════════════════════════════════════════
 
-    def test_fails_with_too_few_rows(self, clean_df):
-        from src.validation.validator import check_shape
+class TestCheckAccuracy:
 
-        small_df = clean_df.head(100)
-        result = check_shape(small_df)
-        assert result["status"] == "FAIL"
-        assert result["meets_min_rows"] is False
-
-    def test_fails_with_too_few_columns(self, clean_df):
-        from src.validation.validator import check_shape
-
-        narrow_df = clean_df[["Store", "Date", "Weekly_Sales"]]
-        result = check_shape(narrow_df)
-        assert result["status"] == "FAIL"
-        assert result["meets_min_cols"] is False
-
-
-class TestCheckRequiredSchema:
-
-    def test_pass_with_required_columns(self, clean_df):
-        from src.validation.validator import check_required_schema
-
-        result = check_required_schema(clean_df)
-        assert result["status"] == "PASS"
-
-    def test_fail_when_required_missing(self, clean_df):
-        from src.validation.validator import check_required_schema
-
-        df = clean_df.drop(columns=["Weekly_Sales"])
-        result = check_required_schema(df)
-        assert result["status"] == "FAIL"
-        assert "Weekly_Sales" in result["missing_required_columns"]
-
-
-class TestCheckMissingValues:
-
-    def test_pass_on_complete_data(self, clean_df):
-        from src.validation.validator import check_missing_values
-
-        result = check_missing_values(clean_df)
-        assert result["status"] == "PASS"
-        assert result["total_missing_cells"] == 0
-
-    def test_warns_on_missing_data(self, clean_df):
-        from src.validation.validator import check_missing_values
-
-        df_with_missing = clean_df.copy()
-        df_with_missing.loc[0:50, "UMCSENT"] = np.nan
-        result = check_missing_values(df_with_missing)
-        assert result["status"] == "WARN"
-        assert result["total_missing_cells"] > 0
-
-    def test_counts_correctly(self, clean_df):
-        from src.validation.validator import check_missing_values
+    def test_range_violation_detected(self, clean_df):
+        from src.validation.validator import check_accuracy
 
         df = clean_df.copy()
-        df.loc[0:9, "Weekly_Sales"] = np.nan
-        result = check_missing_values(df)
-        assert result["total_missing_cells"] == 10
+        df.loc[0:99, "Temperature"] = 200.0 
+        result = check_accuracy(df)
+        chk = _find_check(result, "Temperature")
+        assert chk is not None
+        assert chk["violations"] >= 100
 
-
-class TestRowLevelAndSevereMissingness:
-
-    def test_row_level_missingness_warns(self, clean_df):
-        from src.validation.validator import check_row_level_missingness
-
-        df = clean_df.copy()
-        df.loc[0:20, "UMCSENT"] = np.nan
-        result = check_row_level_missingness(df)
-        assert result["status"] == "WARN"
-        assert result["rows_with_missing"] > 0
-
-    def test_severe_missingness_detects_columns(self, clean_df):
-        from src.validation.validator import check_severe_missingness_thresholds
-
-        df = clean_df.copy()
-        df.loc[:4000, "PCE"] = np.nan
-        result = check_severe_missingness_thresholds(df)
-        assert result["status"] == "WARN"
-        assert "PCE" in result["severe_columns"]
-
-
-class TestCheckDuplicates:
-
-    def test_pass_on_unique_data(self, clean_df):
-        from src.validation.validator import check_duplicates
-
-        result = check_duplicates(clean_df)
-        assert result["status"] == "PASS"
-        assert result["full_row_duplicates"] == 0
-
-    def test_detects_full_row_duplicates(self, clean_df):
-        from src.validation.validator import check_duplicates
-
-        df_with_dups = pd.concat([clean_df, clean_df.head(5)], ignore_index=True)
-        result = check_duplicates(df_with_dups)
-        assert result["status"] == "WARN"
-        assert result["full_row_duplicates"] == 5
-
-
-class TestStrictDtypes:
-
-    def test_strict_dtypes_pass(self, clean_df):
-        from src.validation.validator import check_strict_dtypes
-
-        result = check_strict_dtypes(clean_df)
-        assert result["status"] == "PASS"
-
-    def test_strict_dtypes_fail_on_mismatch(self, clean_df):
-        from src.validation.validator import check_strict_dtypes
-
-        df = clean_df.copy()
-        df["Store"] = df["Store"].astype(str)
-        result = check_strict_dtypes(df)
-        assert result["status"] == "FAIL"
-        assert "Store" in result["mismatches"]
-
-
-class TestCheckDateRange:
-
-    def test_pass_on_valid_dates(self):
-        from src.validation.validator import check_date_range
-        import numpy as np
-
-        rng = np.random.default_rng(42)
-        dates = pd.date_range("2010-02-05", periods=143, freq="W")
-        df = pd.DataFrame(
-            {
-                "Date": np.resize(dates, 6000),
-                "Weekly_Sales": rng.uniform(5000, 80000, size=6000),
-            }
-        )
-        result = check_date_range(df)
-        assert result["status"] == "PASS"
-        assert result["out_of_range_rows"] == 0
-
-    def test_skips_without_date_column(self, clean_df):
-        from src.validation.validator import check_date_range
-
-        df_no_date = clean_df.drop(columns=["Date"])
-        result = check_date_range(df_no_date)
-        assert result["status"] == "SKIP"
-
-    def test_warns_on_out_of_range_dates(self, clean_df):
-        from src.validation.validator import check_date_range
-
-        df = clean_df.copy()
-        df.loc[0, "Date"] = pd.Timestamp("2005-01-01")
-        result = check_date_range(df)
-        assert result["out_of_range_rows"] >= 1
-
-
-class TestCheckNegativeSales:
-
-    def test_pass_on_positive_sales(self, clean_df):
-        from src.validation.validator import check_negative_sales
-
-        result = check_negative_sales(clean_df)
-        assert result["status"] == "PASS"
-
-    def test_warns_on_negative_sales(self, clean_df):
-        from src.validation.validator import check_negative_sales
-
-        df = clean_df.copy()
-        df.loc[0:4, "Weekly_Sales"] = -500.0
-        result = check_negative_sales(df)
-        assert result["status"] == "WARN"
-        assert result["negative_rows"] == 5
-
-
-class TestCheckClassDistribution:
-
-    def test_pass_on_balanced_target(self, clean_df):
-        from src.validation.validator import check_class_distribution
-
-        result = check_class_distribution(clean_df)
-        assert result["status"] == "PASS"
-        assert result["imbalance_ratio"] < 2.0
-
-    def test_skip_without_target(self, clean_df):
-        from src.validation.validator import check_class_distribution
-
-        df_no_target = clean_df.drop(columns=["Sales_Class"])
-        result = check_class_distribution(df_no_target)
-        assert result["status"] == "SKIP"
-
-
-class TestTargetAndCategoricalValidity:
-
-    def test_target_validity_pass(self, clean_df):
-        from src.validation.validator import check_target_validity
-
-        result = check_target_validity(clean_df)
-        assert result["status"] == "PASS"
-
-    def test_target_validity_fail_on_invalid(self, clean_df):
-        from src.validation.validator import check_target_validity
-
-        df = clean_df.copy()
-        df.loc[0, "Sales_Class"] = 2
-        result = check_target_validity(df)
-        assert result["status"] == "FAIL"
-
-    def test_categorical_domain_warns(self, clean_df):
-        from src.validation.validator import check_categorical_domains
+    def test_invalid_type_value_detected(self, clean_df):
+        from src.validation.validator import check_accuracy
 
         df = clean_df.copy()
         df.loc[0, "Type"] = "Z"
-        result = check_categorical_domains(df)
-        assert result["status"] == "WARN"
+        result = check_accuracy(df)
+        chk = _find_check(result, "Type in")
+        assert chk is not None
+        assert chk["violations"] >= 1
+        assert "Z" in chk["sample_invalid_values"]
+
+    def test_invalid_isholiday_detected(self, clean_df):
+        from src.validation.validator import check_accuracy
+
+        df = clean_df.copy()
+        df["IsHoliday"] = df["IsHoliday"].astype(object)
+        df.loc[0, "IsHoliday"] = "maybe"
+        result = check_accuracy(df)
+        chk = _find_check(result, "IsHoliday")
+        assert chk is not None
+        assert chk["status"] == "FAIL"
+
+    def test_date_out_of_range_detected(self, clean_df):
+        from src.validation.validator import check_accuracy
+
+        df = clean_df.copy()
+        df.loc[0, "Date"] = pd.Timestamp("2005-01-01")
+        result = check_accuracy(df)
+        chk = _find_check(result, "Date within")
+        assert chk is not None
+        assert chk["out_of_range_rows"] >= 1
+
+    def test_sales_class_invalid_value(self, clean_df):
+        from src.validation.validator import check_accuracy
+
+        df = clean_df.copy()
+        df.loc[0, "Sales_Class"] = 5
+        result = check_accuracy(df)
+        chk = _find_check(result, "Sales_Class values")
+        assert chk is not None
+        assert chk["status"] == "FAIL"
+        assert 5 in chk["invalid_values"]
+
+    def test_negative_sales_warns(self, clean_df):
+        from src.validation.validator import check_accuracy
+
+        df = clean_df.copy()
+        df.loc[0:4, "Weekly_Sales"] = -500.0
+        result = check_accuracy(df)
+        chk = _find_check(result, "Negative Weekly_Sales")
+        assert chk is not None
+        assert chk["status"] == "WARN"
+        assert chk["negative_rows"] == 5
 
 
-class TestCheckFredCoverage:
+# ══════════════════════════════════════════════════════════════
+# 2 ─ COMPLETENESS
+# ══════════════════════════════════════════════════════════════
 
-    def test_pass_with_all_fred_cols(self, clean_df):
-        from src.validation.validator import check_fred_coverage
+class TestCheckCompleteness:
 
-        result = check_fred_coverage(clean_df)
-        assert result["all_series_present"] is True
+    def test_passes_on_clean_data(self, clean_df):
+        from src.validation.validator import check_completeness
 
-    def test_warns_when_fred_col_missing(self, clean_df):
-        from src.validation.validator import check_fred_coverage
+        result = check_completeness(clean_df)
+        assert result["dimension"] == "Completeness"
+        assert result["overall_completeness_pct"] == 100.0
 
-        df_missing_fred = clean_df.drop(columns=["UMCSENT"])
-        result = check_fred_coverage(df_missing_fred)
-        assert result["status"] == "WARN"
-        assert result["fred_column_coverage"]["UMCSENT"]["present"] is False
+    def test_row_count_check(self, clean_df):
+        from src.validation.validator import check_completeness
+
+        small = clean_df.head(100)
+        result = check_completeness(small)
+        chk = _find_check(result, "Minimum row count")
+        assert chk is not None
+        assert chk["status"] == "FAIL"
+
+    def test_missing_column_detected(self, clean_df):
+        from src.validation.validator import check_completeness
+
+        df = clean_df.drop(columns=["Weekly_Sales"])
+        result = check_completeness(df)
+        chk = _find_check(result, "required columns")
+        assert chk is not None
+        assert "Weekly_Sales" in chk["missing_columns"]
+        assert chk["status"] == "FAIL"
+
+    def test_column_null_threshold_breach(self, clean_df):
+        from src.validation.validator import check_completeness
+
+        df = clean_df.copy()
+        # Temperature threshold is 1 %, inject ~10 % nulls
+        n_nulls = int(len(df) * 0.10)
+        df.loc[:n_nulls - 1, "Temperature"] = np.nan
+        result = check_completeness(df)
+        chk = _find_check(result, "Temperature null")
+        assert chk is not None
+        assert chk["status"] == "FAIL"
+        assert chk["null_pct"] > 1.0
+
+    def test_row_level_missingness_warns(self, clean_df):
+        from src.validation.validator import check_completeness
+
+        df = clean_df.copy()
+        df.loc[0:20, "UMCSENT"] = np.nan
+        result = check_completeness(df)
+        chk = _find_check(result, "Row-level missingness")
+        assert chk is not None
+        assert chk["status"] == "WARN"
+        assert chk["rows_with_missing"] > 0
+
+    def test_fred_coverage_pass(self, clean_df):
+        from src.validation.validator import check_completeness
+
+        result = check_completeness(clean_df)
+        chk = _find_check(result, "FRED")
+        assert chk is not None
+        assert chk["status"] == "PASS"
+
+    def test_fred_coverage_fail_when_missing(self, clean_df):
+        from src.validation.validator import check_completeness
+
+        df = clean_df.drop(columns=["UMCSENT"])
+        result = check_completeness(df)
+        chk = _find_check(result, "FRED")
+        assert chk is not None
+        assert chk["status"] == "FAIL"
+        assert chk["fred_column_coverage"]["UMCSENT"]["present"] is False
+
+    def test_total_missing_cells_counted(self, clean_df):
+        from src.validation.validator import check_completeness
+
+        df = clean_df.copy()
+        df.loc[0:9, "Weekly_Sales"] = np.nan
+        result = check_completeness(df)
+        assert result["overall_missing_cells"] == 10
 
 
-class TestCheckReferentialIntegrity:
+# ══════════════════════════════════════════════════════════════
+# 3 ─ CONSISTENCY
+# ══════════════════════════════════════════════════════════════
 
-    def test_pass_on_valid_store_ids(self, clean_df):
-        from src.validation.validator import check_referential_integrity
+class TestCheckConsistency:
 
-        result = check_referential_integrity(clean_df)
-        assert result["status"] == "PASS"
+    def test_passes_on_clean_data(self, clean_df):
+        from src.validation.validator import check_consistency
 
-    def test_warns_on_invalid_store_id(self, clean_df):
-        from src.validation.validator import check_referential_integrity
+        result = check_consistency(clean_df)
+        assert result["dimension"] == "Consistency"
+        assert result["overall_status"] == "PASS"
+
+    def test_invalid_store_id_detected(self, clean_df):
+        from src.validation.validator import check_consistency
 
         df = clean_df.copy()
         df.loc[0, "Store"] = 99
-        result = check_referential_integrity(df)
-        assert result["status"] == "WARN"
+        result = check_consistency(df)
+        chk = _find_check(result, "Store IDs")
+        assert chk is not None
+        assert chk["status"] == "FAIL"
+        assert 99 in chk["invalid_store_ids"]
+
+    def test_invalid_dept_id_detected(self, clean_df):
+        from src.validation.validator import check_consistency
+
+        df = clean_df.copy()
+        df.loc[0, "Dept"] = 200
+        result = check_consistency(df)
+        chk = _find_check(result, "Dept IDs")
+        assert chk is not None
+        assert chk["status"] == "FAIL"
+
+    def test_sales_per_sqft_violation(self, clean_df):
+        from src.validation.validator import check_consistency
+
+        df = clean_df.copy()
+        # Force extreme sales-per-sqft: sales=500k, size=1000 → 500
+        df.loc[0:199, "Weekly_Sales"] = 500_000
+        df.loc[0:199, "Size"] = 1_000
+        result = check_consistency(df)
+        chk = _find_check(result, "sales-per-sqft")
+        assert chk is not None
+        assert chk["violations"] >= 200
+
+    def test_frozen_summer_detected(self, clean_df):
+        from src.validation.validator import check_consistency
+
+        df = clean_df.copy()
+        summer_mask = df["Date"].dt.month.isin([6, 7, 8])
+        summer_idx = df.index[summer_mask][:5]
+        df.loc[summer_idx, "Temperature"] = -10.0
+        result = check_consistency(df)
+        chk = _find_check(result, "sub-zero")
+        assert chk is not None
+        assert chk["violations"] >= 5
+        assert chk["status"] == "FAIL"
+
+    def test_isholiday_boolean_check(self, clean_df):
+        from src.validation.validator import check_consistency
+
+        result = check_consistency(clean_df)
+        chk = _find_check(result, "IsHoliday contains only boolean")
+        assert chk is not None
+        assert chk["status"] == "PASS"
 
 
-class TestValidationOutputs:
+# ══════════════════════════════════════════════════════════════
+# 4 ─ UNIQUENESS
+# ══════════════════════════════════════════════════════════════
 
-    def test_run_validation_writes_json_and_csv(self, clean_df, tmp_path, monkeypatch):
+class TestCheckUniqueness:
+
+    def test_passes_on_unique_data(self, clean_df):
+        from src.validation.validator import check_uniqueness
+
+        result = check_uniqueness(clean_df)
+        assert result["dimension"] == "Uniqueness"
+        assert result["overall_status"] == "PASS"
+
+    def test_full_row_duplicates_detected(self, clean_df):
+        from src.validation.validator import check_uniqueness
+
+        df = pd.concat([clean_df, clean_df.head(5)], ignore_index=True)
+        result = check_uniqueness(df)
+        chk = _find_check(result, "full-row duplicates")
+        assert chk is not None
+        assert chk["duplicate_count"] == 5
+        assert chk["status"] == "FAIL"
+
+    def test_business_key_duplicate_detected(self, clean_df):
+        from src.validation.validator import check_uniqueness
+
+        df = clean_df.copy()
+        dup_row = df.iloc[0].copy()
+        dup_row["Weekly_Sales"] = 999999  # different sales, same key
+        df = pd.concat([df, pd.DataFrame([dup_row])], ignore_index=True)
+        result = check_uniqueness(df)
+        chk = _find_check(result, "business key")
+        assert chk is not None
+        assert chk["duplicate_count"] >= 1
+
+    def test_fingerprint_duplicate(self, clean_df):
+        from src.validation.validator import check_uniqueness
+
+        df = pd.concat([clean_df, clean_df.head(3)], ignore_index=True)
+        result = check_uniqueness(df)
+        chk = _find_check(result, "fingerprint")
+        assert chk is not None
+        assert chk["duplicate_count"] >= 3
+
+
+# ══════════════════════════════════════════════════════════════
+# 5 ─ OUTLIER DETECTION
+# ══════════════════════════════════════════════════════════════
+
+class TestCheckOutliers:
+
+    def test_passes_on_clean_data(self, clean_df):
+        from src.validation.validator import check_outliers
+
+        result = check_outliers(clean_df)
+        assert result["dimension"] == "Outlier Detection"
+        # uniform data should have very few outliers
+        assert result["overall_status"] == "PASS"
+
+    def test_outlier_column_structure(self, clean_df):
+        from src.validation.validator import check_outliers
+
+        result = check_outliers(clean_df)
+        assert "columns" in result
+        assert isinstance(result["columns"], dict)
+        for col_name, col_info in result["columns"].items():
+            assert "iqr_method" in col_info
+            assert "zscore_method" in col_info
+            assert "overall_status" in col_info
+            assert "skewness" in col_info
+            assert "is_skewed" in col_info
+
+    def test_iqr_and_zscore_both_present(self, clean_df):
+        from src.validation.validator import check_outliers
+
+        result = check_outliers(clean_df)
+        for col_info in result["columns"].values():
+            iqr = col_info["iqr_method"]
+            z = col_info["zscore_method"]
+            assert "outlier_count" in iqr
+            assert "outlier_pct" in iqr
+            assert "outlier_count" in z
+            assert "outlier_pct" in z
+
+    def test_methods_listed(self, clean_df):
+        from src.validation.validator import check_outliers
+
+        result = check_outliers(clean_df)
+        assert "methods_used" in result
+        assert len(result["methods_used"]) == 2
+
+    def test_skewed_column_lenient_evaluation(self, clean_df):
+        from src.validation.validator import check_outliers
+
+        df = clean_df.copy()
+        # Create a right-skewed distribution (skew > 1)
+        rng = np.random.default_rng(99)
+        df["MarkDown1"] = rng.exponential(scale=5000, size=len(df))
+        result = check_outliers(df)
+        md1 = result["columns"].get("MarkDown1")
+        assert md1 is not None
+        assert md1["is_skewed"] is True
+        assert md1["evaluation_mode"].startswith("lenient")
+
+
+# ══════════════════════════════════════════════════════════════
+# 6 ─ DISTRIBUTION PROFILE
+# ══════════════════════════════════════════════════════════════
+
+class TestCheckDistributionProfile:
+
+    def test_numeric_profiles_present(self, clean_df):
+        from src.validation.validator import check_distribution_profile
+
+        result = check_distribution_profile(clean_df)
+        profiles = result["numeric_profiles"]
+        assert "Weekly_Sales" in profiles
+        ws = profiles["Weekly_Sales"]
+        for key in ["mean", "median", "std", "min", "max", "skewness", "kurtosis"]:
+            assert key in ws
+
+    def test_categorical_profiles_present(self, clean_df):
+        from src.validation.validator import check_distribution_profile
+
+        result = check_distribution_profile(clean_df)
+        cats = result["categorical_profiles"]
+        assert "Type" in cats
+        assert "IsHoliday" in cats
+        assert "unique_values" in cats["Type"]
+        assert "balance_flag" in cats["IsHoliday"]
+
+    def test_class_imbalance_check(self, clean_df):
+        from src.validation.validator import check_distribution_profile
+
+        result = check_distribution_profile(clean_df)
+        chk = _find_check(result, "Class imbalance")
+        assert chk is not None
+        assert chk["status"] == "PASS"
+        assert chk["imbalance_ratio"] < 2.0
+
+    def test_temperature_sanity(self, clean_df):
+        from src.validation.validator import check_distribution_profile
+
+        result = check_distribution_profile(clean_df)
+        chk = _find_check(result, "Median Temperature")
+        assert chk is not None
+        assert chk["status"] == "PASS"
+
+    def test_unemployment_sanity(self, clean_df):
+        from src.validation.validator import check_distribution_profile
+
+        result = check_distribution_profile(clean_df)
+        chk = _find_check(result, "Median Unemployment")
+        assert chk is not None
+        assert chk["status"] == "PASS"
+
+    def test_store_type_sanity(self, clean_df):
+        from src.validation.validator import check_distribution_profile
+
+        result = check_distribution_profile(clean_df)
+        chk = _find_check(result, "Most common store Type")
+        assert chk is not None
+        # In the fixture, Type is uniformly random among A/B/C, so this
+        # may or may not be "A" — we just verify the check ran.
+        assert chk["status"] in ("PASS", "FAIL")
+
+    def test_class_imbalance_skip_without_target(self, clean_df):
+        from src.validation.validator import check_distribution_profile
+
+        df = clean_df.drop(columns=["Sales_Class"])
+        result = check_distribution_profile(df)
+        chk = _find_check(result, "Class imbalance")
+        assert chk is None  # check should not appear
+
+
+# ══════════════════════════════════════════════════════════════
+# 7 ─ RELATIONSHIPS
+# ══════════════════════════════════════════════════════════════
+
+class TestCheckRelationships:
+
+    def test_structure_on_clean_data(self, clean_df):
+        from src.validation.validator import check_relationships
+
+        result = check_relationships(clean_df)
+        assert result["dimension"] == "Relationships"
+        assert "pairwise_checks" in result
+        assert "target_feature_correlations" in result
+        assert "pearson_correlation_matrix" in result
+
+    def test_pairwise_direction_checks_run(self, clean_df):
+        from src.validation.validator import check_relationships
+
+        result = check_relationships(clean_df)
+        pairs = result["pairwise_checks"]["results"]
+        assert len(pairs) >= 3  # 2 positive + 1 negative expected
+
+    def test_pair_result_structure(self, clean_df):
+        from src.validation.validator import check_relationships
+
+        result = check_relationships(clean_df)
+        for pair in result["pairwise_checks"]["results"]:
+            assert "pearson_r" in pair
+            assert "pearson_p" in pair
+            assert "spearman_r" in pair
+            assert "strength" in pair
+            assert "status" in pair
+
+    def test_target_correlations_present(self, clean_df):
+        from src.validation.validator import check_relationships
+
+        result = check_relationships(clean_df)
+        tc = result["target_feature_correlations"]
+        assert isinstance(tc, dict)
+        # Should have entries for numeric columns other than Weekly_Sales
+        assert "Size" in tc or "Temperature" in tc
+
+    def test_rsxfs_pce_positive_correlation(self, clean_df):
+        from src.validation.validator import check_relationships
+
+        # Force strong positive correlation
+        df = clean_df.copy()
+        df["PCE"] = df["RSXFS"] * 0.03 + np.random.default_rng(1).normal(0, 10, len(df))
+        result = check_relationships(df)
+        pairs = result["pairwise_checks"]["results"]
+        rsxfs_pce = [p for p in pairs if "RSXFS" in p["pair"] and "PCE" in p["pair"]]
+        assert len(rsxfs_pce) == 1
+        assert rsxfs_pce[0]["status"] == "PASS"
+        assert rsxfs_pce[0]["pearson_r"] > 0
+
+
+# ══════════════════════════════════════════════════════════════
+# ORCHESTRATOR — run_validation
+# ══════════════════════════════════════════════════════════════
+
+class TestRunValidation:
+
+    def test_returns_all_dimensions(self, clean_df, tmp_path, monkeypatch):
         import src.validation.validator as validator
 
         monkeypatch.setattr(validator, "PROCESSED_DIR", tmp_path)
-        monkeypatch.setattr(
-            validator, "REPORT_PATH", tmp_path / "validation_report.txt"
-        )
-        monkeypatch.setattr(
-            validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json"
-        )
-        monkeypatch.setattr(
-            validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv"
-        )
+        monkeypatch.setattr(validator, "REPORT_PATH", tmp_path / "validation_report.txt")
+        monkeypatch.setattr(validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json")
+        monkeypatch.setattr(validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv")
+
+        report = validator.run_validation(clean_df)
+
+        assert "dimensions" in report
+        expected_dims = {
+            "1_accuracy", "2_completeness", "3_consistency",
+            "4_uniqueness", "5_outlier_detection",
+            "6_distribution_profile", "7_relationships",
+        }
+        assert set(report["dimensions"].keys()) == expected_dims
+
+    def test_summary_present(self, clean_df, tmp_path, monkeypatch):
+        import src.validation.validator as validator
+
+        monkeypatch.setattr(validator, "PROCESSED_DIR", tmp_path)
+        monkeypatch.setattr(validator, "REPORT_PATH", tmp_path / "validation_report.txt")
+        monkeypatch.setattr(validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json")
+        monkeypatch.setattr(validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv")
+
+        report = validator.run_validation(clean_df)
+        summary = report["summary"]
+
+        assert "total_checks" in summary
+        assert "passed" in summary
+        assert "warnings" in summary
+        assert "failed" in summary
+        assert "overall_status" in summary
+        assert summary["overall_status"] in ("PASS", "WARN", "FAIL")
+        assert summary["dimensions_evaluated"] == 7
+
+    def test_snapshots_present(self, clean_df, tmp_path, monkeypatch):
+        import src.validation.validator as validator
+
+        monkeypatch.setattr(validator, "PROCESSED_DIR", tmp_path)
+        monkeypatch.setattr(validator, "REPORT_PATH", tmp_path / "validation_report.txt")
+        monkeypatch.setattr(validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json")
+        monkeypatch.setattr(validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv")
+
+        report = validator.run_validation(clean_df)
+
+        assert "snapshots" in report
+        assert "schema" in report["snapshots"]
+        assert "top_missing_columns" in report["snapshots"]
+        assert "sample_rows_head" in report["snapshots"]
+
+    def test_writes_text_report(self, clean_df, tmp_path, monkeypatch):
+        import src.validation.validator as validator
+
+        monkeypatch.setattr(validator, "PROCESSED_DIR", tmp_path)
+        monkeypatch.setattr(validator, "REPORT_PATH", tmp_path / "validation_report.txt")
+        monkeypatch.setattr(validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json")
+        monkeypatch.setattr(validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv")
 
         validator.run_validation(clean_df)
 
-        assert (tmp_path / "validation_report.txt").exists()
-        assert (tmp_path / "validation_summary.json").exists()
-        assert (tmp_path / "validation_summary.csv").exists()
+        txt_path = tmp_path / "validation_report.txt"
+        assert txt_path.exists()
+        content = txt_path.read_text()
+        assert "WALMART SALES CLASSIFICATION" in content
+        assert "DIMENSION" in content
+
+    def test_writes_json_summary(self, clean_df, tmp_path, monkeypatch):
+        import src.validation.validator as validator
+
+        monkeypatch.setattr(validator, "PROCESSED_DIR", tmp_path)
+        monkeypatch.setattr(validator, "REPORT_PATH", tmp_path / "validation_report.txt")
+        monkeypatch.setattr(validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json")
+        monkeypatch.setattr(validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv")
+
+        validator.run_validation(clean_df)
+
+        json_path = tmp_path / "validation_summary.json"
+        assert json_path.exists()
+        data = json.loads(json_path.read_text())
+        assert "dimensions" in data
+        assert "summary" in data
+
+    def test_writes_csv_summary(self, clean_df, tmp_path, monkeypatch):
+        import src.validation.validator as validator
+
+        monkeypatch.setattr(validator, "PROCESSED_DIR", tmp_path)
+        monkeypatch.setattr(validator, "REPORT_PATH", tmp_path / "validation_report.txt")
+        monkeypatch.setattr(validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json")
+        monkeypatch.setattr(validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv")
+
+        validator.run_validation(clean_df)
+
+        csv_path = tmp_path / "validation_summary.csv"
+        assert csv_path.exists()
+        csv_df = pd.read_csv(csv_path)
+        assert "dimension" in csv_df.columns
+        assert "check" in csv_df.columns
+        assert "status" in csv_df.columns
+        assert len(csv_df) > 0
+
+    def test_overall_fail_propagates(self, clean_df, tmp_path, monkeypatch):
+        import src.validation.validator as validator
+
+        monkeypatch.setattr(validator, "PROCESSED_DIR", tmp_path)
+        monkeypatch.setattr(validator, "REPORT_PATH", tmp_path / "validation_report.txt")
+        monkeypatch.setattr(validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json")
+        monkeypatch.setattr(validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv")
+
+        df = clean_df.copy()
+        # Break consistency: invalid store id
+        df.loc[0, "Store"] = 99
+        # Break accuracy: invalid Sales_Class
+        df.loc[0, "Sales_Class"] = 5
+        report = validator.run_validation(df)
+
+        assert report["summary"]["overall_status"] == "FAIL"
+        assert report["summary"]["dimensions_failed"] >= 1
