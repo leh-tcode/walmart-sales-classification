@@ -9,7 +9,6 @@ from src.validation.constants import (
     REQUIRED_COLUMNS,
     SEVERE_COLUMN_MISSINGNESS_PCT,
     SEVERE_ROW_MISSINGNESS_PCT,
-    STRUCTURAL_MISSING_COLUMNS,
 )
 
 
@@ -70,42 +69,35 @@ def check_completeness(df: pd.DataFrame) -> dict[str, Any]:
         })
 
     # 2-d  Row-level missingness
-    non_structural = df.drop(columns=[
-        c for c in STRUCTURAL_MISSING_COLUMNS if c in df.columns
-    ])
-    row_miss = non_structural.isna().sum(axis=1)
+    row_miss = df.isna().sum(axis=1)
     rows_with_miss = int((row_miss > 0).sum())
     checks.append({
-        "check": "Row-level missingness profile (excl. structural nulls)",
+        "check": "Row-level missingness profile",
         "type": "row_missingness",
-        "excluded_columns": sorted(STRUCTURAL_MISSING_COLUMNS & set(df.columns)),
         "rows_with_missing": rows_with_miss,
         "rows_with_missing_pct": _pct(rows_with_miss, n),
         "max_missing_cells_in_row": int(row_miss.max()),
         "p95_missing_cells_in_row": float(row_miss.quantile(0.95)),
-        "note": "MarkDown columns excluded — nulls before Nov 2011 are expected",
         "status": "WARN" if rows_with_miss > 0 else "PASS",
     })
 
     # 2-e  Severe missingness thresholds
-    non_structural_miss_pct = (non_structural.isna().mean() * 100).round(2)
+    miss_pct = (df.isna().mean() * 100).round(2)
     severe_cols = {
         col: float(pct)
-        for col, pct in non_structural_miss_pct.items()
+        for col, pct in miss_pct.items()
         if pct >= SEVERE_COLUMN_MISSINGNESS_PCT
     }
-    row_miss_pct = non_structural.isna().mean(axis=1) * 100
+    row_miss_pct = df.isna().mean(axis=1) * 100
     severe_rows = int((row_miss_pct >= SEVERE_ROW_MISSINGNESS_PCT).sum())
     checks.append({
         "check": f"No columns ≥ {SEVERE_COLUMN_MISSINGNESS_PCT}% missing "
                  f"& no rows ≥ {SEVERE_ROW_MISSINGNESS_PCT}% missing "
-                 f"(excl. structural nulls)",
+                 f"(all columns)",
         "type": "severe_missingness",
-        "excluded_columns": sorted(STRUCTURAL_MISSING_COLUMNS & set(df.columns)),
         "severe_columns": severe_cols,
         "severe_row_count": severe_rows,
         "severe_row_pct": _pct(severe_rows, n),
-        "note": "MarkDown columns excluded from severity assessment",
         "status": "PASS" if (not severe_cols and severe_rows == 0) else "WARN",
     })
 

@@ -22,8 +22,6 @@ STRICT_DTYPE_EXPECTATIONS = {
     "PCE": "numeric", "Sales_Class": "integer",
 }
 
-STRUCTURAL_MISSING_COLUMNS = {"MarkDown1", "MarkDown2", "MarkDown3", "MarkDown4", "MarkDown5"}
-
 VALUE_RANGES = {
     "Store":         (1, 45),
     "Dept":          (1, 99),
