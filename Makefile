@@ -2,7 +2,7 @@
 #  Walmart Sales Classification — Makefile
 # ─────────────────────────────────────────
 
-.PHONY: acquire validate preprocess full full-no-acquire test lint format clean
+.PHONY: acquire validate cleaning full full-no-acquire test lint format clean
 
 ## Run data acquisition + FRED merge
 acquire:
@@ -12,16 +12,16 @@ acquire:
 validate:
 	poetry run python -m src.validation.validator
 
-## Run preprocessing and feature engineering pipeline
-preprocess:
-	poetry run python -m src.data.preprocessing
+## Run cleaning
+cleaning:
+	poetry run python -m src.cleaning.cleaning
 
 ## Run full Phase 1 pipeline
-full: acquire validate preprocess
+full: acquire validate cleaning
 	@echo "full pipeline complete."
 
 ## Run full Phase 1 pipeline without data acquisition
-full-no-acquire: validate preprocess
+full-no-acquire: validate cleaning
 	@echo "full pipeline complete (without acquisition)."
 
 ## Run tests with coverage
