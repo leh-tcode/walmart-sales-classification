@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from scipy import stats as scipy_stats
 
 from src.utils.logger import logger
+
 matplotlib.use("Agg")
 
 # Paths
