@@ -16,12 +16,16 @@ validate:
 cleaning:
 	poetry run python -m src.cleaning.cleaning
 
+## Run feature engineering
+features:
+	poetry run python -m src.features.feature_engineering
+
 ## Run full Phase 1 pipeline
-full: acquire validate cleaning
+full: acquire validate cleaning features
 	@echo "full pipeline complete."
 
 ## Run full Phase 1 pipeline without data acquisition
-full-no-acquire: validate cleaning
+full-no-acquire: validate cleaning features
 	@echo "full pipeline complete (without acquisition)."
 
 ## Run tests with coverage
