@@ -1,0 +1,1317 @@
+{
+  "figures": [
+    "reports/eda/figures/01_target_distribution.png",
+    "reports/eda/figures/01_target_box_violin.png",
+    "reports/eda/figures/01_target_by_store_type.png",
+    "reports/eda/figures/01_target_stats_table.png",
+    "reports/eda/figures/02_temporal_trend.png",
+    "reports/eda/figures/02_monthly_seasonality.png",
+    "reports/eda/figures/02_holiday_impact.png",
+    "reports/eda/figures/02_store_week_heatmap.png",
+    "reports/eda/figures/02_holiday_period_effect.png",
+    "reports/eda/figures/02_yoy_comparison.png",
+    "reports/eda/figures/03_store_type_comparison.png",
+    "reports/eda/figures/03_size_vs_sales_scatter.png",
+    "reports/eda/figures/03_top_bottom_stores.png",
+    "reports/eda/figures/03_department_analysis.png",
+    "reports/eda/figures/03_store_month_heatmap.png",
+    "reports/eda/figures/04_distribution_grid.png",
+    "reports/eda/figures/04_distribution_by_class.png",
+    "reports/eda/figures/04_qq_plots.png",
+    "reports/eda/figures/04_skewness_summary.png",
+    "reports/eda/figures/05_correlation_heatmap.png",
+    "reports/eda/figures/05_target_correlation_ranking.png",
+    "reports/eda/figures/05_top_correlated_pairs.png",
+    "reports/eda/figures/05_pairplot.png",
+    "reports/eda/figures/06_promotion_impact.png",
+    "reports/eda/figures/06_markdown_breakdown.png",
+    "reports/eda/figures/06_promo_by_store_type.png",
+    "reports/eda/figures/06_markdown_vs_sales.png",
+    "reports/eda/figures/07_economic_trends.png",
+    "reports/eda/figures/07_economic_vs_target.png",
+    "reports/eda/figures/07_fred_multicollinearity.png",
+    "reports/eda/figures/07_unemployment_vs_sales.png",
+    "reports/eda/figures/08_feature_importance_correlation.png",
+    "reports/eda/figures/08_feature_significance_ttest.png",
+    "reports/eda/figures/08_effect_size_cohens_d.png",
+    "reports/eda/figures/09_type_holiday_segmentation.png",
+    "reports/eda/figures/09_size_quarter_segmentation.png",
+    "reports/eda/figures/09_promo_holiday_interaction.png",
+    "reports/eda/figures/09_type_size_heatmap.png"
+  ],
+  "target_analysis": {
+    "class_counts": {
+      "Low": 210794,
+      "High": 210776
+    },
+    "class_pct": {
+      "Low": 50.0,
+      "High": 50.0
+    },
+    "sales_by_class": {
+      "mean": {
+        "High": 28136.38,
+        "Low": 3173.76
+      },
+      "median": {
+        "High": 20206.37,
+        "Low": 2187.9
+      },
+      "std": {
+        "High": 23276.01,
+        "Low": 3231.14
+      }
+    }
+  },
+  "temporal_patterns": {
+    "monthly_avg_sales": {
+      "0": 13892.307392057763,
+      "1": 15677.434293193719,
+      "2": 15176.984148188603,
+      "3": 15419.616426255685,
+      "4": 15541.77608670782,
+      "5": 16079.534771324435,
+      "6": 15624.797757930697,
+      "7": 15796.407732453037,
+      "8": 14854.485136649366,
+      "9": 14998.685942495178,
+      "10": 16553.71658323805,
+      "11": 18571.391079726192
+    },
+    "holiday_avg_sales": {
+      "Christmas": 19404.81,
+      "Labor Day": 15241.08,
+      "Super Bowl": 15936.01,
+      "Thanksgiving": 17063.57
+    },
+    "years_covered": [
+      2010,
+      2011,
+      2012
+    ]
+  },
+  "store_analysis": {
+    "stores_per_type": {
+      "A": 22,
+      "B": 17,
+      "C": 6
+    },
+    "avg_sales_by_type": {
+      "A": 19540.7,
+      "B": 12131.29,
+      "C": 9519.17
+    },
+    "top_5_stores": {
+      "10": 25552.54,
+      "13": 25823.14,
+      "14": 26768.56,
+      "4": 27600.64,
+      "20": 27724.17
+    },
+    "bottom_5_stores": {
+      "5": 5053.49,
+      "33": 5728.48,
+      "44": 6039.05,
+      "3": 6234.46,
+      "38": 7492.56
+    }
+  },
+  "distributions": {
+    "skewness": {
+      "Weekly_Sales": 2.2004,
+      "Temperature": -0.3214,
+      "Fuel_Price": -0.1049,
+      "CPI": 0.0852,
+      "Unemployment": 1.1837,
+      "Size": -0.3258,
+      "UMCSENT": -0.7653,
+      "RSXFS": -0.2905,
+      "PCE": -0.2243,
+      "TotalMarkDown": 2.3947,
+      "EconIndex": 0.2292,
+      "ConsumerConfRatio": 1.1388
+    },
+    "kurtosis": {
+      "Weekly_Sales": 5.1517,
+      "Temperature": -0.6359,
+      "Fuel_Price": -1.1854,
+      "CPI": -1.8297,
+      "Unemployment": 2.7312,
+      "Size": -1.2063,
+      "UMCSENT": 0.3988,
+      "RSXFS": -1.2363,
+      "PCE": -1.2179,
+      "TotalMarkDown": 6.0988,
+      "EconIndex": -1.1271,
+      "ConsumerConfRatio": 2.7532
+    }
+  },
+  "correlations": {
+    "top_target_positive": {
+      "Weekly_Sales": 0.6006,
+      "Month": 0.0199,
+      "DayOfYear": 0.0195,
+      "Week": 0.0194,
+      "MarkDown3": 0.0187
+    },
+    "top_target_negative": {
+      "is_return": -0.0553,
+      "Year": -0.0176,
+      "Fuel_Price": -0.0122,
+      "PCE": -0.0122,
+      "RSXFS": -0.0119
+    },
+    "high_collinearity_pairs": [
+      {
+        "pair": "Week \u2194 DayOfYear",
+        "r": 0.9999688081485235
+      },
+      {
+        "pair": "has_MarkDown1 \u2194 has_MarkDown5",
+        "r": 0.9961335623620822
+      },
+      {
+        "pair": "Month \u2194 DayOfYear",
+        "r": 0.9960745444817832
+      },
+      {
+        "pair": "Month \u2194 Week",
+        "r": 0.995999435217328
+      },
+      {
+        "pair": "RSXFS \u2194 PCE",
+        "r": 0.9922351630492625
+      },
+      {
+        "pair": "Month \u2194 Quarter",
+        "r": 0.9671636728859949
+      },
+      {
+        "pair": "Quarter \u2194 DayOfYear",
+        "r": 0.9640152220858021
+      },
+      {
+        "pair": "Week \u2194 Quarter",
+        "r": 0.9639670029770553
+      },
+      {
+        "pair": "PCE \u2194 Year",
+        "r": 0.9492765107093075
+      },
+      {
+        "pair": "RSXFS \u2194 Year",
+        "r": 0.9426739385899096
+      },
+      {
+        "pair": "has_MarkDown3 \u2194 has_MarkDown5",
+        "r": 0.9271785522166119
+      },
+      {
+        "pair": "has_MarkDown1 \u2194 has_MarkDown3",
+        "r": 0.9249765495868452
+      },
+      {
+        "pair": "has_MarkDown1 \u2194 has_MarkDown4",
+        "r": 0.9201102513995265
+      },
+      {
+        "pair": "has_MarkDown4 \u2194 has_MarkDown5",
+        "r": 0.9165527024924376
+      },
+      {
+        "pair": "has_MarkDown3 \u2194 has_MarkDown4",
+        "r": 0.8860244678261041
+      }
+    ]
+  },
+  "promotions": {
+    "promo_vs_no_promo_avg_sales": {
+      "0": 15566.42,
+      "1": 15811.72
+    }
+  },
+  "feature_importance": {
+    "top_10_correlation": {
+      "is_return": 0.0553,
+      "DeptFrequency": 0.2949,
+      "Rolling_Std_4w": 0.333,
+      "Lag_Sales_4w": 0.5835,
+      "Lag_Sales_2w": 0.5894,
+      "Rolling_Mean_12w": 0.5927,
+      "Lag_Sales_1w": 0.5937,
+      "Rolling_Mean_8w": 0.5938,
+      "Rolling_Mean_4w": 0.5952,
+      "Weekly_Sales": 0.6006
+    },
+    "top_10_cohens_d": {
+      "is_return": 0.1108,
+      "DeptFrequency": 0.6172,
+      "Rolling_Std_4w": 0.7062,
+      "Lag_Sales_4w": 1.4369,
+      "Lag_Sales_2w": 1.4593,
+      "Rolling_Mean_12w": 1.4716,
+      "Lag_Sales_1w": 1.4757,
+      "Rolling_Mean_8w": 1.4761,
+      "Rolling_Mean_4w": 1.4815,
+      "Weekly_Sales": 1.5023
+    },
+    "significant_features_count": 51,
+    "total_features_tested": 73
+  },
+  "dashboard_data": {
+    "path": "reports/eda/dashboard_data.json",
+    "sections": [
+      "weekly_sales_ts",
+      "monthly_summary",
+      "store_summary",
+      "dept_summary",
+      "holiday_summary",
+      "promotion_summary",
+      "class_distribution",
+      "kpi_metrics",
+      "feature_statistics",
+      "target_correlations",
+      "store_type_breakdown",
+      "year_summary"
+    ],
+    "section_count": 12
+  },
+  "summary_statistics": {
+    "dataset": {
+      "rows": 421570,
+      "columns": 85,
+      "memory_mb": 416.77,
+      "date_range": {
+        "start": "2010-02-05",
+        "end": "2012-10-26"
+      }
+    },
+    "target": {
+      "class_counts": {
+        "Low": 210794,
+        "High": 210776
+      },
+      "balance_ratio": 1.0001
+    },
+    "numeric_summary": {
+      "Weekly_Sales": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 15654.5359,
+        "std": 20781.6709,
+        "min": 5.0,
+        "p25": 2079.65,
+        "median": 7612.03,
+        "p75": 20205.8525,
+        "max": 106479.586,
+        "skewness": 2.2004,
+        "kurtosis": 5.1517
+      },
+      "Size": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 136727.9157,
+        "std": 60980.5833,
+        "min": 34875.0,
+        "p25": 93638.0,
+        "median": 140167.0,
+        "p75": 202505.0,
+        "max": 219622.0,
+        "skewness": -0.3258,
+        "kurtosis": -1.2063
+      },
+      "Temperature": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 60.0901,
+        "std": 18.4479,
+        "min": -2.06,
+        "p25": 46.68,
+        "median": 62.09,
+        "p75": 74.28,
+        "max": 100.14,
+        "skewness": -0.3214,
+        "kurtosis": -0.6359
+      },
+      "Fuel_Price": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 3.361,
+        "std": 0.4585,
+        "min": 2.472,
+        "p25": 2.933,
+        "median": 3.452,
+        "p75": 3.738,
+        "max": 4.468,
+        "skewness": -0.1049,
+        "kurtosis": -1.1854
+      },
+      "MarkDown1": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 2451.6021,
+        "std": 5086.689,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 2809.05,
+        "max": 28177.29,
+        "skewness": 2.8434,
+        "kurtosis": 9.0489
+      },
+      "MarkDown2": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 664.8571,
+        "std": 2886.7257,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 2.2,
+        "max": 21813.16,
+        "skewness": 5.7159,
+        "kurtosis": 34.732
+      },
+      "MarkDown3": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 56.1789,
+        "std": 253.7641,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 4.54,
+        "max": 2083.28,
+        "skewness": 6.5913,
+        "kurtosis": 46.0534
+      },
+      "MarkDown4": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 933.7018,
+        "std": 2579.5008,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 425.29,
+        "max": 16822.46,
+        "skewness": 4.1874,
+        "kurtosis": 19.489
+      },
+      "MarkDown5": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 1523.4297,
+        "std": 2860.6273,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 2168.04,
+        "max": 15590.53,
+        "skewness": 2.5582,
+        "kurtosis": 7.4758
+      },
+      "CPI": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 171.2019,
+        "std": 39.1593,
+        "min": 126.064,
+        "p25": 132.0227,
+        "median": 182.3188,
+        "p75": 212.417,
+        "max": 227.2328,
+        "skewness": 0.0852,
+        "kurtosis": -1.8297
+      },
+      "Unemployment": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 7.9603,
+        "std": 1.8633,
+        "min": 3.879,
+        "p25": 6.891,
+        "median": 7.866,
+        "p75": 8.572,
+        "max": 14.313,
+        "skewness": 1.1837,
+        "kurtosis": 2.7312
+      },
+      "UMCSENT": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 71.3646,
+        "std": 5.7282,
+        "min": 55.8,
+        "p25": 67.8,
+        "median": 73.2,
+        "p75": 75.0,
+        "max": 82.6,
+        "skewness": -0.7653,
+        "kurtosis": 0.3988
+      },
+      "RSXFS": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 332223.0876,
+        "std": 15778.5461,
+        "min": 302310.0,
+        "p25": 317699.0,
+        "median": 334922.0,
+        "p75": 345656.0,
+        "max": 354747.0,
+        "skewness": -0.2905,
+        "kurtosis": -1.2363
+      },
+      "PCE": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 10658.6767,
+        "std": 310.353,
+        "min": 10093.4,
+        "p25": 10386.4,
+        "median": 10694.8,
+        "p75": 10987.2,
+        "max": 11137.4,
+        "skewness": -0.2243,
+        "kurtosis": -1.2179
+      },
+      "Sales_Class": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.5,
+        "std": 0.5,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 1.0,
+        "max": 1.0,
+        "skewness": 0.0001,
+        "kurtosis": -2.0
+      },
+      "has_MarkDown1": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.3574,
+        "std": 0.4792,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 1.0,
+        "max": 1.0,
+        "skewness": 0.595,
+        "kurtosis": -1.646
+      },
+      "has_MarkDown2": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.2639,
+        "std": 0.4407,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 1.0,
+        "max": 1.0,
+        "skewness": 1.0714,
+        "kurtosis": -0.852
+      },
+      "has_MarkDown3": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.3252,
+        "std": 0.4684,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 1.0,
+        "max": 1.0,
+        "skewness": 0.7463,
+        "kurtosis": -1.443
+      },
+      "has_MarkDown4": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.3202,
+        "std": 0.4665,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 1.0,
+        "max": 1.0,
+        "skewness": 0.771,
+        "kurtosis": -1.4056
+      },
+      "has_MarkDown5": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.3592,
+        "std": 0.4798,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 1.0,
+        "max": 1.0,
+        "skewness": 0.5869,
+        "kurtosis": -1.6555
+      },
+      "is_return": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.003,
+        "std": 0.0551,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.0,
+        "max": 1.0,
+        "skewness": 18.0298,
+        "kurtosis": 323.0769
+      },
+      "Year": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 2010.9686,
+        "std": 0.7969,
+        "min": 2010.0,
+        "p25": 2010.0,
+        "median": 2011.0,
+        "p75": 2012.0,
+        "max": 2012.0,
+        "skewness": 0.0562,
+        "kurtosis": -1.4232
+      },
+      "Month": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 6.4495,
+        "std": 3.2432,
+        "min": 1.0,
+        "p25": 4.0,
+        "median": 6.0,
+        "p75": 9.0,
+        "max": 12.0,
+        "skewness": 0.0408,
+        "kurtosis": -1.1104
+      },
+      "Week": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 25.8268,
+        "std": 14.1519,
+        "min": 1.0,
+        "p25": 14.0,
+        "median": 26.0,
+        "p75": 38.0,
+        "max": 52.0,
+        "skewness": 0.0527,
+        "kurtosis": -1.1117
+      },
+      "Quarter": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 2.4828,
+        "std": 1.0713,
+        "min": 1.0,
+        "p25": 2.0,
+        "median": 2.0,
+        "p75": 3.0,
+        "max": 4.0,
+        "skewness": 0.0115,
+        "kurtosis": -1.2491
+      },
+      "DayOfYear": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 180.8187,
+        "std": 99.2112,
+        "min": 6.0,
+        "p25": 97.0,
+        "median": 181.0,
+        "p75": 265.0,
+        "max": 365.0,
+        "skewness": 0.0538,
+        "kurtosis": -1.1074
+      },
+      "WeekOfMonth": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 2.6917,
+        "std": 1.2639,
+        "min": 1.0,
+        "p25": 2.0,
+        "median": 3.0,
+        "p75": 4.0,
+        "max": 5.0,
+        "skewness": 0.1359,
+        "kurtosis": -1.1175
+      },
+      "IsMonthStart": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.0279,
+        "std": 0.1647,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.0,
+        "max": 1.0,
+        "skewness": 5.7338,
+        "kurtosis": 30.8769
+      },
+      "IsMonthEnd": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.0279,
+        "std": 0.1648,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.0,
+        "max": 1.0,
+        "skewness": 5.7296,
+        "kurtosis": 30.8282
+      },
+      "IsYearStart": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.0559,
+        "std": 0.2296,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.0,
+        "max": 1.0,
+        "skewness": 3.8683,
+        "kurtosis": 12.9642
+      },
+      "IsYearEnd": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.0707,
+        "std": 0.2563,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.0,
+        "max": 1.0,
+        "skewness": 3.3499,
+        "kurtosis": 9.2219
+      },
+      "DaysInMonth": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 30.4401,
+        "std": 0.7992,
+        "min": 28.0,
+        "p25": 30.0,
+        "median": 31.0,
+        "p75": 31.0,
+        "max": 31.0,
+        "skewness": -1.6142,
+        "kurtosis": 2.3302
+      },
+      "YearProgress": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.4954,
+        "std": 0.2718,
+        "min": 0.0164,
+        "p25": 0.2658,
+        "median": 0.4959,
+        "p75": 0.726,
+        "max": 1.0,
+        "skewness": 0.0538,
+        "kurtosis": -1.1074
+      },
+      "HolidayType": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.4856,
+        "std": 1.0669,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.0,
+        "max": 4.0,
+        "skewness": 2.1825,
+        "kurtosis": 3.5933
+      },
+      "IsPreHoliday": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.2035,
+        "std": 0.4026,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.0,
+        "max": 1.0,
+        "skewness": 1.4732,
+        "kurtosis": 0.1704
+      },
+      "IsPostHoliday": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.1969,
+        "std": 0.3977,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.0,
+        "max": 1.0,
+        "skewness": 1.5244,
+        "kurtosis": 0.3239
+      },
+      "HolidayProximity": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 4.5976,
+        "std": 4.3125,
+        "min": 0.0,
+        "p25": 1.0,
+        "median": 3.0,
+        "p75": 8.0,
+        "max": 14.0,
+        "skewness": 0.6777,
+        "kurtosis": -0.846
+      },
+      "IsPeakSeason": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.1267,
+        "std": 0.3326,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.0,
+        "max": 1.0,
+        "skewness": 2.2444,
+        "kurtosis": 3.0375
+      },
+      "IsBackToSchool": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.1877,
+        "std": 0.3905,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.0,
+        "max": 1.0,
+        "skewness": 1.5992,
+        "kurtosis": 0.5574
+      },
+      "TotalMarkDown": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 5629.7697,
+        "std": 10689.1269,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 7717.32,
+        "max": 67883.09,
+        "skewness": 2.3947,
+        "kurtosis": 6.0988
+      },
+      "ActiveMarkDownCount": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 1.6259,
+        "std": 2.2157,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 4.0,
+        "max": 5.0,
+        "skewness": 0.6856,
+        "kurtosis": -1.4436
+      },
+      "AvgMarkDownAmount": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 1191.3523,
+        "std": 2205.7157,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 1668.4875,
+        "max": 13576.618,
+        "skewness": 2.2787,
+        "kurtosis": 5.3664
+      },
+      "MaxMarkDown": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 3051.8052,
+        "std": 5749.0525,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 4032.81,
+        "max": 28177.29,
+        "skewness": 2.3094,
+        "kurtosis": 5.2613
+      },
+      "HasAnyMarkDown": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.3592,
+        "std": 0.4798,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 1.0,
+        "max": 1.0,
+        "skewness": 0.5869,
+        "kurtosis": -1.6555
+      },
+      "TypeEncoded": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 1.4101,
+        "std": 0.6663,
+        "min": 0.0,
+        "p25": 1.0,
+        "median": 2.0,
+        "p75": 2.0,
+        "max": 2.0,
+        "skewness": -0.6933,
+        "kurtosis": -0.604
+      },
+      "SizePerType": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 54887.8519,
+        "std": 15339.5569,
+        "min": 13230.0,
+        "p25": 46819.0,
+        "median": 60326.5,
+        "p75": 67669.0,
+        "max": 73207.3333,
+        "skewness": -1.1759,
+        "kurtosis": 0.6385
+      },
+      "StoreDeptCount": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 74.721,
+        "std": 5.0111,
+        "min": 61.0,
+        "p25": 75.0,
+        "median": 77.0,
+        "p75": 77.0,
+        "max": 79.0,
+        "skewness": -1.8156,
+        "kurtosis": 1.8692
+      },
+      "DeptFrequency": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 43.7438,
+        "std": 3.7297,
+        "min": 1.0,
+        "p25": 45.0,
+        "median": 45.0,
+        "p75": 45.0,
+        "max": 45.0,
+        "skewness": -5.0377,
+        "kurtosis": 32.3032
+      },
+      "SizeQuartile": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 2.4578,
+        "std": 1.1239,
+        "min": 1.0,
+        "p25": 1.0,
+        "median": 2.0,
+        "p75": 3.0,
+        "max": 4.0,
+        "skewness": 0.0563,
+        "kurtosis": -1.3706
+      },
+      "EconIndex": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.5642,
+        "std": 0.222,
+        "min": 0.2214,
+        "p25": 0.3394,
+        "median": 0.535,
+        "p75": 0.7762,
+        "max": 1.0,
+        "skewness": 0.2292,
+        "kurtosis": -1.1271
+      },
+      "ConsumerConfRatio": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 9.4501,
+        "std": 2.4054,
+        "min": 4.1324,
+        "p25": 8.11,
+        "median": 9.046,
+        "p75": 10.5247,
+        "max": 21.2941,
+        "skewness": 1.1388,
+        "kurtosis": 2.7532
+      },
+      "RealSpendingPerCapita": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.0321,
+        "std": 0.0006,
+        "min": 0.0313,
+        "p25": 0.0315,
+        "median": 0.032,
+        "p75": 0.0326,
+        "max": 0.0334,
+        "skewness": 0.4943,
+        "kurtosis": -0.9677
+      },
+      "EconMomentum": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.0058,
+        "std": 0.0297,
+        "min": -0.1877,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.0,
+        "max": 0.6403,
+        "skewness": 0.6391,
+        "kurtosis": 11.7461
+      },
+      "FuelBurden": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 2.0806,
+        "std": 0.5886,
+        "min": 1.1701,
+        "p25": 1.5593,
+        "median": 2.0314,
+        "p75": 2.6448,
+        "max": 3.4079,
+        "skewness": 0.2269,
+        "kurtosis": -1.291
+      },
+      "PurchasingPower": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 22.8328,
+        "std": 7.6123,
+        "min": 8.8196,
+        "p25": 16.3662,
+        "median": 22.2967,
+        "p75": 28.9529,
+        "max": 45.8685,
+        "skewness": 0.1714,
+        "kurtosis": -0.8162
+      },
+      "Lag_Sales_1w": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 15653.3441,
+        "std": 20781.8901,
+        "min": 5.0,
+        "p25": 2080.5725,
+        "median": 7611.22,
+        "p75": 20199.4925,
+        "max": 106479.586,
+        "skewness": 2.2011,
+        "kurtosis": 5.1548
+      },
+      "Lag_Sales_2w": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 15653.6594,
+        "std": 20781.303,
+        "min": 5.0,
+        "p25": 2082.8875,
+        "median": 7612.01,
+        "p75": 20197.8125,
+        "max": 106479.586,
+        "skewness": 2.2014,
+        "kurtosis": 5.1564
+      },
+      "Lag_Sales_4w": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 15647.0536,
+        "std": 20769.0147,
+        "min": 5.0,
+        "p25": 2086.5275,
+        "median": 7611.145,
+        "p75": 20183.13,
+        "max": 106479.586,
+        "skewness": 2.2024,
+        "kurtosis": 5.1636
+      },
+      "Rolling_Mean_4w": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 15664.6874,
+        "std": 20555.4854,
+        "min": 5.0,
+        "p25": 2146.5,
+        "median": 7725.0,
+        "p75": 20302.8669,
+        "max": 106479.586,
+        "skewness": 2.1644,
+        "kurtosis": 4.9713
+      },
+      "Rolling_Mean_8w": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 15677.1743,
+        "std": 20450.3169,
+        "min": 5.0,
+        "p25": 2190.1716,
+        "median": 7793.5275,
+        "p75": 20394.2744,
+        "max": 106479.586,
+        "skewness": 2.1605,
+        "kurtosis": 4.9817
+      },
+      "Rolling_Mean_12w": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 15681.2998,
+        "std": 20383.632,
+        "min": 5.0,
+        "p25": 2220.3175,
+        "median": 7848.4308,
+        "p75": 20432.926,
+        "max": 106479.586,
+        "skewness": 2.1628,
+        "kurtosis": 5.015
+      },
+      "Rolling_Std_4w": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 1752.2699,
+        "std": 3230.4317,
+        "min": 0.0,
+        "p25": 255.993,
+        "median": 736.3466,
+        "p75": 1856.6655,
+        "max": 55468.5465,
+        "skewness": 5.3666,
+        "kurtosis": 41.9065
+      },
+      "SalesTrend_4w": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": -4.8493,
+        "std": 2023.9399,
+        "min": -32697.5353,
+        "p25": -240.8725,
+        "median": 0.3033,
+        "p75": 271.0492,
+        "max": 28949.5487,
+        "skewness": -1.3227,
+        "kurtosis": 53.8963
+      },
+      "SalesAcceleration": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 4.8985,
+        "std": 2280.4985,
+        "min": -42150.842,
+        "p25": -297.5858,
+        "median": 1.0,
+        "p75": 318.33,
+        "max": 39428.3653,
+        "skewness": -0.0725,
+        "kurtosis": 42.1558
+      },
+      "Holiday_Size": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 9629.2093,
+        "std": 38554.5078,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.0,
+        "max": 219622.0,
+        "skewness": 4.1632,
+        "kurtosis": 16.4194
+      },
+      "Holiday_Type": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.0993,
+        "std": 0.4019,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.0,
+        "max": 2.0,
+        "skewness": 4.1032,
+        "kurtosis": 15.7108
+      },
+      "Promo_Holiday": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.0284,
+        "std": 0.1662,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.0,
+        "max": 1.0,
+        "skewness": 5.6733,
+        "kurtosis": 30.1868
+      },
+      "Temp_Season": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 154.0302,
+        "std": 79.9933,
+        "min": -2.06,
+        "p25": 83.44,
+        "median": 156.78,
+        "p75": 224.04,
+        "max": 365.8,
+        "skewness": -0.1041,
+        "kurtosis": -1.1731
+      },
+      "Econ_Size": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 1.3856,
+        "std": 0.8714,
+        "min": 0.2214,
+        "p25": 0.6704,
+        "median": 1.1526,
+        "p75": 1.9494,
+        "max": 4.0,
+        "skewness": 0.9057,
+        "kurtosis": 0.1118
+      },
+      "MarkDown_Intensity": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.0413,
+        "std": 0.0772,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.0624,
+        "max": 1.2416,
+        "skewness": 3.0998,
+        "kurtosis": 17.6209
+      },
+      "Month_sin": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": -0.0059,
+        "std": 0.7268,
+        "min": -1.0,
+        "p25": -0.866,
+        "median": 0.0,
+        "p75": 0.866,
+        "max": 1.0,
+        "skewness": 0.0218,
+        "kurtosis": -1.5477
+      },
+      "Month_cos": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": -0.0863,
+        "std": 0.6814,
+        "min": -1.0,
+        "p25": -0.866,
+        "median": -0.0,
+        "p75": 0.5,
+        "max": 1.0,
+        "skewness": 0.1723,
+        "kurtosis": -1.3921
+      },
+      "Week_sin": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 0.0201,
+        "std": 0.725,
+        "min": -1.0,
+        "p25": -0.7485,
+        "median": 0.0,
+        "p75": 0.7485,
+        "max": 1.0,
+        "skewness": -0.0554,
+        "kurtosis": -1.5469
+      },
+      "Week_cos": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": -0.077,
+        "std": 0.6841,
+        "min": -1.0,
+        "p25": -0.7485,
+        "median": -0.1205,
+        "p75": 0.5681,
+        "max": 1.0,
+        "skewness": 0.1429,
+        "kurtosis": -1.4184
+      }
+    },
+    "categorical_summary": {
+      "Type": {
+        "unique": 3,
+        "top_values": {
+          "A": 215478,
+          "B": 163495,
+          "C": 42597
+        },
+        "dominant_pct": 51.11
+      },
+      "Sales_Label": {
+        "unique": 2,
+        "top_values": {
+          "Low": 210794,
+          "High": 210776
+        },
+        "dominant_pct": 50.0
+      },
+      "StoreTypeLabel": {
+        "unique": 3,
+        "top_values": {
+          "Type A (Large)": 215478,
+          "Type B (Medium)": 163495,
+          "Type C (Small)": 42597
+        },
+        "dominant_pct": 51.11
+      },
+      "HolidayName": {
+        "unique": 4,
+        "top_values": {
+          "Super Bowl": 26682,
+          "Labor Day": 26540,
+          "Christmas": 17901,
+          "Thanksgiving": 17779
+        },
+        "dominant_pct": 6.33
+      },
+      "SalesBucket": {
+        "unique": 5,
+        "top_values": {
+          "Very Low": 170674,
+          "Low": 113252,
+          "Medium": 68024,
+          "High": 37436,
+          "Very High": 32184
+        },
+        "dominant_pct": 40.49
+      }
+    },
+    "missing_summary": {
+      "HolidayName": {
+        "count": 332668,
+        "pct": 78.91
+      }
+    }
+  },
+  "figure_count": 38
+}
