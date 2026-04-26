@@ -1,5 +1,4 @@
 import json
-import warnings
 from pathlib import Path
 from typing import Any
 
@@ -9,7 +8,6 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, RobustScaler
 
-from src.features.feature_engineering import FEATURES_PATH
 from src.features.feature_engineering import FEATURES_PATH
 from src.utils.logger import logger
 
@@ -50,18 +48,26 @@ ORDINAL_MAPS = {
 
 NO_SCALE_COLS = [
     TARGET,
-    "Store", "Dept",
+    "Store",
+    "Dept",
     "IsHoliday",
     "TypeEncoded",
     "SizeQuartile",
     "HolidayType",
-    "IsPreHoliday", "IsPostHoliday",
-    "IsPeakSeason", "IsBackToSchool",
-    "IsMonthStart", "IsMonthEnd",
-    "IsYearStart", "IsYearEnd",
+    "IsPreHoliday",
+    "IsPostHoliday",
+    "IsPeakSeason",
+    "IsBackToSchool",
+    "IsMonthStart",
+    "IsMonthEnd",
+    "IsYearStart",
+    "IsYearEnd",
     "HasAnyMarkDown",
-    "has_MarkDown1", "has_MarkDown2", "has_MarkDown3",
-    "has_MarkDown4", "has_MarkDown5",
+    "has_MarkDown1",
+    "has_MarkDown2",
+    "has_MarkDown3",
+    "has_MarkDown4",
+    "has_MarkDown5",
     "is_return",
     "Promo_Holiday",
     "Holiday_Type",
@@ -103,35 +109,50 @@ def prepare_eda_dataset(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     eda["Sales_Label"] = eda[TARGET].map({0: "Low", 1: "High"})
 
     if "Type" in eda.columns:
-        eda["StoreTypeLabel"] = eda["Type"].map({
-            "A": "Type A (Large)",
-            "B": "Type B (Medium)",
-            "C": "Type C (Small)",
-        })
+        eda["StoreTypeLabel"] = eda["Type"].map(
+            {
+                "A": "Type A (Large)",
+                "B": "Type B (Medium)",
+                "C": "Type C (Small)",
+            }
+        )
 
     if "Weekly_Sales" in eda.columns:
         eda["SalesBucket"] = pd.cut(
             eda["Weekly_Sales"],
             bins=[-np.inf, 0, 5000, 15000, 30000, 50000, np.inf],
-            labels=["Negative/Return", "Very Low", "Low", "Medium", "High", "Very High"],
+            labels=[
+                "Negative/Return",
+                "Very Low",
+                "Low",
+                "Medium",
+                "High",
+                "Very High",
+            ],
         )
 
     if "HolidayType" in eda.columns:
-        eda["HolidayName"] = eda["HolidayType"].map({
-            0: "None",
-            1: "Super Bowl",
-            2: "Labor Day",
-            3: "Thanksgiving",
-            4: "Christmas",
-        })
+        eda["HolidayName"] = eda["HolidayType"].map(
+            {
+                0: "None",
+                1: "Super Bowl",
+                2: "Labor Day",
+                3: "Thanksgiving",
+                4: "Christmas",
+            }
+        )
 
     step_report = {
         "step": "Prepare EDA Dataset",
         "shape": _shape_str(eda),
         "columns": len(eda.columns),
         "helper_columns_added": [
-            "YearMonth", "YearWeek", "Sales_Label",
-            "StoreTypeLabel", "SalesBucket", "HolidayName",
+            "YearMonth",
+            "YearWeek",
+            "Sales_Label",
+            "StoreTypeLabel",
+            "SalesBucket",
+            "HolidayName",
         ],
         "date_range": {
             "min": str(eda["Date"].min().date()) if "Date" in eda.columns else "N/A",
@@ -161,10 +182,12 @@ def encode_categoricals(df: pd.DataFrame, report: dict) -> pd.DataFrame:
         if col in df.columns:
             if f"{col}Encoded" in df.columns or "TypeEncoded" in df.columns:
                 cats_to_drop.append(col)
-                encoded_cols.append({
-                    "column": col,
-                    "method": "dropped (ordinal version exists)",
-                })
+                encoded_cols.append(
+                    {
+                        "column": col,
+                        "method": "dropped (ordinal version exists)",
+                    }
+                )
 
     df = df.drop(columns=cats_to_drop, errors="ignore")
 
@@ -176,7 +199,9 @@ def encode_categoricals(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     }
 
     report["steps"].append(step_report)
-    logger.info("  Encoded: {} columns | Dropped originals: {}", len(encoded_cols), cats_to_drop)
+    logger.info(
+        "  Encoded: {} columns | Dropped originals: {}", len(encoded_cols), cats_to_drop
+    )
     return df
 
 
@@ -220,7 +245,8 @@ def split_data(
     y = df[TARGET]
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y,
+        X,
+        y,
         test_size=TEST_SIZE,
         random_state=RANDOM_STATE,
         stratify=y,
@@ -244,7 +270,9 @@ def split_data(
     report["steps"].append(step_report)
     logger.info(
         "  Train: {} | Test: {} | Stratified on {}",
-        _shape_str(X_train), _shape_str(X_test), STRATIFY_COL,
+        _shape_str(X_train),
+        _shape_str(X_test),
+        STRATIFY_COL,
     )
     return X_train, X_test, y_train, y_test
 
@@ -260,9 +288,9 @@ def scale_features(
     all_cols = list(X_train.columns)
     no_scale = set(NO_SCALE_COLS) & set(all_cols)
     scale_cols = [
-        c for c in all_cols
-        if c not in no_scale
-        and pd.api.types.is_numeric_dtype(X_train[c])
+        c
+        for c in all_cols
+        if c not in no_scale and pd.api.types.is_numeric_dtype(X_train[c])
     ]
 
     logger.info("  Scaling {} of {} columns", len(scale_cols), len(all_cols))
@@ -282,8 +310,12 @@ def scale_features(
 
     train_nulls = int(X_train_scaled.isna().sum().sum())
     test_nulls = int(X_test_scaled.isna().sum().sum())
-    train_inf = int(np.isinf(X_train_scaled.select_dtypes(include=[np.number])).sum().sum())
-    test_inf = int(np.isinf(X_test_scaled.select_dtypes(include=[np.number])).sum().sum())
+    train_inf = int(
+        np.isinf(X_train_scaled.select_dtypes(include=[np.number])).sum().sum()
+    )
+    test_inf = int(
+        np.isinf(X_test_scaled.select_dtypes(include=[np.number])).sum().sum()
+    )
 
     step_report = {
         "step": "Scale Numeric Features",
@@ -303,7 +335,10 @@ def scale_features(
     report["steps"].append(step_report)
     logger.info(
         "  {} scaler fit on train ({} cols) | Post-scale nulls: train={}, test={}",
-        type(scaler).__name__, len(scale_cols), train_nulls, test_nulls,
+        type(scaler).__name__,
+        len(scale_cols),
+        train_nulls,
+        test_nulls,
     )
     return X_train_scaled, X_test_scaled, scaler
 
@@ -320,8 +355,7 @@ def save_feature_metadata(
     all_features = list(X_train.columns)
     numeric_features = list(X_train.select_dtypes(include=[np.number]).columns)
     binary_features = [
-        c for c in numeric_features
-        if set(X_train[c].unique()) <= {0, 1, 0.0, 1.0}
+        c for c in numeric_features if set(X_train[c].unique()) <= {0, 1, 0.0, 1.0}
     ]
     continuous_features = [c for c in numeric_features if c not in binary_features]
 
@@ -355,19 +389,24 @@ def save_feature_metadata(
     with open(FEATURE_META_PATH, "w") as f:
         json.dump(metadata, f, indent=2, default=str)
 
-    report["steps"].append({
-        "step": "Save Feature Metadata",
-        "path": str(FEATURE_META_PATH),
-        "feature_count": len(all_features),
-        "binary_features": len(binary_features),
-        "continuous_features": len(continuous_features),
-    })
+    report["steps"].append(
+        {
+            "step": "Save Feature Metadata",
+            "path": str(FEATURE_META_PATH),
+            "feature_count": len(all_features),
+            "binary_features": len(binary_features),
+            "continuous_features": len(continuous_features),
+        }
+    )
 
     logger.info(
         "  Metadata saved: {} features ({} continuous, {} binary)",
-        len(all_features), len(continuous_features), len(binary_features),
+        len(all_features),
+        len(continuous_features),
+        len(binary_features),
     )
     return metadata
+
 
 # REPORT GENERATION
 def _generate_summary(
@@ -402,11 +441,13 @@ def _generate_summary(
     }
     return report
 
+
 def _save_json_report(report: dict) -> None:
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     with open(REPORT_JSON_PATH, "w") as f:
         json.dump(report, f, indent=2, default=str)
     logger.info("Preprocessing JSON report saved to: {}", REPORT_JSON_PATH)
+
 
 def _save_text_report(report: dict) -> None:
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
@@ -419,16 +460,18 @@ def _save_text_report(report: dict) -> None:
     ]
 
     s = report.get("summary", {})
-    lines.extend([
-        "SUMMARY",
-        "-" * 70,
-        f"  Input:       {s.get('input', {}).get('shape', '?')}",
-        f"  EDA Output:  {s.get('eda_output', {}).get('shape', '?')}",
-        f"  Train:       {s.get('model_output', {}).get('train_shape', '?')}",
-        f"  Test:        {s.get('model_output', {}).get('test_shape', '?')}",
-        f"  Features:    {s.get('model_output', {}).get('features', '?')}",
-        "",
-    ])
+    lines.extend(
+        [
+            "SUMMARY",
+            "-" * 70,
+            f"  Input:       {s.get('input', {}).get('shape', '?')}",
+            f"  EDA Output:  {s.get('eda_output', {}).get('shape', '?')}",
+            f"  Train:       {s.get('model_output', {}).get('train_shape', '?')}",
+            f"  Test:        {s.get('model_output', {}).get('test_shape', '?')}",
+            f"  Features:    {s.get('model_output', {}).get('features', '?')}",
+            "",
+        ]
+    )
 
     for step in report.get("steps", []):
         lines.append(f"{'─' * 70}")
@@ -466,15 +509,14 @@ def run_preprocessing(df: pd.DataFrame) -> dict[str, Any]:
     all_cols = list(X_train.columns)
     no_scale = set(NO_SCALE_COLS) & set(all_cols)
     scale_cols = [
-        c for c in all_cols
-        if c not in no_scale
-        and pd.api.types.is_numeric_dtype(X_train[c])
+        c
+        for c in all_cols
+        if c not in no_scale and pd.api.types.is_numeric_dtype(X_train[c])
     ]
 
     X_train, X_test, scaler = scale_features(X_train, X_test, report)
 
     feature_meta = save_feature_metadata(X_train, scaler, scale_cols, report)
-
 
     report = _generate_summary(df, eda_df, X_train, X_test, report)
 
@@ -522,7 +564,8 @@ def run_preprocessing(df: pd.DataFrame) -> dict[str, Any]:
         "report": report,
     }
 
+
 if __name__ == "__main__":
-    
+
     featured_df = pd.read_csv(FEATURES_PATH, parse_dates=["Date"])
     outputs = run_preprocessing(featured_df)
