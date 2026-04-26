@@ -20,10 +20,10 @@ MARKDOWN_COLS = ["MarkDown1", "MarkDown2", "MarkDown3", "MarkDown4", "MarkDown5"
 MARKDOWN_FLAGS = [f"has_{c}" for c in MARKDOWN_COLS]
 
 HOLIDAY_WINDOWS = {
-    "SuperBowl":   {"month": 2, "week_range": (5, 7)},
-    "LaborDay":    {"month": 9, "week_range": (35, 37)},
+    "SuperBowl": {"month": 2, "week_range": (5, 7)},
+    "LaborDay": {"month": 9, "week_range": (35, 37)},
     "Thanksgiving": {"month": 11, "week_range": (46, 48)},
-    "Christmas":   {"month": 12, "week_range": (50, 52)},
+    "Christmas": {"month": 12, "week_range": (50, 52)},
 }
 
 FRED_COLS = ["UMCSENT", "RSXFS", "PCE"]
@@ -64,16 +64,27 @@ def create_temporal_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     df["YearProgress"] = df["DayOfYear"] / 365.0
 
     n_created = len(df.columns) - n_before
-    report["groups"].append({
-        "group": "Temporal Features",
-        "features_created": n_created,
-        "features": [
-            "Year", "Month", "Week", "Quarter", "DayOfYear",
-            "WeekOfMonth", "IsMonthStart", "IsMonthEnd",
-            "IsYearStart", "IsYearEnd", "DaysInMonth", "YearProgress",
-        ],
-        "rationale": "Capture calendar-driven seasonality in retail sales",
-    })
+    report["groups"].append(
+        {
+            "group": "Temporal Features",
+            "features_created": n_created,
+            "features": [
+                "Year",
+                "Month",
+                "Week",
+                "Quarter",
+                "DayOfYear",
+                "WeekOfMonth",
+                "IsMonthStart",
+                "IsMonthEnd",
+                "IsYearStart",
+                "IsYearEnd",
+                "DaysInMonth",
+                "YearProgress",
+            ],
+            "rationale": "Capture calendar-driven seasonality in retail sales",
+        }
+    )
 
     logger.info("  Temporal: {} features created", n_created)
     return df
@@ -106,7 +117,9 @@ def create_holiday_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     def _min_holiday_distance(week: int) -> int:
         if not holiday_week_list:
             return 26
-        distances = [min(abs(week - hw), 52 - abs(week - hw)) for hw in holiday_week_list]
+        distances = [
+            min(abs(week - hw), 52 - abs(week - hw)) for hw in holiday_week_list
+        ]
         return min(distances)
 
     df["HolidayProximity"] = df["Week"].apply(_min_holiday_distance)
@@ -115,18 +128,24 @@ def create_holiday_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     df["IsBackToSchool"] = df["Month"].isin([7, 8]).astype(int)
 
     n_created = len(df.columns) - n_before
-    report["groups"].append({
-        "group": "Holiday Features",
-        "features_created": n_created,
-        "features": [
-            "HolidayType", "IsPreHoliday", "IsPostHoliday",
-            "HolidayProximity", "IsPeakSeason", "IsBackToSchool",
-        ],
-        "rationale": (
-            "Differentiate holiday types and capture pre/post-holiday "
-            "effects that a binary IsHoliday flag misses"
-        ),
-    })
+    report["groups"].append(
+        {
+            "group": "Holiday Features",
+            "features_created": n_created,
+            "features": [
+                "HolidayType",
+                "IsPreHoliday",
+                "IsPostHoliday",
+                "HolidayProximity",
+                "IsPeakSeason",
+                "IsBackToSchool",
+            ],
+            "rationale": (
+                "Differentiate holiday types and capture pre/post-holiday "
+                "effects that a binary IsHoliday flag misses"
+            ),
+        }
+    )
 
     logger.info("  Holiday: {} features created", n_created)
     return df
@@ -154,19 +173,24 @@ def create_promotion_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     df["HasAnyMarkDown"] = (active_count > 0).astype(int)
 
     n_created = len(df.columns) - n_before
-    report["groups"].append({
-        "group": "Promotion Features",
-        "features_created": n_created,
-        "features": [
-            "TotalMarkDown", "ActiveMarkDownCount",
-            "AvgMarkDownAmount", "MaxMarkDown", "HasAnyMarkDown",
-        ],
-        "rationale": (
-            "Individual MarkDown columns are sparse and skewed — "
-            "aggregates capture overall promotional intensity "
-            "with less noise"
-        ),
-    })
+    report["groups"].append(
+        {
+            "group": "Promotion Features",
+            "features_created": n_created,
+            "features": [
+                "TotalMarkDown",
+                "ActiveMarkDownCount",
+                "AvgMarkDownAmount",
+                "MaxMarkDown",
+                "HasAnyMarkDown",
+            ],
+            "rationale": (
+                "Individual MarkDown columns are sparse and skewed — "
+                "aggregates capture overall promotional intensity "
+                "with less noise"
+            ),
+        }
+    )
 
     logger.info("  Promotion: {} features created", n_created)
     return df
@@ -191,19 +215,24 @@ def create_store_dept_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     df["SizeQuartile"] = pd.qcut(df["Size"], q=4, labels=[1, 2, 3, 4]).astype(int)
 
     n_created = len(df.columns) - n_before
-    report["groups"].append({
-        "group": "Store & Department Features",
-        "features_created": n_created,
-        "features": [
-            "TypeEncoded", "SizePerType", "StoreDeptCount",
-            "DeptFrequency", "SizeQuartile",
-        ],
-        "rationale": (
-            "Encode store structure beyond raw Type/Size — "
-            "captures store complexity and relative positioning"
-        ),
-        "leakage_risk": "None — based on store metadata only",
-    })
+    report["groups"].append(
+        {
+            "group": "Store & Department Features",
+            "features_created": n_created,
+            "features": [
+                "TypeEncoded",
+                "SizePerType",
+                "StoreDeptCount",
+                "DeptFrequency",
+                "SizeQuartile",
+            ],
+            "rationale": (
+                "Encode store structure beyond raw Type/Size — "
+                "captures store complexity and relative positioning"
+            ),
+            "leakage_risk": "None — based on store metadata only",
+        }
+    )
 
     logger.info("  Store & Dept: {} features created", n_created)
     return df
@@ -241,22 +270,28 @@ def create_economic_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     df["PurchasingPower"] = df["CPI"] / (df["Unemployment"] + 1e-6)
 
     n_created = len(df.columns) - n_before
-    report["groups"].append({
-        "group": "Economic Features",
-        "features_created": n_created,
-        "features": [
-            "EconIndex", "ConsumerConfRatio", "RealSpendingPerCapita",
-            "EconMomentum", "FuelBurden", "PurchasingPower",
-        ],
-        "rationale": (
-            "FRED macro series are highly correlated (r > 0.78) — "
-            "composites reduce multicollinearity while ratios "
-            "capture divergences between economic indicators"
-        ),
-        "correlation_note": (
-            "UMCSENT↔RSXFS: r=0.83, RSXFS↔PCE: r=0.88, UMCSENT↔PCE: r=0.79"
-        ),
-    })
+    report["groups"].append(
+        {
+            "group": "Economic Features",
+            "features_created": n_created,
+            "features": [
+                "EconIndex",
+                "ConsumerConfRatio",
+                "RealSpendingPerCapita",
+                "EconMomentum",
+                "FuelBurden",
+                "PurchasingPower",
+            ],
+            "rationale": (
+                "FRED macro series are highly correlated (r > 0.78) — "
+                "composites reduce multicollinearity while ratios "
+                "capture divergences between economic indicators"
+            ),
+            "correlation_note": (
+                "UMCSENT↔RSXFS: r=0.83, RSXFS↔PCE: r=0.88, UMCSENT↔PCE: r=0.79"
+            ),
+        }
+    )
 
     logger.info("  Economic: {} features created", n_created)
     return df
@@ -293,14 +328,13 @@ def create_lag_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
         df["SalesTrend_4w"] = (df["Lag_Sales_1w"] - df["Lag_Sales_4w"]) / 3.0
 
     if "SalesTrend_4w" in df.columns:
-        df["SalesAcceleration"] = df.groupby(["Store", "Dept"])[
-            "SalesTrend_4w"
-        ].diff()
+        df["SalesAcceleration"] = df.groupby(["Store", "Dept"])["SalesTrend_4w"].diff()
 
-    lag_rolling_cols = [c for c in df.columns if c.startswith(("Lag_", "Rolling_", "Sales"))]
     lag_rolling_cols = [
-        c for c in lag_rolling_cols
-        if c in df.columns and c not in ["Sales_Class"]
+        c for c in df.columns if c.startswith(("Lag_", "Rolling_", "Sales"))
+    ]
+    lag_rolling_cols = [
+        c for c in lag_rolling_cols if c in df.columns and c not in ["Sales_Class"]
     ]
 
     nulls_before = int(df[lag_rolling_cols].isna().sum().sum())
@@ -315,33 +349,43 @@ def create_lag_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     nulls_after = int(df[lag_rolling_cols].isna().sum().sum())
 
     n_created = len(df.columns) - n_before
-    report["groups"].append({
-        "group": "Lag & Rolling Features",
-        "features_created": n_created,
-        "features": [
-            "Lag_Sales_1w", "Lag_Sales_2w", "Lag_Sales_4w",
-            "Rolling_Mean_4w", "Rolling_Mean_8w", "Rolling_Mean_12w",
-            "Rolling_Std_4w", "SalesTrend_4w", "SalesAcceleration",
-        ],
-        "lag_periods": LAG_PERIODS,
-        "rolling_windows": ROLLING_WINDOWS,
-        "null_handling": (
-            f"Filled {nulls_before - nulls_after:,} NaN values "
-            f"with Store-Dept group median (fallback: global median → 0)"
-        ),
-        "leakage_policy": (
-            "All lags use .shift() — only past data used. "
-            "Current row's Weekly_Sales is NEVER in its own features."
-        ),
-        "rationale": (
-            "Past sales are the strongest predictor of future sales. "
-            "Rolling windows capture momentum at different time horizons."
-        ),
-    })
+    report["groups"].append(
+        {
+            "group": "Lag & Rolling Features",
+            "features_created": n_created,
+            "features": [
+                "Lag_Sales_1w",
+                "Lag_Sales_2w",
+                "Lag_Sales_4w",
+                "Rolling_Mean_4w",
+                "Rolling_Mean_8w",
+                "Rolling_Mean_12w",
+                "Rolling_Std_4w",
+                "SalesTrend_4w",
+                "SalesAcceleration",
+            ],
+            "lag_periods": LAG_PERIODS,
+            "rolling_windows": ROLLING_WINDOWS,
+            "null_handling": (
+                f"Filled {nulls_before - nulls_after:,} NaN values "
+                f"with Store-Dept group median (fallback: global median → 0)"
+            ),
+            "leakage_policy": (
+                "All lags use .shift() — only past data used. "
+                "Current row's Weekly_Sales is NEVER in its own features."
+            ),
+            "rationale": (
+                "Past sales are the strongest predictor of future sales. "
+                "Rolling windows capture momentum at different time horizons."
+            ),
+        }
+    )
 
     logger.info(
         "  Lag & Rolling: {} features created | NaN filled: {:,} → {:,}",
-        n_created, nulls_before, nulls_after,
+        n_created,
+        nulls_before,
+        nulls_after,
     )
     return df
 
@@ -364,20 +408,26 @@ def create_interaction_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     df["MarkDown_Intensity"] = df["TotalMarkDown"] / (df["Size"] + 1e-6)
 
     n_created = len(df.columns) - n_before
-    report["groups"].append({
-        "group": "Interaction Features",
-        "features_created": n_created,
-        "features": [
-            "Holiday_Size", "Holiday_Type", "Promo_Holiday",
-            "Temp_Season", "Econ_Size", "MarkDown_Intensity",
-        ],
-        "rationale": (
-            "Capture non-additive effects: holiday impact depends "
-            "on store size/type, promotional effects compound with "
-            "holidays, economic conditions affect stores differently "
-            "by size tier"
-        ),
-    })
+    report["groups"].append(
+        {
+            "group": "Interaction Features",
+            "features_created": n_created,
+            "features": [
+                "Holiday_Size",
+                "Holiday_Type",
+                "Promo_Holiday",
+                "Temp_Season",
+                "Econ_Size",
+                "MarkDown_Intensity",
+            ],
+            "rationale": (
+                "Capture non-additive effects: holiday impact depends "
+                "on store size/type, promotional effects compound with "
+                "holidays, economic conditions affect stores differently "
+                "by size tier"
+            ),
+        }
+    )
 
     logger.info("  Interactions: {} features created", n_created)
     return df
@@ -395,15 +445,17 @@ def create_cyclical_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     df["Week_cos"] = np.cos(2 * np.pi * df["Week"] / 52)
 
     n_created = len(df.columns) - n_before
-    report["groups"].append({
-        "group": "Cyclical Encoding",
-        "features_created": n_created,
-        "features": ["Month_sin", "Month_cos", "Week_sin", "Week_cos"],
-        "rationale": (
-            "Sin/cos encoding preserves cyclical adjacency — "
-            "December is next to January, not 11 units away"
-        ),
-    })
+    report["groups"].append(
+        {
+            "group": "Cyclical Encoding",
+            "features_created": n_created,
+            "features": ["Month_sin", "Month_cos", "Week_sin", "Week_cos"],
+            "rationale": (
+                "Sin/cos encoding preserves cyclical adjacency — "
+                "December is next to January, not 11 units away"
+            ),
+        }
+    )
 
     logger.info("  Cyclical: {} features created", n_created)
     return df
@@ -417,60 +469,78 @@ def validate_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
 
     null_counts = df.isna().sum()
     cols_with_nulls = null_counts[null_counts > 0]
-    checks.append({
-        "check": "No NaN values in engineered features",
-        "columns_with_nulls": cols_with_nulls.to_dict() if len(cols_with_nulls) > 0 else {},
-        "status": "PASS" if len(cols_with_nulls) == 0 else "WARN",
-    })
+    checks.append(
+        {
+            "check": "No NaN values in engineered features",
+            "columns_with_nulls": (
+                cols_with_nulls.to_dict() if len(cols_with_nulls) > 0 else {}
+            ),
+            "status": "PASS" if len(cols_with_nulls) == 0 else "WARN",
+        }
+    )
 
     numeric_df = df.select_dtypes(include=[np.number])
     inf_count = int(np.isinf(numeric_df).sum().sum())
-    checks.append({
-        "check": "No infinite values",
-        "inf_count": inf_count,
-        "status": "PASS" if inf_count == 0 else "FAIL",
-    })
+    checks.append(
+        {
+            "check": "No infinite values",
+            "inf_count": inf_count,
+            "status": "PASS" if inf_count == 0 else "FAIL",
+        }
+    )
 
-    checks.append({
-        "check": "Row count preserved",
-        "rows": len(df),
-        "status": "PASS",
-    })
+    checks.append(
+        {
+            "check": "Row count preserved",
+            "rows": len(df),
+            "status": "PASS",
+        }
+    )
 
     if "Sales_Class" in df.columns:
         unique_vals = set(df["Sales_Class"].unique())
-        checks.append({
-            "check": "Target column intact",
-            "unique_values": sorted(unique_vals),
-            "status": "PASS" if unique_vals == {0, 1} else "FAIL",
-        })
+        checks.append(
+            {
+                "check": "Target column intact",
+                "unique_values": sorted(unique_vals),
+                "status": "PASS" if unique_vals == {0, 1} else "FAIL",
+            }
+        )
 
     for col in ["Month_sin", "Month_cos", "Week_sin", "Week_cos"]:
         if col in df.columns:
             col_min, col_max = df[col].min(), df[col].max()
-            checks.append({
-                "check": f"{col} in [-1, 1]",
-                "min": round(float(col_min), 4),
-                "max": round(float(col_max), 4),
-                "status": "PASS" if -1.01 <= col_min and col_max <= 1.01 else "FAIL",
-            })
+            checks.append(
+                {
+                    "check": f"{col} in [-1, 1]",
+                    "min": round(float(col_min), 4),
+                    "max": round(float(col_max), 4),
+                    "status": (
+                        "PASS" if -1.01 <= col_min and col_max <= 1.01 else "FAIL"
+                    ),
+                }
+            )
 
-    constant_cols = [
-        col for col in numeric_df.columns
-        if numeric_df[col].std() == 0
-    ]
+    constant_cols = [col for col in numeric_df.columns if numeric_df[col].std() == 0]
 
     if constant_cols:
         df = df.drop(columns=constant_cols)
-        logger.info("  Dropped {} zero-variance columns: {}", len(constant_cols), constant_cols)
+        logger.info(
+            "  Dropped {} zero-variance columns: {}", len(constant_cols), constant_cols
+        )
 
-    checks.append({
-        "check": "No zero-variance features",
-        "constant_columns_dropped": constant_cols,
-        "status": "PASS",
-        "note": f"Dropped {len(constant_cols)} constant columns" if constant_cols else "None found",
-
-    })
+    checks.append(
+        {
+            "check": "No zero-variance features",
+            "constant_columns_dropped": constant_cols,
+            "status": "PASS",
+            "note": (
+                f"Dropped {len(constant_cols)} constant columns"
+                if constant_cols
+                else "None found"
+            ),
+        }
+    )
 
     passed = sum(1 for c in checks if c["status"] == "PASS")
     report["validation"] = {
@@ -497,8 +567,7 @@ def _generate_summary(
     all_new_features = sorted(set(df_after.columns) - set(df_before.columns))
 
     numeric_new = [
-        c for c in all_new_features
-        if pd.api.types.is_numeric_dtype(df_after[c])
+        c for c in all_new_features if pd.api.types.is_numeric_dtype(df_after[c])
     ]
 
     report["summary"] = {
@@ -515,8 +584,7 @@ def _generate_summary(
         "numeric_features_added": len(numeric_new),
         "feature_groups": len(report.get("groups", [])),
         "group_breakdown": {
-            g["group"]: g["features_created"]
-            for g in report.get("groups", [])
+            g["group"]: g["features_created"] for g in report.get("groups", [])
         },
     }
 
@@ -541,14 +609,16 @@ def _save_text_report(report: dict) -> None:
     ]
 
     s = report.get("summary", {})
-    lines.extend([
-        "SUMMARY",
-        "-" * 70,
-        f"  Before:  {s.get('before', {}).get('shape', '?')}",
-        f"  After:   {s.get('after', {}).get('shape', '?')}",
-        f"  Total features created: {s.get('total_features_created', 0)}",
-        "",
-    ])
+    lines.extend(
+        [
+            "SUMMARY",
+            "-" * 70,
+            f"  Before:  {s.get('before', {}).get('shape', '?')}",
+            f"  After:   {s.get('after', {}).get('shape', '?')}",
+            f"  Total features created: {s.get('total_features_created', 0)}",
+            "",
+        ]
+    )
 
     for group in report.get("groups", []):
         lines.append(f"{'─' * 70}")
@@ -577,7 +647,9 @@ def _save_text_report(report: dict) -> None:
     with open(FEATURES_TEXT_REPORT_PATH, "w") as f:
         f.write("\n".join(lines))
 
-    logger.info("Feature engineering text report saved to: {}", FEATURES_TEXT_REPORT_PATH)
+    logger.info(
+        "Feature engineering text report saved to: {}", FEATURES_TEXT_REPORT_PATH
+    )
 
 
 # ORCHESTRATOR
@@ -618,17 +690,20 @@ def run_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     logger.info("=" * 60)
     logger.info("  Before: {}", _shape_str(df_before))
     logger.info("  After:  {}", _shape_str(df))
-    logger.info("  Total features created: {}", report["summary"]["total_features_created"])
+    logger.info(
+        "  Total features created: {}", report["summary"]["total_features_created"]
+    )
     logger.info("")
     for group in report["groups"]:
-        logger.info("    {:30s}  +{} features", group["group"], group["features_created"])
+        logger.info(
+            "    {:30s}  +{} features", group["group"], group["features_created"]
+        )
     logger.info("")
-    logger.info(
-        "  Validation: {}", report.get("validation", {}).get("status", "?")
-    )
+    logger.info("  Validation: {}", report.get("validation", {}).get("status", "?"))
     logger.info("=" * 60)
 
     return df
+
 
 if __name__ == "__main__":
     cleaned_df = pd.read_csv(CLEANED_PATH, parse_dates=["Date"])

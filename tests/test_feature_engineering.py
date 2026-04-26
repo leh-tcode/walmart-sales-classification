@@ -12,46 +12,45 @@ from src.features.feature_engineering import (
     create_interaction_features,
     create_cyclical_features,
     run_feature_engineering,
-    MARKDOWN_COLS,
-    MARKDOWN_FLAGS,
 )
 
 
 # Fixtures
 @pytest.fixture
 def sample_df():
-    """Minimal cleaned DataFrame (post-cleaning output)."""
     np.random.seed(42)
     n = 500
 
-    df = pd.DataFrame({
-        "Store": np.repeat(range(1, 6), 100),
-        "Dept": np.tile(np.repeat(range(1, 11), 10), 5),
-        "Date": pd.date_range("2010-02-05", periods=n, freq="W"),
-        "Weekly_Sales": np.random.normal(15000, 8000, n).clip(-5000, 200000),
-        "IsHoliday": np.random.choice([True, False], size=n, p=[0.07, 0.93]),
-        "Type": np.random.choice(["A", "B", "C"], size=n),
-        "Size": np.random.randint(34000, 220000, size=n),
-        "Temperature": np.random.normal(60, 18, n),
-        "Fuel_Price": np.random.uniform(2.5, 4.5, n),
-        "MarkDown1": np.random.uniform(0, 20000, n),
-        "MarkDown2": np.random.uniform(0, 10000, n),
-        "MarkDown3": np.random.uniform(0, 3000, n),
-        "MarkDown4": np.random.uniform(0, 8000, n),
-        "MarkDown5": np.random.uniform(0, 30000, n),
-        "CPI": np.random.uniform(126, 228, n),
-        "Unemployment": np.random.uniform(4, 14, n),
-        "UMCSENT": np.random.uniform(55, 83, n),
-        "RSXFS": np.random.uniform(302000, 355000, n),
-        "PCE": np.random.uniform(10000, 11200, n),
-        "Sales_Class": np.random.choice([0, 1], size=n),
-        "has_MarkDown1": np.random.choice([0, 1], size=n),
-        "has_MarkDown2": np.random.choice([0, 1], size=n),
-        "has_MarkDown3": np.random.choice([0, 1], size=n),
-        "has_MarkDown4": np.random.choice([0, 1], size=n),
-        "has_MarkDown5": np.random.choice([0, 1], size=n),
-        "is_return": (np.random.normal(15000, 8000, n) < 0).astype(int),
-    })
+    df = pd.DataFrame(
+        {
+            "Store": np.repeat(range(1, 6), 100),
+            "Dept": np.tile(np.repeat(range(1, 11), 10), 5),
+            "Date": pd.date_range("2010-02-05", periods=n, freq="W"),
+            "Weekly_Sales": np.random.normal(15000, 8000, n).clip(-5000, 200000),
+            "IsHoliday": np.random.choice([True, False], size=n, p=[0.07, 0.93]),
+            "Type": np.random.choice(["A", "B", "C"], size=n),
+            "Size": np.random.randint(34000, 220000, size=n),
+            "Temperature": np.random.normal(60, 18, n),
+            "Fuel_Price": np.random.uniform(2.5, 4.5, n),
+            "MarkDown1": np.random.uniform(0, 20000, n),
+            "MarkDown2": np.random.uniform(0, 10000, n),
+            "MarkDown3": np.random.uniform(0, 3000, n),
+            "MarkDown4": np.random.uniform(0, 8000, n),
+            "MarkDown5": np.random.uniform(0, 30000, n),
+            "CPI": np.random.uniform(126, 228, n),
+            "Unemployment": np.random.uniform(4, 14, n),
+            "UMCSENT": np.random.uniform(55, 83, n),
+            "RSXFS": np.random.uniform(302000, 355000, n),
+            "PCE": np.random.uniform(10000, 11200, n),
+            "Sales_Class": np.random.choice([0, 1], size=n),
+            "has_MarkDown1": np.random.choice([0, 1], size=n),
+            "has_MarkDown2": np.random.choice([0, 1], size=n),
+            "has_MarkDown3": np.random.choice([0, 1], size=n),
+            "has_MarkDown4": np.random.choice([0, 1], size=n),
+            "has_MarkDown5": np.random.choice([0, 1], size=n),
+            "is_return": (np.random.normal(15000, 8000, n) < 0).astype(int),
+        }
+    )
     return df
 
 
@@ -65,9 +64,20 @@ class TestTemporalFeatures:
 
     def test_columns_created(self, sample_df, empty_report):
         df = create_temporal_features(sample_df.copy(), empty_report)
-        expected = {"Year", "Month", "Week", "Quarter", "DayOfYear",
-                    "WeekOfMonth", "IsMonthStart", "IsMonthEnd",
-                    "IsYearStart", "IsYearEnd", "DaysInMonth", "YearProgress"}
+        expected = {
+            "Year",
+            "Month",
+            "Week",
+            "Quarter",
+            "DayOfYear",
+            "WeekOfMonth",
+            "IsMonthStart",
+            "IsMonthEnd",
+            "IsYearStart",
+            "IsYearEnd",
+            "DaysInMonth",
+            "YearProgress",
+        }
         assert expected <= set(df.columns)
 
     def test_month_range(self, sample_df, empty_report):
@@ -89,8 +99,14 @@ class TestHolidayFeatures:
     def test_columns_created(self, sample_df, empty_report):
         df = create_temporal_features(sample_df.copy(), empty_report)
         df = create_holiday_features(df, empty_report)
-        expected = {"HolidayType", "IsPreHoliday", "IsPostHoliday",
-                    "HolidayProximity", "IsPeakSeason", "IsBackToSchool"}
+        expected = {
+            "HolidayType",
+            "IsPreHoliday",
+            "IsPostHoliday",
+            "HolidayProximity",
+            "IsPeakSeason",
+            "IsBackToSchool",
+        }
         assert expected <= set(df.columns)
 
     def test_holiday_type_range(self, sample_df, empty_report):
@@ -111,8 +127,13 @@ class TestPromotionFeatures:
 
     def test_columns_created(self, sample_df, empty_report):
         df = create_promotion_features(sample_df.copy(), empty_report)
-        expected = {"TotalMarkDown", "ActiveMarkDownCount",
-                    "AvgMarkDownAmount", "MaxMarkDown", "HasAnyMarkDown"}
+        expected = {
+            "TotalMarkDown",
+            "ActiveMarkDownCount",
+            "AvgMarkDownAmount",
+            "MaxMarkDown",
+            "HasAnyMarkDown",
+        }
         assert expected <= set(df.columns)
 
     def test_total_markdown_non_negative(self, sample_df, empty_report):
@@ -129,8 +150,13 @@ class TestStoreDeptFeatures:
 
     def test_columns_created(self, sample_df, empty_report):
         df = create_store_dept_features(sample_df.copy(), empty_report)
-        expected = {"TypeEncoded", "SizePerType", "StoreDeptCount",
-                    "DeptFrequency", "SizeQuartile"}
+        expected = {
+            "TypeEncoded",
+            "SizePerType",
+            "StoreDeptCount",
+            "DeptFrequency",
+            "SizeQuartile",
+        }
         assert expected <= set(df.columns)
 
     def test_type_encoding(self, sample_df, empty_report):
@@ -147,8 +173,14 @@ class TestEconomicFeatures:
 
     def test_columns_created(self, sample_df, empty_report):
         df = create_economic_features(sample_df.copy(), empty_report)
-        expected = {"EconIndex", "ConsumerConfRatio", "RealSpendingPerCapita",
-                    "EconMomentum", "FuelBurden", "PurchasingPower"}
+        expected = {
+            "EconIndex",
+            "ConsumerConfRatio",
+            "RealSpendingPerCapita",
+            "EconMomentum",
+            "FuelBurden",
+            "PurchasingPower",
+        }
         assert expected <= set(df.columns)
 
     def test_econ_index_range(self, sample_df, empty_report):
@@ -166,14 +198,24 @@ class TestLagFeatures:
 
     def test_columns_created(self, sample_df, empty_report):
         df = create_lag_features(sample_df.copy(), empty_report)
-        expected = {"Lag_Sales_1w", "Lag_Sales_2w", "Lag_Sales_4w",
-                    "Rolling_Mean_4w", "Rolling_Mean_8w", "Rolling_Mean_12w",
-                    "Rolling_Std_4w", "SalesTrend_4w", "SalesAcceleration"}
+        expected = {
+            "Lag_Sales_1w",
+            "Lag_Sales_2w",
+            "Lag_Sales_4w",
+            "Rolling_Mean_4w",
+            "Rolling_Mean_8w",
+            "Rolling_Mean_12w",
+            "Rolling_Std_4w",
+            "SalesTrend_4w",
+            "SalesAcceleration",
+        }
         assert expected <= set(df.columns)
 
     def test_no_nulls_after_fill(self, sample_df, empty_report):
         df = create_lag_features(sample_df.copy(), empty_report)
-        lag_cols = [c for c in df.columns if c.startswith(("Lag_", "Rolling_", "Sales"))]
+        lag_cols = [
+            c for c in df.columns if c.startswith(("Lag_", "Rolling_", "Sales"))
+        ]
         lag_cols = [c for c in lag_cols if c != "Sales_Class" and c != "Weekly_Sales"]
         assert df[lag_cols].isna().sum().sum() == 0
 
@@ -186,7 +228,6 @@ class TestLagFeatures:
 class TestInteractionFeatures:
 
     def _prepare(self, sample_df, empty_report):
-        """Run prerequisite steps."""
         df = create_temporal_features(sample_df.copy(), empty_report)
         df = create_holiday_features(df, empty_report)
         df = create_promotion_features(df, empty_report)
@@ -197,15 +238,27 @@ class TestInteractionFeatures:
     def test_columns_created(self, sample_df, empty_report):
         df = self._prepare(sample_df, empty_report)
         df = create_interaction_features(df, empty_report)
-        expected = {"Holiday_Size", "Holiday_Type", "Promo_Holiday",
-                    "Temp_Season", "Econ_Size", "MarkDown_Intensity"}
+        expected = {
+            "Holiday_Size",
+            "Holiday_Type",
+            "Promo_Holiday",
+            "Temp_Season",
+            "Econ_Size",
+            "MarkDown_Intensity",
+        }
         assert expected <= set(df.columns)
 
     def test_no_nulls(self, sample_df, empty_report):
         df = self._prepare(sample_df, empty_report)
         df = create_interaction_features(df, empty_report)
-        interaction_cols = ["Holiday_Size", "Holiday_Type", "Promo_Holiday",
-                           "Temp_Season", "Econ_Size", "MarkDown_Intensity"]
+        interaction_cols = [
+            "Holiday_Size",
+            "Holiday_Type",
+            "Promo_Holiday",
+            "Temp_Season",
+            "Econ_Size",
+            "MarkDown_Intensity",
+        ]
         assert df[interaction_cols].isna().sum().sum() == 0
 
 

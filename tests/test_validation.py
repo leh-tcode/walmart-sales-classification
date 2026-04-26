@@ -38,22 +38,17 @@ def clean_df():
     )
 
 
-# ══════════════════════════════════════════════════════════════
 # helpers to dig into dimension reports
-# ══════════════════════════════════════════════════════════════
 
 
 def _find_check(report: dict, substring: str) -> dict | None:
-    """Return the first check whose 'check' field contains *substring*."""
     for c in report.get("checks", []):
         if substring.lower() in c.get("check", "").lower():
             return c
     return None
 
 
-# ══════════════════════════════════════════════════════════════
 # 1 ─ ACCURACY
-# ══════════════════════════════════════════════════════════════
 
 
 class TestCheckAccuracy:
