@@ -23,9 +23,13 @@ def check_relationships(df: pd.DataFrame) -> dict[str, Any]:
         report = {
             "dimension": "Relationships",
             "error": "No complete numeric rows for correlation analysis",
-            "total_checks": 0, "passed": 0, "failed": 0,
-            "warnings": 0, "skipped": 0,
-            "overall_status": "SKIP", "checks": [],
+            "total_checks": 0,
+            "passed": 0,
+            "failed": 0,
+            "warnings": 0,
+            "skipped": 0,
+            "overall_status": "SKIP",
+            "checks": [],
         }
         return report
 
@@ -40,21 +44,22 @@ def check_relationships(df: pd.DataFrame) -> dict[str, Any]:
             ok = r > 0
         else:
             ok = r < 0
-        pair_results.append({
-            "check": f"{col_a} vs {col_b} ({expected_direction})",
-            "pair": f"{col_a} vs {col_b}",
-            "expected": f"{expected_direction}_correlation",
-            "pearson_r": round(float(r), 4),
-            "pearson_p": round(float(p), 6),
-            "spearman_r": round(float(sr), 4),
-            "spearman_p": round(float(sp), 6),
-            "strength": (
-                "strong" if abs(r) > 0.6 else
-                "moderate" if abs(r) > 0.3 else "weak"
-            ),
-            "statistically_significant": bool(p < 0.05),
-            "status": _pf(ok),
-        })
+        pair_results.append(
+            {
+                "check": f"{col_a} vs {col_b} ({expected_direction})",
+                "pair": f"{col_a} vs {col_b}",
+                "expected": f"{expected_direction}_correlation",
+                "pearson_r": round(float(r), 4),
+                "pearson_p": round(float(p), 6),
+                "spearman_r": round(float(sr), 4),
+                "spearman_p": round(float(sp), 6),
+                "strength": (
+                    "strong" if abs(r) > 0.6 else "moderate" if abs(r) > 0.3 else "weak"
+                ),
+                "statistically_significant": bool(p < 0.05),
+                "status": _pf(ok),
+            }
+        )
 
     for col_a, col_b in EXPECTED_POSITIVE_CORRELATIONS:
         _check_pair(col_a, col_b, "positive")
@@ -78,8 +83,7 @@ def check_relationships(df: pd.DataFrame) -> dict[str, Any]:
                 "significant": bool(p < 0.05),
                 "direction": "positive" if r > 0 else "negative",
                 "strength": (
-                    "strong" if abs(r) > 0.6 else
-                    "moderate" if abs(r) > 0.3 else "weak"
+                    "strong" if abs(r) > 0.6 else "moderate" if abs(r) > 0.3 else "weak"
                 ),
             }
 
@@ -105,5 +109,7 @@ def check_relationships(df: pd.DataFrame) -> dict[str, Any]:
         "checks": pair_results,
     }
 
-    logger.info("  Relationships: {}/{} directional checks passed", passed, len(pair_results))
+    logger.info(
+        "  Relationships: {}/{} directional checks passed", passed, len(pair_results)
+    )
     return report
