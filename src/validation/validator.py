@@ -28,13 +28,13 @@ def run_validation(df: pd.DataFrame) -> dict[str, Any]:
     logger.info("=" * 60)
 
     dimensions = {
-        "1_accuracy":             check_accuracy(df),
-        "2_completeness":         check_completeness(df),
-        "3_consistency":          check_consistency(df),
-        "4_uniqueness":           check_uniqueness(df),
-        "5_outlier_detection":    check_outliers(df),
+        "1_accuracy": check_accuracy(df),
+        "2_completeness": check_completeness(df),
+        "3_consistency": check_consistency(df),
+        "4_uniqueness": check_uniqueness(df),
+        "5_outlier_detection": check_outliers(df),
         "6_distribution_profile": check_distribution_profile(df),
-        "7_relationships":        check_relationships(df),
+        "7_relationships": check_relationships(df),
     }
 
     dim_statuses = {k: v.get("overall_status", "N/A") for k, v in dimensions.items()}
@@ -48,10 +48,12 @@ def run_validation(df: pd.DataFrame) -> dict[str, Any]:
     total_failed = sum(d.get("failed", 0) for d in dimensions.values())
 
     missing_snapshot = (
-        pd.DataFrame({
-            "missing_count": df.isna().sum(),
-            "missing_pct": (df.isna().mean() * 100).round(2),
-        })
+        pd.DataFrame(
+            {
+                "missing_count": df.isna().sum(),
+                "missing_pct": (df.isna().mean() * 100).round(2),
+            }
+        )
         .query("missing_count > 0")
         .sort_values("missing_pct", ascending=False)
         .head(10)
@@ -71,15 +73,9 @@ def run_validation(df: pd.DataFrame) -> dict[str, Any]:
             "warnings": total_warned,
             "failed": total_failed,
             "dimensions_evaluated": len(dimensions),
-            "dimensions_passed": sum(
-                1 for s in dim_statuses.values() if s == "PASS"
-            ),
-            "dimensions_warned": sum(
-                1 for s in dim_statuses.values() if s == "WARN"
-            ),
-            "dimensions_failed": sum(
-                1 for s in dim_statuses.values() if s == "FAIL"
-            ),
+            "dimensions_passed": sum(1 for s in dim_statuses.values() if s == "PASS"),
+            "dimensions_warned": sum(1 for s in dim_statuses.values() if s == "WARN"),
+            "dimensions_failed": sum(1 for s in dim_statuses.values() if s == "FAIL"),
             "dimension_statuses": dim_statuses,
             "overall_status": overall,
         },
@@ -157,12 +153,14 @@ def _save_text_report(report: dict) -> None:
                         lines.append(f"          {method}: {col_info[method]}")
                 lines.append("")
 
-    lines.extend([
-        "-" * 70,
-        "SNAPSHOTS",
-        "-" * 70,
-        "Top missing columns:",
-    ])
+    lines.extend(
+        [
+            "-" * 70,
+            "SNAPSHOTS",
+            "-" * 70,
+            "Top missing columns:",
+        ]
+    )
     for col, st in report.get("snapshots", {}).get("top_missing_columns", {}).items():
         lines.append(f"  - {col}: {st}")
 
@@ -189,24 +187,25 @@ def _save_csv_summary(report: dict[str, Any]) -> None:
     for dim_key, dim_data in report["dimensions"].items():
         dim_name = dim_data.get("dimension", dim_key)
         for check in dim_data.get("checks", []):
-            details = {
-                k: v for k, v in check.items()
-                if k not in {"check", "status"}
-            }
-            rows.append({
-                "dimension": dim_name,
-                "check": check.get("check", "unnamed"),
-                "status": check.get("status", "?"),
-                "details": json.dumps(details, default=str),
-            })
+            details = {k: v for k, v in check.items() if k not in {"check", "status"}}
+            rows.append(
+                {
+                    "dimension": dim_name,
+                    "check": check.get("check", "unnamed"),
+                    "status": check.get("status", "?"),
+                    "details": json.dumps(details, default=str),
+                }
+            )
         if "columns" in dim_data and isinstance(dim_data["columns"], dict):
             for col_name, col_info in dim_data["columns"].items():
-                rows.append({
-                    "dimension": dim_name,
-                    "check": f"Outlier — {col_name}",
-                    "status": col_info.get("overall_status", "?"),
-                    "details": json.dumps(col_info, default=str),
-                })
+                rows.append(
+                    {
+                        "dimension": dim_name,
+                        "check": f"Outlier — {col_name}",
+                        "status": col_info.get("overall_status", "?"),
+                        "details": json.dumps(col_info, default=str),
+                    }
+                )
 
     pd.DataFrame(rows).to_csv(CSV_SUMMARY_PATH, index=False)
     logger.info("Validation CSV summary saved to: {}", CSV_SUMMARY_PATH)

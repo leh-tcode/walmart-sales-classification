@@ -19,7 +19,11 @@ MARKDOWN_COLS = ["MarkDown1", "MarkDown2", "MarkDown3", "MarkDown4", "MarkDown5"
 
 CLIP_COLS = [
     "Weekly_Sales",
-    "MarkDown1", "MarkDown2", "MarkDown3", "MarkDown4", "MarkDown5",
+    "MarkDown1",
+    "MarkDown2",
+    "MarkDown3",
+    "MarkDown4",
+    "MarkDown5",
 ]
 
 CLIP_LOWER_PERCENTILE = 0.01
@@ -77,7 +81,11 @@ def handle_markdown_nulls(df: pd.DataFrame, report: dict) -> pd.DataFrame:
 
         logger.info(
             "  {} — nulls: {:,} ({:.1f}%) → 0 | flag '{}' created ({:,} active)",
-            col, null_before, null_pct, flag_col, promotions_active,
+            col,
+            null_before,
+            null_pct,
+            flag_col,
+            promotions_active,
         )
 
     report["steps"].append(step_report)
@@ -104,14 +112,19 @@ def handle_negative_sales(df: pd.DataFrame, report: dict) -> pd.DataFrame:
         "negative_rows": neg_count,
         "negative_pct": neg_pct,
         "min_value": round(float(df["Weekly_Sales"].min()), 2),
-        "max_negative": round(float(df.loc[negative_mask, "Weekly_Sales"].max()), 2) if neg_count > 0 else None,
+        "max_negative": (
+            round(float(df.loc[negative_mask, "Weekly_Sales"].max()), 2)
+            if neg_count > 0
+            else None
+        ),
         "action_taken": "No values modified — domain-valid negative sales retained",
         "flag_column_created": "is_return",
     }
 
     logger.info(
         "  Negative sales: {:,} rows ({:.3f}%) — KEPT (returns are domain-valid)",
-        neg_count, neg_pct,
+        neg_count,
+        neg_pct,
     )
 
     report["steps"].append(step_report)
@@ -186,10 +199,14 @@ def clip_outliers(df: pd.DataFrame, report: dict) -> pd.DataFrame:
         logger.info(
             "  {} — clipped {:,} values | skew: {:.2f} → {:.2f} | "
             "range: [{:.0f}, {:.0f}] → [{:.0f}, {:.0f}]",
-            col, total_clipped,
-            skew_before, skew_after,
-            min_before, max_before,
-            lower_bound, upper_bound,
+            col,
+            total_clipped,
+            skew_before,
+            skew_after,
+            min_before,
+            max_before,
+            lower_bound,
+            upper_bound,
         )
 
     report["steps"].append(step_report)
@@ -204,62 +221,74 @@ def post_cleaning_validation(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     checks = []
 
     total_nulls = int(df.isna().sum().sum())
-    checks.append({
-        "check": "No remaining null values",
-        "total_nulls": total_nulls,
-        "status": "PASS" if total_nulls == 0 else "WARN",
-        "columns_with_nulls": {
-            col: int(df[col].isna().sum())
-            for col in df.columns
-            if df[col].isna().sum() > 0
-        },
-    })
+    checks.append(
+        {
+            "check": "No remaining null values",
+            "total_nulls": total_nulls,
+            "status": "PASS" if total_nulls == 0 else "WARN",
+            "columns_with_nulls": {
+                col: int(df[col].isna().sum())
+                for col in df.columns
+                if df[col].isna().sum() > 0
+            },
+        }
+    )
 
     numeric_df = df.select_dtypes(include=[np.number])
     inf_count = int(np.isinf(numeric_df).sum().sum())
-    checks.append({
-        "check": "No infinite values",
-        "inf_count": inf_count,
-        "status": "PASS" if inf_count == 0 else "FAIL",
-    })
+    checks.append(
+        {
+            "check": "No infinite values",
+            "inf_count": inf_count,
+            "status": "PASS" if inf_count == 0 else "FAIL",
+        }
+    )
 
-    checks.append({
-        "check": "Row count preserved",
-        "rows": len(df),
-        "status": "PASS",
-        "note": "No rows were dropped during cleaning",
-    })
+    checks.append(
+        {
+            "check": "Row count preserved",
+            "rows": len(df),
+            "status": "PASS",
+            "note": "No rows were dropped during cleaning",
+        }
+    )
 
     if "Sales_Class" in df.columns:
         dist = df["Sales_Class"].value_counts()
         ratio = round(dist.max() / dist.min(), 3)
-        checks.append({
-            "check": "Target distribution intact",
-            "class_counts": dist.to_dict(),
-            "imbalance_ratio": ratio,
-            "status": "PASS" if ratio < 2.0 else "WARN",
-        })
+        checks.append(
+            {
+                "check": "Target distribution intact",
+                "class_counts": dist.to_dict(),
+                "imbalance_ratio": ratio,
+                "status": "PASS" if ratio < 2.0 else "WARN",
+            }
+        )
 
     expected_new = [f"has_{c}" for c in MARKDOWN_COLS] + ["is_return"]
     actual_new = [c for c in expected_new if c in df.columns]
     missing_new = [c for c in expected_new if c not in df.columns]
-    checks.append({
-        "check": "All expected new columns created",
-        "expected": expected_new,
-        "created": actual_new,
-        "missing": missing_new,
-        "status": "PASS" if len(missing_new) == 0 else "FAIL",
-    })
+    checks.append(
+        {
+            "check": "All expected new columns created",
+            "expected": expected_new,
+            "created": actual_new,
+            "missing": missing_new,
+            "status": "PASS" if len(missing_new) == 0 else "FAIL",
+        }
+    )
 
     dtype_issues = []
     for col in df.select_dtypes(include=["object"]).columns:
-        if col not in ["Type"]:  
+        if col not in ["Type"]:
             dtype_issues.append(col)
-    checks.append({
-        "check": "No unexpected object dtypes",
-        "unexpected_object_columns": dtype_issues,
-        "status": "PASS" if len(dtype_issues) == 0 else "WARN",
-    })
+    checks.append(
+        {
+            "check": "No unexpected object dtypes",
+            "unexpected_object_columns": dtype_issues,
+            "status": "PASS" if len(dtype_issues) == 0 else "WARN",
+        }
+    )
 
     passed = sum(1 for c in checks if c["status"] == "PASS")
     step_report = {
@@ -294,25 +323,19 @@ def _generate_cleaning_summary(
             "rows": len(df_before),
             "columns": len(df_before.columns),
             "total_null_cells": null_before,
-            "completeness_pct": round(
-                100 * (1 - null_before / df_before.size), 2
-            ),
+            "completeness_pct": round(100 * (1 - null_before / df_before.size), 2),
         },
         "after": {
             "shape": _shape_str(df_after),
             "rows": len(df_after),
             "columns": len(df_after.columns),
             "total_null_cells": null_after,
-            "completeness_pct": round(
-                100 * (1 - null_after / df_after.size), 2
-            ),
+            "completeness_pct": round(100 * (1 - null_after / df_after.size), 2),
         },
         "changes": {
             "rows_removed": len(df_before) - len(df_after),
             "columns_added": len(df_after.columns) - len(df_before.columns),
-            "new_columns": sorted(
-                set(df_after.columns) - set(df_before.columns)
-            ),
+            "new_columns": sorted(set(df_after.columns) - set(df_before.columns)),
             "null_cells_resolved": null_before - null_after,
             "completeness_improvement_pct": round(
                 (1 - null_after / df_after.size) * 100
@@ -341,21 +364,23 @@ def _save_text_report(report: dict) -> None:
     after = s.get("after", {})
     changes = s.get("changes", {})
 
-    lines.extend([
-        "SUMMARY",
-        "-" * 70,
-        f"  Before:  {before.get('shape', '?')}  |  "
-        f"Nulls: {before.get('total_null_cells', '?'):,}  |  "
-        f"Completeness: {before.get('completeness_pct', '?')}%",
-        f"  After:   {after.get('shape', '?')}  |  "
-        f"Nulls: {after.get('total_null_cells', '?'):,}  |  "
-        f"Completeness: {after.get('completeness_pct', '?')}%",
-        f"  Rows removed: {changes.get('rows_removed', 0)}",
-        f"  Columns added: {changes.get('columns_added', 0)} "
-        f"({changes.get('new_columns', [])})",
-        f"  Null cells resolved: {changes.get('null_cells_resolved', 0):,}",
-        "",
-    ])
+    lines.extend(
+        [
+            "SUMMARY",
+            "-" * 70,
+            f"  Before:  {before.get('shape', '?')}  |  "
+            f"Nulls: {before.get('total_null_cells', '?'):,}  |  "
+            f"Completeness: {before.get('completeness_pct', '?')}%",
+            f"  After:   {after.get('shape', '?')}  |  "
+            f"Nulls: {after.get('total_null_cells', '?'):,}  |  "
+            f"Completeness: {after.get('completeness_pct', '?')}%",
+            f"  Rows removed: {changes.get('rows_removed', 0)}",
+            f"  Columns added: {changes.get('columns_added', 0)} "
+            f"({changes.get('new_columns', [])})",
+            f"  Null cells resolved: {changes.get('null_cells_resolved', 0):,}",
+            "",
+        ]
+    )
 
     for i, step in enumerate(report.get("steps", []), 1):
         lines.append(f"{'─' * 70}")
@@ -424,18 +449,25 @@ def run_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     s = report["summary"]
     logger.info(
         "  Before: {} | Completeness: {}%",
-        s["before"]["shape"], s["before"]["completeness_pct"],
+        s["before"]["shape"],
+        s["before"]["completeness_pct"],
     )
     logger.info(
         "  After:  {} | Completeness: {}%",
-        s["after"]["shape"], s["after"]["completeness_pct"],
+        s["after"]["shape"],
+        s["after"]["completeness_pct"],
     )
     logger.info("  Rows removed:       {}", s["changes"]["rows_removed"])
-    logger.info("  Columns added:      {} {}", s["changes"]["columns_added"], s["changes"]["new_columns"])
+    logger.info(
+        "  Columns added:      {} {}",
+        s["changes"]["columns_added"],
+        s["changes"]["new_columns"],
+    )
     logger.info("  Null cells resolved: {:,}", s["changes"]["null_cells_resolved"])
     logger.info("=" * 60)
 
     return df
+
 
 if __name__ == "__main__":
     input_path = PROCESSED_DIR / "merged_dataset.csv"

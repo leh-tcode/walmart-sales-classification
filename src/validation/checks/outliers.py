@@ -6,7 +6,11 @@ from scipy import stats as scipy_stats
 
 from src.utils.logger import logger
 from src.validation.common import _iqr_bounds, _pct, _pf
-from src.validation.constants import IQR_MULTIPLIER, OUTLIER_THRESHOLD_PCT, ZSCORE_THRESHOLD
+from src.validation.constants import (
+    IQR_MULTIPLIER,
+    OUTLIER_THRESHOLD_PCT,
+    ZSCORE_THRESHOLD,
+)
 
 
 # 5 ─ OUTLIER DETECTION
@@ -15,9 +19,17 @@ def check_outliers(df: pd.DataFrame) -> dict[str, Any]:
     col_results: dict[str, Any] = {}
 
     outlier_cols = [
-        "Weekly_Sales", "Temperature", "Fuel_Price", "CPI",
-        "Unemployment", "Size", "MarkDown1", "MarkDown2",
-        "MarkDown3", "MarkDown4", "MarkDown5",
+        "Weekly_Sales",
+        "Temperature",
+        "Fuel_Price",
+        "CPI",
+        "Unemployment",
+        "Size",
+        "MarkDown1",
+        "MarkDown2",
+        "MarkDown3",
+        "MarkDown4",
+        "MarkDown5",
     ]
 
     for col in outlier_cols:
@@ -68,7 +80,9 @@ def check_outliers(df: pd.DataFrame) -> dict[str, Any]:
             "sample_outlier_values_iqr": sorted(
                 [round(float(x), 2) for x in s[iqr_mask].unique()[:10]]
             ),
-            "evaluation_mode": "lenient (skewed)" if is_skewed else "strict (symmetric)",
+            "evaluation_mode": (
+                "lenient (skewed)" if is_skewed else "strict (symmetric)"
+            ),
             "overall_status": _pf(overall_pass),
         }
 
