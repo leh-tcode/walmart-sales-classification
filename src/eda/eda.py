@@ -1,20 +1,18 @@
 import json
 import warnings
+import numpy as np
+import pandas as pd
+import seaborn as sns
 from pathlib import Path
 from typing import Any
 
 import matplotlib
-
-matplotlib.use("Agg")
-
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-import numpy as np
-import pandas as pd
-import seaborn as sns
+
 from scipy import stats as scipy_stats
 
 from src.utils.logger import logger
+matplotlib.use("Agg")
 
 # Paths
 EDA_DIR = Path("reports/eda")
@@ -276,7 +274,7 @@ def plot_temporal_patterns(df: pd.DataFrame, report: dict) -> list[Path]:
     axes[0].set_ylabel("Avg Weekly Sales ($)")
 
     # Highlight holidays
-    holidays = df[df["IsHoliday"] == True]["Date"].unique()
+    holidays = df[df["IsHoliday"] is True]["Date"].unique()
     for h in holidays:
         axes[0].axvline(h, color=PALETTE["danger"], alpha=0.2, linewidth=0.8)
 
@@ -464,7 +462,6 @@ def plot_store_analysis(df: pd.DataFrame, report: dict) -> list[Path]:
     axes[0].set_title("Sales by Store Type", fontweight="bold")
     axes[0].set_ylim(-5000, 60000)
 
-    type_size = df.groupby("Type")["Size"].first().reset_index()
     type_counts = df.groupby("Type")["Store"].nunique().reset_index()
     axes[1].bar(
         type_counts["Type"],
