@@ -16,6 +16,7 @@ from src.cleaning.cleaning import (
 # Fixtures
 @pytest.fixture
 def sample_df():
+    """Minimal DataFrame that mimics the real dataset structure."""
     np.random.seed(42)
     n = 1000
 
@@ -197,6 +198,7 @@ class TestClipOutliers:
         assert len(df) == len(sample_df)
 
     def test_middle_values_untouched(self, sample_df, empty_report):
+        """Values between P1 and P99 should not be modified."""
         df = handle_markdown_nulls(sample_df.copy(), empty_report)
         original = df.copy()
         report2 = {"steps": []}
