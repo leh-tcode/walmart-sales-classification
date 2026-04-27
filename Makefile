@@ -36,12 +36,12 @@ test:
 
 ## Lint check
 lint:
-	poetry run flake8 src/ tests/ --max-line-length=150
+	poetry run ruff check src/ tests/
 
 ## Auto-format code
 format:
-	poetry run black src/ tests/
-	poetry run isort src/ tests/
+	poetry run ruff check src/ tests/ --fix
+	poetry run ruff format src/ tests/
 
 ## Clean generated files
 clean:

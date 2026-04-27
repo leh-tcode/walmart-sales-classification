@@ -4,12 +4,21 @@ from typing import Any
 import pandas as pd
 
 from src.utils.logger import logger
-from src.validation.checks import (check_accuracy, check_completeness,
-                                   check_consistency,
-                                   check_distribution_profile, check_outliers,
-                                   check_relationships, check_uniqueness)
-from src.validation.constants import (CSV_SUMMARY_PATH, JSON_SUMMARY_PATH,
-                                      PROCESSED_DIR, REPORT_PATH)
+from src.validation.checks import (
+    check_accuracy,
+    check_completeness,
+    check_consistency,
+    check_distribution_profile,
+    check_outliers,
+    check_relationships,
+    check_uniqueness,
+)
+from src.validation.constants import (
+    CSV_SUMMARY_PATH,
+    JSON_SUMMARY_PATH,
+    PROCESSED_DIR,
+    REPORT_PATH,
+)
 
 
 # ORCHESTRATOR
@@ -109,8 +118,7 @@ def _save_text_report(report: dict) -> None:
         "=" * 70,
         "  WALMART SALES CLASSIFICATION — DATA VALIDATION REPORT",
         "=" * 70,
-        f"  Dataset shape : {report['dataset_shape']['rows']:,} rows x "
-        f"{report['dataset_shape']['columns']} columns",
+        f"  Dataset shape : {report['dataset_shape']['rows']:,} rows x {report['dataset_shape']['columns']} columns",
         f"  Total checks  : {report['summary']['total_checks']}",
         f"  PASS          : {report['summary']['passed']}",
         f"  WARN          : {report['summary']['warnings']}",

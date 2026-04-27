@@ -77,22 +77,17 @@ def sample_fred_df():
 @pytest.fixture
 def sample_walmart_df(sample_train_df, sample_stores_df, sample_features_df):
     df = sample_train_df.merge(sample_stores_df, on="Store", how="left")
-    df = df.merge(
-        sample_features_df, on=["Store", "Date"], how="left", suffixes=("", "_feat")
-    )
+    df = df.merge(sample_features_df, on=["Store", "Date"], how="left", suffixes=("", "_feat"))
     df.drop(columns=["IsHoliday_feat"], inplace=True, errors="ignore")
     return df
 
 
 class TestCreateTargetVariable:
-
     def test_binary_output_values(self, sample_walmart_df):
         from src.data.acquisition import create_target_variable
 
         df = create_target_variable(sample_walmart_df.copy())
-        assert set(df["Sales_Class"].unique()).issubset(
-            {0, 1}
-        ), "Sales_Class must only contain 0 or 1"
+        assert set(df["Sales_Class"].unique()).issubset({0, 1}), "Sales_Class must only contain 0 or 1"
 
     def test_store_specific_median(self, sample_walmart_df):
         from src.data.acquisition import create_target_variable
@@ -124,14 +119,11 @@ class TestCreateTargetVariable:
 
 
 class TestMergeWalmartFred:
-
     def test_row_count_preserved(self, sample_walmart_df, sample_fred_df):
         from src.data.acquisition import merge_walmart_fred
 
         merged = merge_walmart_fred(sample_walmart_df, sample_fred_df)
-        assert len(merged) == len(
-            sample_walmart_df
-        ), "merge_asof must not drop any Walmart rows"
+        assert len(merged) == len(sample_walmart_df), "merge_asof must not drop any Walmart rows"
 
     def test_fred_columns_present(self, sample_walmart_df, sample_fred_df):
         from src.data.acquisition import merge_walmart_fred
@@ -145,9 +137,7 @@ class TestMergeWalmartFred:
 
         merged = merge_walmart_fred(sample_walmart_df, sample_fred_df)
         feb_5_row = merged[merged["Date"] == pd.Timestamp("2010-02-05")].iloc[0]
-        assert (
-            feb_5_row["UMCSENT"] == 73.6
-        ), "Backward merge should assign February FRED value to Feb 5 Walmart row"
+        assert feb_5_row["UMCSENT"] == 73.6, "Backward merge should assign February FRED value to Feb 5 Walmart row"
 
     def test_no_future_fred_values(self, sample_walmart_df, sample_fred_df):
         from src.data.acquisition import merge_walmart_fred
@@ -157,7 +147,6 @@ class TestMergeWalmartFred:
 
 
 class TestFetchFredSeries:
-
     def test_raises_without_api_key(self):
 
         with patch.dict(os.environ, {"FRED_API_KEY": ""}):
@@ -205,6 +194,4 @@ class TestFetchFredSeries:
         with patch("requests.get", return_value=mock_response):
             result = acq.fetch_fred_series("UMCSENT")
 
-        assert pd.isna(
-            result["UMCSENT"].iloc[0]
-        ), "FRED '.' missing value must be converted to NaN"
+        assert pd.isna(result["UMCSENT"].iloc[0]), "FRED '.' missing value must be converted to NaN"

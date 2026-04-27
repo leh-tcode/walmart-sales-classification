@@ -6,8 +6,11 @@ from scipy import stats as scipy_stats
 
 from src.utils.logger import logger
 from src.validation.common import _iqr_bounds, _pct, _pf
-from src.validation.constants import (IQR_MULTIPLIER, OUTLIER_THRESHOLD_PCT,
-                                      ZSCORE_THRESHOLD)
+from src.validation.constants import (
+    IQR_MULTIPLIER,
+    OUTLIER_THRESHOLD_PCT,
+    ZSCORE_THRESHOLD,
+)
 
 
 # 5 ─ OUTLIER DETECTION
@@ -74,12 +77,8 @@ def check_outliers(df: pd.DataFrame) -> dict[str, Any]:
                 "outlier_pct": z_pct,
                 "status": _pf(z_pass),
             },
-            "sample_outlier_values_iqr": sorted(
-                [round(float(x), 2) for x in s[iqr_mask].unique()[:10]]
-            ),
-            "evaluation_mode": (
-                "lenient (skewed)" if is_skewed else "strict (symmetric)"
-            ),
+            "sample_outlier_values_iqr": sorted([round(float(x), 2) for x in s[iqr_mask].unique()[:10]]),
+            "evaluation_mode": ("lenient (skewed)" if is_skewed else "strict (symmetric)"),
             "overall_status": _pf(overall_pass),
         }
 
@@ -93,8 +92,7 @@ def check_outliers(df: pd.DataFrame) -> dict[str, Any]:
             f"Z-score (threshold={ZSCORE_THRESHOLD})",
         ],
         "evaluation_policy": (
-            "Symmetric columns: FAIL if EITHER method exceeds threshold. "
-            "Skewed columns (|skew| > 1): FAIL only if BOTH methods exceed threshold."
+            "Symmetric columns: FAIL if EITHER method exceeds threshold. Skewed columns (|skew| > 1): FAIL only if BOTH methods exceed threshold."
         ),
         "outlier_flag_threshold_pct": OUTLIER_THRESHOLD_PCT,
         "columns": col_results,
