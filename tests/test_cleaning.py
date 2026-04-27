@@ -2,15 +2,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.cleaning.cleaning import (
-    handle_markdown_nulls,
-    handle_negative_sales,
-    clip_outliers,
-    MARKDOWN_COLS,
-    CLIP_COLS,
-    CLIP_LOWER_PERCENTILE,
-    CLIP_UPPER_PERCENTILE,
-)
+from src.cleaning.cleaning import (CLIP_COLS, CLIP_LOWER_PERCENTILE,
+                                   CLIP_UPPER_PERCENTILE, MARKDOWN_COLS,
+                                   clip_outliers, handle_markdown_nulls,
+                                   handle_negative_sales)
 
 
 # Fixtures
