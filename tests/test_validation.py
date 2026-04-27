@@ -53,7 +53,6 @@ def _find_check(report: dict, substring: str) -> dict | None:
 
 
 class TestCheckAccuracy:
-
     def test_range_violation_detected(self, clean_df):
         from src.validation.validator import check_accuracy
 
@@ -125,7 +124,6 @@ class TestCheckAccuracy:
 
 
 class TestCheckCompleteness:
-
     def test_passes_on_clean_data(self, clean_df):
         from src.validation.validator import check_completeness
 
@@ -209,7 +207,6 @@ class TestCheckCompleteness:
 
 
 class TestCheckConsistency:
-
     def test_passes_on_clean_data(self, clean_df):
         from src.validation.validator import check_consistency
 
@@ -278,7 +275,6 @@ class TestCheckConsistency:
 
 
 class TestCheckUniqueness:
-
     def test_passes_on_unique_data(self, clean_df):
         from src.validation.validator import check_uniqueness
 
@@ -324,7 +320,6 @@ class TestCheckUniqueness:
 
 
 class TestCheckOutliers:
-
     def test_passes_on_clean_data(self, clean_df):
         from src.validation.validator import check_outliers
 
@@ -385,7 +380,6 @@ class TestCheckOutliers:
 
 
 class TestCheckDistributionProfile:
-
     def test_numeric_profiles_present(self, clean_df):
         from src.validation.validator import check_distribution_profile
 
@@ -456,7 +450,6 @@ class TestCheckDistributionProfile:
 
 
 class TestCheckRelationships:
-
     def test_structure_on_clean_data(self, clean_df):
         from src.validation.validator import check_relationships
 
@@ -513,20 +506,13 @@ class TestCheckRelationships:
 
 
 class TestRunValidation:
-
     def test_returns_all_dimensions(self, clean_df, tmp_path, monkeypatch):
         import src.validation.validator as validator
 
         monkeypatch.setattr(validator, "PROCESSED_DIR", tmp_path)
-        monkeypatch.setattr(
-            validator, "REPORT_PATH", tmp_path / "validation_report.txt"
-        )
-        monkeypatch.setattr(
-            validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json"
-        )
-        monkeypatch.setattr(
-            validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv"
-        )
+        monkeypatch.setattr(validator, "REPORT_PATH", tmp_path / "validation_report.txt")
+        monkeypatch.setattr(validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json")
+        monkeypatch.setattr(validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv")
 
         report = validator.run_validation(clean_df)
 
@@ -546,15 +532,9 @@ class TestRunValidation:
         import src.validation.validator as validator
 
         monkeypatch.setattr(validator, "PROCESSED_DIR", tmp_path)
-        monkeypatch.setattr(
-            validator, "REPORT_PATH", tmp_path / "validation_report.txt"
-        )
-        monkeypatch.setattr(
-            validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json"
-        )
-        monkeypatch.setattr(
-            validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv"
-        )
+        monkeypatch.setattr(validator, "REPORT_PATH", tmp_path / "validation_report.txt")
+        monkeypatch.setattr(validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json")
+        monkeypatch.setattr(validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv")
 
         report = validator.run_validation(clean_df)
         summary = report["summary"]
@@ -571,15 +551,9 @@ class TestRunValidation:
         import src.validation.validator as validator
 
         monkeypatch.setattr(validator, "PROCESSED_DIR", tmp_path)
-        monkeypatch.setattr(
-            validator, "REPORT_PATH", tmp_path / "validation_report.txt"
-        )
-        monkeypatch.setattr(
-            validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json"
-        )
-        monkeypatch.setattr(
-            validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv"
-        )
+        monkeypatch.setattr(validator, "REPORT_PATH", tmp_path / "validation_report.txt")
+        monkeypatch.setattr(validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json")
+        monkeypatch.setattr(validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv")
 
         report = validator.run_validation(clean_df)
 
@@ -592,15 +566,9 @@ class TestRunValidation:
         import src.validation.validator as validator
 
         monkeypatch.setattr(validator, "PROCESSED_DIR", tmp_path)
-        monkeypatch.setattr(
-            validator, "REPORT_PATH", tmp_path / "validation_report.txt"
-        )
-        monkeypatch.setattr(
-            validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json"
-        )
-        monkeypatch.setattr(
-            validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv"
-        )
+        monkeypatch.setattr(validator, "REPORT_PATH", tmp_path / "validation_report.txt")
+        monkeypatch.setattr(validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json")
+        monkeypatch.setattr(validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv")
 
         validator.run_validation(clean_df)
 
@@ -614,15 +582,9 @@ class TestRunValidation:
         import src.validation.validator as validator
 
         monkeypatch.setattr(validator, "PROCESSED_DIR", tmp_path)
-        monkeypatch.setattr(
-            validator, "REPORT_PATH", tmp_path / "validation_report.txt"
-        )
-        monkeypatch.setattr(
-            validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json"
-        )
-        monkeypatch.setattr(
-            validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv"
-        )
+        monkeypatch.setattr(validator, "REPORT_PATH", tmp_path / "validation_report.txt")
+        monkeypatch.setattr(validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json")
+        monkeypatch.setattr(validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv")
 
         validator.run_validation(clean_df)
 
@@ -636,15 +598,9 @@ class TestRunValidation:
         import src.validation.validator as validator
 
         monkeypatch.setattr(validator, "PROCESSED_DIR", tmp_path)
-        monkeypatch.setattr(
-            validator, "REPORT_PATH", tmp_path / "validation_report.txt"
-        )
-        monkeypatch.setattr(
-            validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json"
-        )
-        monkeypatch.setattr(
-            validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv"
-        )
+        monkeypatch.setattr(validator, "REPORT_PATH", tmp_path / "validation_report.txt")
+        monkeypatch.setattr(validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json")
+        monkeypatch.setattr(validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv")
 
         validator.run_validation(clean_df)
 
@@ -660,15 +616,9 @@ class TestRunValidation:
         import src.validation.validator as validator
 
         monkeypatch.setattr(validator, "PROCESSED_DIR", tmp_path)
-        monkeypatch.setattr(
-            validator, "REPORT_PATH", tmp_path / "validation_report.txt"
-        )
-        monkeypatch.setattr(
-            validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json"
-        )
-        monkeypatch.setattr(
-            validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv"
-        )
+        monkeypatch.setattr(validator, "REPORT_PATH", tmp_path / "validation_report.txt")
+        monkeypatch.setattr(validator, "JSON_SUMMARY_PATH", tmp_path / "validation_summary.json")
+        monkeypatch.setattr(validator, "CSV_SUMMARY_PATH", tmp_path / "validation_summary.csv")
 
         df = clean_df.copy()
         # Break consistency: invalid store id

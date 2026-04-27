@@ -5,9 +5,11 @@ from scipy import stats as scipy_stats
 
 from src.utils.logger import logger
 from src.validation.common import _pf
-from src.validation.constants import (EXPECTED_NEGATIVE_CORRELATIONS,
-                                      EXPECTED_POSITIVE_CORRELATIONS,
-                                      NUMERIC_COLS)
+from src.validation.constants import (
+    EXPECTED_NEGATIVE_CORRELATIONS,
+    EXPECTED_POSITIVE_CORRELATIONS,
+    NUMERIC_COLS,
+)
 
 
 # 7 ─ RELATIONSHIPS
@@ -51,9 +53,7 @@ def check_relationships(df: pd.DataFrame) -> dict[str, Any]:
                 "pearson_p": round(float(p), 6),
                 "spearman_r": round(float(sr), 4),
                 "spearman_p": round(float(sp), 6),
-                "strength": (
-                    "strong" if abs(r) > 0.6 else "moderate" if abs(r) > 0.3 else "weak"
-                ),
+                "strength": ("strong" if abs(r) > 0.6 else "moderate" if abs(r) > 0.3 else "weak"),
                 "statistically_significant": bool(p < 0.05),
                 "status": _pf(ok),
             }
@@ -80,9 +80,7 @@ def check_relationships(df: pd.DataFrame) -> dict[str, Any]:
                 "spearman_p": round(float(sp), 6),
                 "significant": bool(p < 0.05),
                 "direction": "positive" if r > 0 else "negative",
-                "strength": (
-                    "strong" if abs(r) > 0.6 else "moderate" if abs(r) > 0.3 else "weak"
-                ),
+                "strength": ("strong" if abs(r) > 0.6 else "moderate" if abs(r) > 0.3 else "weak"),
             }
 
     corr_matrix = numeric_df.corr(method="pearson").round(4).to_dict()
@@ -107,7 +105,5 @@ def check_relationships(df: pd.DataFrame) -> dict[str, Any]:
         "checks": pair_results,
     }
 
-    logger.info(
-        "  Relationships: {}/{} directional checks passed", passed, len(pair_results)
-    )
+    logger.info("  Relationships: {}/{} directional checks passed", passed, len(pair_results))
     return report

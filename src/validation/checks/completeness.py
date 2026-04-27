@@ -4,10 +4,12 @@ import pandas as pd
 
 from src.utils.logger import logger
 from src.validation.common import _dimension_summary, _pct, _pf
-from src.validation.constants import (COMPLETENESS_THRESHOLDS,
-                                      REQUIRED_COLUMNS,
-                                      SEVERE_COLUMN_MISSINGNESS_PCT,
-                                      SEVERE_ROW_MISSINGNESS_PCT)
+from src.validation.constants import (
+    COMPLETENESS_THRESHOLDS,
+    REQUIRED_COLUMNS,
+    SEVERE_COLUMN_MISSINGNESS_PCT,
+    SEVERE_ROW_MISSINGNESS_PCT,
+)
 
 
 # 2 ─ COMPLETENESS
@@ -61,9 +63,7 @@ def check_completeness(df: pd.DataFrame) -> dict[str, Any]:
         null_count = int(df[col].isna().sum())
         null_pct = _pct(null_count, n)
         max_null = COMPLETENESS_THRESHOLDS.get(col, 20.0)
-        criticality = (
-            "critical" if max_null == 0.0 else "high" if max_null <= 5.0 else "medium"
-        )
+        criticality = "critical" if max_null == 0.0 else "high" if max_null <= 5.0 else "medium"
         checks.append(
             {
                 "check": f"{col} null ≤ {max_null}%",
@@ -94,18 +94,12 @@ def check_completeness(df: pd.DataFrame) -> dict[str, Any]:
 
     # 2-e  Severe missingness thresholds
     miss_pct = (df.isna().mean() * 100).round(2)
-    severe_cols = {
-        col: float(pct)
-        for col, pct in miss_pct.items()
-        if pct >= SEVERE_COLUMN_MISSINGNESS_PCT
-    }
+    severe_cols = {col: float(pct) for col, pct in miss_pct.items() if pct >= SEVERE_COLUMN_MISSINGNESS_PCT}
     row_miss_pct = df.isna().mean(axis=1) * 100
     severe_rows = int((row_miss_pct >= SEVERE_ROW_MISSINGNESS_PCT).sum())
     checks.append(
         {
-            "check": f"No columns ≥ {SEVERE_COLUMN_MISSINGNESS_PCT}% missing "
-            f"& no rows ≥ {SEVERE_ROW_MISSINGNESS_PCT}% missing "
-            f"(all columns)",
+            "check": f"No columns ≥ {SEVERE_COLUMN_MISSINGNESS_PCT}% missing & no rows ≥ {SEVERE_ROW_MISSINGNESS_PCT}% missing (all columns)",
             "type": "severe_missingness",
             "severe_columns": severe_cols,
             "severe_row_count": severe_rows,
@@ -128,9 +122,7 @@ def check_completeness(df: pd.DataFrame) -> dict[str, Any]:
             }
         else:
             fred_coverage[col] = {"present": False, "null_pct": 100.0}
-    all_fred_ok = all(
-        v["present"] and v["null_pct"] < 5 for v in fred_coverage.values()
-    )
+    all_fred_ok = all(v["present"] and v["null_pct"] < 5 for v in fred_coverage.values())
     checks.append(
         {
             "check": "FRED macro series fully populated",
@@ -147,7 +139,5 @@ def check_completeness(df: pd.DataFrame) -> dict[str, Any]:
     report = _dimension_summary("Completeness", checks)
     report["overall_missing_cells"] = total_missing
     report["overall_completeness_pct"] = overall_completeness
-    logger.info(
-        "  Completeness: {}/{} checks passed", report["passed"], report["total_checks"]
-    )
+    logger.info("  Completeness: {}/{} checks passed", report["passed"], report["total_checks"])
     return report

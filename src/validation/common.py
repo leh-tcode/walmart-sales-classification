@@ -26,9 +26,7 @@ def _dtype_matches(series: pd.Series, expected: str) -> bool:
     if expected == "bool":
         return pd.api.types.is_bool_dtype(series)
     if expected == "string":
-        return pd.api.types.is_string_dtype(series) or pd.api.types.is_object_dtype(
-            series
-        )
+        return pd.api.types.is_string_dtype(series) or pd.api.types.is_object_dtype(series)
     return False
 
 
@@ -37,9 +35,7 @@ def _dimension_summary(dimension: str, checks: list[dict]) -> dict:
     warned = sum(1 for c in checks if c.get("status") == "WARN")
     failed = sum(1 for c in checks if c.get("status") == "FAIL")
     skipped = sum(1 for c in checks if c.get("status") == "SKIP")
-    overall = (
-        "PASS" if failed == 0 and warned == 0 else ("WARN" if failed == 0 else "FAIL")
-    )
+    overall = "PASS" if failed == 0 and warned == 0 else ("WARN" if failed == 0 else "FAIL")
     return {
         "dimension": dimension,
         "total_checks": len(checks),
