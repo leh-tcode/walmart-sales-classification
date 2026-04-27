@@ -4,21 +4,12 @@ from typing import Any
 import pandas as pd
 
 from src.utils.logger import logger
-from src.validation.checks import (
-    check_accuracy,
-    check_completeness,
-    check_consistency,
-    check_distribution_profile,
-    check_outliers,
-    check_relationships,
-    check_uniqueness,
-)
-from src.validation.constants import (
-    CSV_SUMMARY_PATH,
-    JSON_SUMMARY_PATH,
-    PROCESSED_DIR,
-    REPORT_PATH,
-)
+from src.validation.checks import (check_accuracy, check_completeness,
+                                   check_consistency,
+                                   check_distribution_profile, check_outliers,
+                                   check_relationships, check_uniqueness)
+from src.validation.constants import (CSV_SUMMARY_PATH, JSON_SUMMARY_PATH,
+                                      PROCESSED_DIR, REPORT_PATH)
 
 
 # ORCHESTRATOR

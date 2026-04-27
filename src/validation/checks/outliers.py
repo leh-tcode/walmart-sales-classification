@@ -6,11 +6,8 @@ from scipy import stats as scipy_stats
 
 from src.utils.logger import logger
 from src.validation.common import _iqr_bounds, _pct, _pf
-from src.validation.constants import (
-    IQR_MULTIPLIER,
-    OUTLIER_THRESHOLD_PCT,
-    ZSCORE_THRESHOLD,
-)
+from src.validation.constants import (IQR_MULTIPLIER, OUTLIER_THRESHOLD_PCT,
+                                      ZSCORE_THRESHOLD)
 
 
 # 5 ─ OUTLIER DETECTION

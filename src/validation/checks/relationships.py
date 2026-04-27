@@ -5,11 +5,9 @@ from scipy import stats as scipy_stats
 
 from src.utils.logger import logger
 from src.validation.common import _pf
-from src.validation.constants import (
-    EXPECTED_NEGATIVE_CORRELATIONS,
-    EXPECTED_POSITIVE_CORRELATIONS,
-    NUMERIC_COLS,
-)
+from src.validation.constants import (EXPECTED_NEGATIVE_CORRELATIONS,
+                                      EXPECTED_POSITIVE_CORRELATIONS,
+                                      NUMERIC_COLS)
 
 
 # 7 ─ RELATIONSHIPS
