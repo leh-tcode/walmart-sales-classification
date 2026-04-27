@@ -41,6 +41,7 @@ def clean_df():
 # helpers to dig into dimension reports
 
 
+
 def _find_check(report: dict, substring: str) -> dict | None:
     for c in report.get("checks", []):
         if substring.lower() in c.get("check", "").lower():
@@ -48,6 +49,7 @@ def _find_check(report: dict, substring: str) -> dict | None:
     return None
 
 
+# ══════════════════════════════════════════════════════════════
 # 1 ─ ACCURACY
 
 
