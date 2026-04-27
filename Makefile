@@ -13,6 +13,7 @@ validate:
 ## Run cleaning
 cleaning:
 	poetry run python -m src.cleaning.cleaning
+
 ## Run feature engineering
 features:
 	poetry run python -m src.features.feature_engineering
