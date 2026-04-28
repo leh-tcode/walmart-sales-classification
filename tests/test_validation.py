@@ -38,9 +38,7 @@ def clean_df():
     )
 
 
-# ══════════════════════════════════════════════════════════════
 # helpers to dig into dimension reports
-# ══════════════════════════════════════════════════════════════
 
 
 def _find_check(report: dict, substring: str) -> dict | None:
@@ -52,7 +50,6 @@ def _find_check(report: dict, substring: str) -> dict | None:
 
 # ══════════════════════════════════════════════════════════════
 # 1 ─ ACCURACY
-# ══════════════════════════════════════════════════════════════
 
 
 class TestCheckAccuracy:
