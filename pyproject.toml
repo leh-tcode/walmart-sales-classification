@@ -27,6 +27,7 @@ eli5 = "^0.16.0"
 xgboost = "^3.2.0"
 lxml = "^6.1.0"
 ruff = "^0.15.12"
+tdqm = "^0.0.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
