@@ -351,9 +351,9 @@ def render_sidebar(df):
         mask &= df["Store"].isin(selected_stores)
 
     if holiday_filter == "Holiday Only":
-        mask &= df["IsHoliday"] == True
+        mask &= df["IsHoliday"]
     elif holiday_filter == "Non-Holiday Only":
-        mask &= df["IsHoliday"] == False
+        mask &= not df["IsHoliday"]
 
     return df[mask]
 
@@ -413,7 +413,7 @@ def render_executive_summary(df, model_results):
     with c1:
         kpi_card(
             "Holiday Sales Lift",
-            f"+{((df[df['IsHoliday']==True]['Weekly_Sales'].mean() / df[df['IsHoliday']==False]['Weekly_Sales'].mean()) - 1) * 100:.1f}%",
+            f"+{((df[df['IsHoliday']]['Weekly_Sales'].mean() / df[not df['IsHoliday']]['Weekly_Sales'].mean()) - 1) * 100:.1f}%",
             "vs Non-Holiday",
             COLORS["danger"],
         )
@@ -449,8 +449,8 @@ def render_executive_summary(df, model_results):
     st.markdown("")
     insight_box(
         f"<b>Key Finding:</b> Store size is the strongest predictor of high sales weeks. "
-        f"Type A stores account for {df[df['Type']=='A']['Sales_Class'].mean()*100:.0f}% "
-        f"high-sales rate vs {df[df['Type']=='C']['Sales_Class'].mean()*100:.0f}% for Type C. "
+        f"Type A stores account for {df[df['Type'] == 'A']['Sales_Class'].mean() * 100:.0f}% "
+        f"high-sales rate vs {df[df['Type'] == 'C']['Sales_Class'].mean() * 100:.0f}% for Type C. "
         f"Holiday weeks see a significant sales lift, especially around Thanksgiving.",
         type="success",
     )
@@ -498,7 +498,7 @@ def render_sales_overview(df):
         )
 
         # Holiday markers
-        holidays = df[df["IsHoliday"] == True]["Date"].unique()
+        holidays = df[df["IsHoliday"]]["Date"].unique()
         for h in holidays[:20]:
             fig.add_vline(
                 x=h,
@@ -666,12 +666,12 @@ def render_sales_overview(df):
                 "Pre-Holiday": df[df.get("IsPreHoliday", pd.Series(0)) == 1][
                     "Weekly_Sales"
                 ].mean(),
-                "Holiday": df[df["IsHoliday"] == True]["Weekly_Sales"].mean(),
+                "Holiday": df[df["IsHoliday"]]["Weekly_Sales"].mean(),
                 "Post-Holiday": df[df.get("IsPostHoliday", pd.Series(0)) == 1][
                     "Weekly_Sales"
                 ].mean(),
                 "Regular": df[
-                    (df["IsHoliday"] == False)
+                    (not df["IsHoliday"])
                     & (df.get("IsPreHoliday", pd.Series(0)) == 0)
                     & (df.get("IsPostHoliday", pd.Series(0)) == 0)
                 ]["Weekly_Sales"].mean(),
@@ -780,7 +780,7 @@ def render_store_performance(df):
             lambda x: f"{x:,.0f} sqft"
         )
         type_table["High_Sales_Pct"] = type_table["High_Sales_Pct"].apply(
-            lambda x: f"{x*100:.1f}%"
+            lambda x: f"{x * 100:.1f}%"
         )
         st.dataframe(type_table, use_container_width=True)
 
@@ -1138,7 +1138,11 @@ def render_model_performance(model_results):
             medal = (
                 "🥇"
                 if rank == 1
-                else "🥈" if rank == 2 else "🥉" if rank == 3 else "  "
+                else "🥈"
+                if rank == 2
+                else "🥉"
+                if rank == 3
+                else "  "
             )
             st.markdown(
                 f"{medal} **{name}**  \n"
@@ -1231,8 +1235,8 @@ def render_recommendations(df, model_results):
                 "icon": "🏪",
                 "title": "Store Size Drives Sales",
                 "detail": (
-                    f"Type A stores (avg {df[df['Type']=='A']['Size'].mean():,.0f} sqft) "
-                    f"generate {df[df['Type']=='A']['Weekly_Sales'].mean()/df[df['Type']=='C']['Weekly_Sales'].mean():.1f}x "
+                    f"Type A stores (avg {df[df['Type'] == 'A']['Size'].mean():,.0f} sqft) "
+                    f"generate {df[df['Type'] == 'A']['Weekly_Sales'].mean() / df[df['Type'] == 'C']['Weekly_Sales'].mean():.1f}x "
                     f"more sales than Type C stores."
                 ),
             },
@@ -1241,7 +1245,7 @@ def render_recommendations(df, model_results):
                 "title": "Holiday Planning is Critical",
                 "detail": (
                     f"Holiday weeks see a "
-                    f"{((df[df['IsHoliday']==True]['Weekly_Sales'].mean()/df[df['IsHoliday']==False]['Weekly_Sales'].mean())-1)*100:.0f}% "
+                    f"{((df[df['IsHoliday']]['Weekly_Sales'].mean() / df[not df['IsHoliday']]['Weekly_Sales'].mean()) - 1) * 100:.0f}% "
                     f"sales increase. Pre-holiday weeks also show elevated demand."
                 ),
             },
@@ -1267,9 +1271,9 @@ def render_recommendations(df, model_results):
             st.markdown(
                 f"""
             <div style="background:#F8FAFC; border-radius:8px; padding:1rem; margin:0.5rem 0;
-                        border-left:3px solid {COLORS['primary']};">
-                <b>{f['icon']} {f['title']}</b><br>
-                <span style="color:#64748B; font-size:0.9rem;">{f['detail']}</span>
+                        border-left:3px solid {COLORS["primary"]};">
+                <b>{f["icon"]} {f["title"]}</b><br>
+                <span style="color:#64748B; font-size:0.9rem;">{f["detail"]}</span>
             </div>
             """,
                 unsafe_allow_html=True,
@@ -1318,11 +1322,11 @@ def render_recommendations(df, model_results):
             st.markdown(
                 f"""
             <div style="background:#F8FAFC; border-radius:8px; padding:1rem; margin:0.5rem 0;
-                        border-left:3px solid {a['color']};">
-                <span style="background:{a['color']}; color:white; padding:2px 8px;
-                             border-radius:4px; font-size:0.7rem; font-weight:600;">{a['priority']}</span>
-                <b style="margin-left:8px;">{a['action']}</b><br>
-                <span style="color:#64748B; font-size:0.9rem;">{a['detail']}</span>
+                        border-left:3px solid {a["color"]};">
+                <span style="background:{a["color"]}; color:white; padding:2px 8px;
+                             border-radius:4px; font-size:0.7rem; font-weight:600;">{a["priority"]}</span>
+                <b style="margin-left:8px;">{a["action"]}</b><br>
+                <span style="color:#64748B; font-size:0.9rem;">{a["detail"]}</span>
             </div>
             """,
                 unsafe_allow_html=True,
@@ -1349,7 +1353,7 @@ def main():
     # Load data
     try:
         df = load_eda_data()
-        dashboard_json = load_dashboard_json()
+        # dashboard_json = load_dashboard_json()
         model_results = load_model_results()
     except FileNotFoundError as e:
         st.error(f"Data file not found: {e}. Run the pipeline first.")
@@ -1362,7 +1366,7 @@ def main():
     if len(filtered_df) < len(df):
         st.info(
             f"🔍 Showing {len(filtered_df):,} of {len(df):,} records "
-            f"({len(filtered_df)/len(df)*100:.1f}%) based on filters"
+            f"({len(filtered_df) / len(df) * 100:.1f}%) based on filters"
         )
 
     # Navigation

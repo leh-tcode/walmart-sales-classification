@@ -40,7 +40,9 @@ def check_distribution_profile(df: pd.DataFrame) -> dict[str, Any]:
                 else (
                     "right_skewed"
                     if s.skew() > 1
-                    else "left_skewed" if s.skew() < -1 else "approximately_symmetric"
+                    else "left_skewed"
+                    if s.skew() < -1
+                    else "approximately_symmetric"
                 )
             ),
             "iqr_outlier_count": iqr_out,
@@ -61,7 +63,9 @@ def check_distribution_profile(df: pd.DataFrame) -> dict[str, Any]:
             "balance_flag": (
                 "highly_imbalanced"
                 if top_pct > 70
-                else "imbalanced" if top_pct > 50 else "balanced"
+                else "imbalanced"
+                if top_pct > 50
+                else "balanced"
             ),
         }
 

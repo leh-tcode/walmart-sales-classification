@@ -53,7 +53,6 @@ def _find_check(report: dict, substring: str) -> dict | None:
 
 
 class TestCheckAccuracy:
-
     def test_range_violation_detected(self, clean_df):
         from src.validation.validator import check_accuracy
 
@@ -125,7 +124,6 @@ class TestCheckAccuracy:
 
 
 class TestCheckCompleteness:
-
     def test_passes_on_clean_data(self, clean_df):
         from src.validation.validator import check_completeness
 
@@ -209,7 +207,6 @@ class TestCheckCompleteness:
 
 
 class TestCheckConsistency:
-
     def test_passes_on_clean_data(self, clean_df):
         from src.validation.validator import check_consistency
 
@@ -278,7 +275,6 @@ class TestCheckConsistency:
 
 
 class TestCheckUniqueness:
-
     def test_passes_on_unique_data(self, clean_df):
         from src.validation.validator import check_uniqueness
 
@@ -324,7 +320,6 @@ class TestCheckUniqueness:
 
 
 class TestCheckOutliers:
-
     def test_passes_on_clean_data(self, clean_df):
         from src.validation.validator import check_outliers
 
@@ -385,7 +380,6 @@ class TestCheckOutliers:
 
 
 class TestCheckDistributionProfile:
-
     def test_numeric_profiles_present(self, clean_df):
         from src.validation.validator import check_distribution_profile
 
@@ -456,7 +450,6 @@ class TestCheckDistributionProfile:
 
 
 class TestCheckRelationships:
-
     def test_structure_on_clean_data(self, clean_df):
         from src.validation.validator import check_relationships
 
@@ -513,7 +506,6 @@ class TestCheckRelationships:
 
 
 class TestRunValidation:
-
     def test_returns_all_dimensions(self, clean_df, tmp_path, monkeypatch):
         import src.validation.validator as validator
 

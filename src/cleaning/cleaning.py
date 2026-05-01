@@ -142,7 +142,7 @@ def clip_outliers(df: pd.DataFrame, report: dict) -> pd.DataFrame:
             "Clipping at 1st–99th percentile reduces extreme tail influence "
             "without removing rows or destroying distribution shape."
         ),
-        "strategy": f"Clip at P{CLIP_LOWER_PERCENTILE*100:.0f} and P{CLIP_UPPER_PERCENTILE*100:.0f}",
+        "strategy": f"Clip at P{CLIP_LOWER_PERCENTILE * 100:.0f} and P{CLIP_UPPER_PERCENTILE * 100:.0f}",
         "columns_affected": [],
         "details": {},
     }

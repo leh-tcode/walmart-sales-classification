@@ -566,6 +566,5 @@ def run_preprocessing(df: pd.DataFrame) -> dict[str, Any]:
 
 
 if __name__ == "__main__":
-
     featured_df = pd.read_csv(FEATURES_PATH, parse_dates=["Date"])
     outputs = run_preprocessing(featured_df)

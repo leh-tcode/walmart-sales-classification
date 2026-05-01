@@ -138,7 +138,7 @@ def plot_target_analysis(df: pd.DataFrame, report: dict) -> list[Path]:
         axes[0].text(
             bar.get_x() + bar.get_width() / 2,
             bar.get_height() + 1000,
-            f"{val:,}\n({val/len(df)*100:.1f}%)",
+            f"{val:,}\n({val / len(df) * 100:.1f}%)",
             ha="center",
             va="bottom",
             fontsize=10,

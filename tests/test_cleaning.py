@@ -2,10 +2,15 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.cleaning.cleaning import (CLIP_COLS, CLIP_LOWER_PERCENTILE,
-                                   CLIP_UPPER_PERCENTILE, MARKDOWN_COLS,
-                                   clip_outliers, handle_markdown_nulls,
-                                   handle_negative_sales)
+from src.cleaning.cleaning import (
+    CLIP_COLS,
+    CLIP_LOWER_PERCENTILE,
+    CLIP_UPPER_PERCENTILE,
+    MARKDOWN_COLS,
+    clip_outliers,
+    handle_markdown_nulls,
+    handle_negative_sales,
+)
 
 
 # Fixtures
@@ -65,7 +70,6 @@ def empty_report():
 
 # Step 1: MarkDown Nulls
 class TestHandleMarkdownNulls:
-
     def test_no_nulls_remaining(self, sample_df, empty_report):
         df = handle_markdown_nulls(sample_df.copy(), empty_report)
         for col in MARKDOWN_COLS:
@@ -91,13 +95,13 @@ class TestHandleMarkdownNulls:
         df = handle_markdown_nulls(sample_df.copy(), empty_report)
         for col in MARKDOWN_COLS:
             was_null = original[col].isna()
-            assert (
-                df.loc[was_null, f"has_{col}"] == 0
-            ).all(), f"has_{col} should be 0 where original was null"
+            assert (df.loc[was_null, f"has_{col}"] == 0).all(), (
+                f"has_{col} should be 0 where original was null"
+            )
             was_present = original[col].notna()
-            assert (
-                df.loc[was_present, f"has_{col}"] == 1
-            ).all(), f"has_{col} should be 1 where original had data"
+            assert (df.loc[was_present, f"has_{col}"] == 1).all(), (
+                f"has_{col} should be 1 where original had data"
+            )
 
     def test_filled_value_is_zero(self, sample_df, empty_report):
         original = sample_df.copy()
@@ -105,9 +109,7 @@ class TestHandleMarkdownNulls:
         for col in MARKDOWN_COLS:
             was_null = original[col].isna()
             filled_values = df.loc[was_null, col]
-            assert (
-                filled_values == 0.0
-            ).all(), (
+            assert (filled_values == 0.0).all(), (
                 f"{col}: nulls should be filled with 0, not {filled_values.unique()}"
             )
 
@@ -125,7 +127,6 @@ class TestHandleMarkdownNulls:
 
 # Step 2: Negative Sales
 class TestHandleNegativeSales:
-
     def test_is_return_flag_created(self, sample_df, empty_report):
         df = handle_negative_sales(sample_df.copy(), empty_report)
         assert "is_return" in df.columns
@@ -158,7 +159,6 @@ class TestHandleNegativeSales:
 
 # Step 3: Clip Outliers
 class TestClipOutliers:
-
     def test_values_within_clip_bounds(self, sample_df, empty_report):
         df = handle_markdown_nulls(sample_df.copy(), empty_report)
         report2 = {"steps": []}
@@ -179,12 +179,12 @@ class TestClipOutliers:
         for col in CLIP_COLS:
             if col not in df.columns:
                 continue
-            assert (
-                df[col].max() <= original[col].max()
-            ), f"{col}: max should not increase after clipping"
-            assert (
-                df[col].min() >= original[col].min()
-            ), f"{col}: min should not decrease after clipping"
+            assert df[col].max() <= original[col].max(), (
+                f"{col}: max should not increase after clipping"
+            )
+            assert df[col].min() >= original[col].min(), (
+                f"{col}: min should not decrease after clipping"
+            )
 
     def test_row_count_preserved(self, sample_df, empty_report):
         df = handle_markdown_nulls(sample_df.copy(), empty_report)
@@ -222,9 +222,9 @@ class TestClipOutliers:
                 continue
             skew_before = abs(original[col].skew())
             skew_after = abs(df[col].skew())
-            assert (
-                skew_after <= skew_before + 0.01
-            ), f"{col}: skewness should not increase after clipping"
+            assert skew_after <= skew_before + 0.01, (
+                f"{col}: skewness should not increase after clipping"
+            )
 
     def test_report_has_clip_bounds(self, sample_df, empty_report):
         df = handle_markdown_nulls(sample_df.copy(), empty_report)

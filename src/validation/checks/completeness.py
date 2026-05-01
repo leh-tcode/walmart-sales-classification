@@ -4,10 +4,12 @@ import pandas as pd
 
 from src.utils.logger import logger
 from src.validation.common import _dimension_summary, _pct, _pf
-from src.validation.constants import (COMPLETENESS_THRESHOLDS,
-                                      REQUIRED_COLUMNS,
-                                      SEVERE_COLUMN_MISSINGNESS_PCT,
-                                      SEVERE_ROW_MISSINGNESS_PCT)
+from src.validation.constants import (
+    COMPLETENESS_THRESHOLDS,
+    REQUIRED_COLUMNS,
+    SEVERE_COLUMN_MISSINGNESS_PCT,
+    SEVERE_ROW_MISSINGNESS_PCT,
+)
 
 
 # 2 ─ COMPLETENESS
