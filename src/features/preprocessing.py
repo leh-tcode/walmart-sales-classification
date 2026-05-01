@@ -6,7 +6,7 @@ import joblib
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, RobustScaler
+from sklearn.preprocessing import RobustScaler, StandardScaler
 
 from src.features.feature_engineering import FEATURES_PATH
 from src.utils.logger import logger
@@ -100,11 +100,7 @@ def prepare_eda_dataset(df: pd.DataFrame, report: dict) -> pd.DataFrame:
 
     if "Date" in eda.columns:
         eda["YearMonth"] = eda["Date"].dt.to_period("M").astype(str)
-        eda["YearWeek"] = (
-            eda["Date"].dt.isocalendar().year.astype(str)
-            + "-W"
-            + eda["Date"].dt.isocalendar().week.astype(str).str.zfill(2)
-        )
+        eda["YearWeek"] = eda["Date"].dt.isocalendar().year.astype(str) + "-W" + eda["Date"].dt.isocalendar().week.astype(str).str.zfill(2)
 
     eda["Sales_Label"] = eda[TARGET].map({0: "Low", 1: "High"})
 
@@ -199,9 +195,7 @@ def encode_categoricals(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     }
 
     report["steps"].append(step_report)
-    logger.info(
-        "  Encoded: {} columns | Dropped originals: {}", len(encoded_cols), cats_to_drop
-    )
+    logger.info("  Encoded: {} columns | Dropped originals: {}", len(encoded_cols), cats_to_drop)
     return df
 
 
@@ -287,11 +281,7 @@ def scale_features(
 
     all_cols = list(X_train.columns)
     no_scale = set(NO_SCALE_COLS) & set(all_cols)
-    scale_cols = [
-        c
-        for c in all_cols
-        if c not in no_scale and pd.api.types.is_numeric_dtype(X_train[c])
-    ]
+    scale_cols = [c for c in all_cols if c not in no_scale and pd.api.types.is_numeric_dtype(X_train[c])]
 
     logger.info("  Scaling {} of {} columns", len(scale_cols), len(all_cols))
     logger.info("  Not scaling {} columns (binary/ordinal/ID)", len(no_scale))
@@ -310,12 +300,8 @@ def scale_features(
 
     train_nulls = int(X_train_scaled.isna().sum().sum())
     test_nulls = int(X_test_scaled.isna().sum().sum())
-    train_inf = int(
-        np.isinf(X_train_scaled.select_dtypes(include=[np.number])).sum().sum()
-    )
-    test_inf = int(
-        np.isinf(X_test_scaled.select_dtypes(include=[np.number])).sum().sum()
-    )
+    train_inf = int(np.isinf(X_train_scaled.select_dtypes(include=[np.number])).sum().sum())
+    test_inf = int(np.isinf(X_test_scaled.select_dtypes(include=[np.number])).sum().sum())
 
     step_report = {
         "step": "Scale Numeric Features",
@@ -354,9 +340,7 @@ def save_feature_metadata(
 
     all_features = list(X_train.columns)
     numeric_features = list(X_train.select_dtypes(include=[np.number]).columns)
-    binary_features = [
-        c for c in numeric_features if set(X_train[c].unique()) <= {0, 1, 0.0, 1.0}
-    ]
+    binary_features = [c for c in numeric_features if set(X_train[c].unique()) <= {0, 1, 0.0, 1.0}]
     continuous_features = [c for c in numeric_features if c not in binary_features]
 
     metadata = {
@@ -508,11 +492,7 @@ def run_preprocessing(df: pd.DataFrame) -> dict[str, Any]:
 
     all_cols = list(X_train.columns)
     no_scale = set(NO_SCALE_COLS) & set(all_cols)
-    scale_cols = [
-        c
-        for c in all_cols
-        if c not in no_scale and pd.api.types.is_numeric_dtype(X_train[c])
-    ]
+    scale_cols = [c for c in all_cols if c not in no_scale and pd.api.types.is_numeric_dtype(X_train[c])]
 
     X_train, X_test, scaler = scale_features(X_train, X_test, report)
 
@@ -566,6 +546,5 @@ def run_preprocessing(df: pd.DataFrame) -> dict[str, Any]:
 
 
 if __name__ == "__main__":
-
     featured_df = pd.read_csv(FEATURES_PATH, parse_dates=["Date"])
     outputs = run_preprocessing(featured_df)
