@@ -3,14 +3,14 @@ import pandas as pd
 import pytest
 
 from src.features.feature_engineering import (
-    create_cyclical_features,
-    create_economic_features,
+    create_temporal_features,
     create_holiday_features,
-    create_interaction_features,
-    create_lag_features,
     create_promotion_features,
     create_store_dept_features,
-    create_temporal_features,
+    create_economic_features,
+    create_lag_features,
+    create_interaction_features,
+    create_cyclical_features,
     run_feature_engineering,
 )
 
@@ -61,6 +61,7 @@ def empty_report():
 
 # Group 1: Temporal
 class TestTemporalFeatures:
+
     def test_columns_created(self, sample_df, empty_report):
         df = create_temporal_features(sample_df.copy(), empty_report)
         expected = {
@@ -94,6 +95,7 @@ class TestTemporalFeatures:
 
 # Group 2: Holiday
 class TestHolidayFeatures:
+
     def test_columns_created(self, sample_df, empty_report):
         df = create_temporal_features(sample_df.copy(), empty_report)
         df = create_holiday_features(df, empty_report)
@@ -122,6 +124,7 @@ class TestHolidayFeatures:
 
 # Group 3: Promotion
 class TestPromotionFeatures:
+
     def test_columns_created(self, sample_df, empty_report):
         df = create_promotion_features(sample_df.copy(), empty_report)
         expected = {
@@ -144,6 +147,7 @@ class TestPromotionFeatures:
 
 # Group 4: Store & Dept
 class TestStoreDeptFeatures:
+
     def test_columns_created(self, sample_df, empty_report):
         df = create_store_dept_features(sample_df.copy(), empty_report)
         expected = {
@@ -166,6 +170,7 @@ class TestStoreDeptFeatures:
 
 # Group 5: Economic
 class TestEconomicFeatures:
+
     def test_columns_created(self, sample_df, empty_report):
         df = create_economic_features(sample_df.copy(), empty_report)
         expected = {
@@ -190,6 +195,7 @@ class TestEconomicFeatures:
 
 # Group 6: Lag & Rolling
 class TestLagFeatures:
+
     def test_columns_created(self, sample_df, empty_report):
         df = create_lag_features(sample_df.copy(), empty_report)
         expected = {
@@ -207,7 +213,9 @@ class TestLagFeatures:
 
     def test_no_nulls_after_fill(self, sample_df, empty_report):
         df = create_lag_features(sample_df.copy(), empty_report)
-        lag_cols = [c for c in df.columns if c.startswith(("Lag_", "Rolling_", "Sales"))]
+        lag_cols = [
+            c for c in df.columns if c.startswith(("Lag_", "Rolling_", "Sales"))
+        ]
         lag_cols = [c for c in lag_cols if c != "Sales_Class" and c != "Weekly_Sales"]
         assert df[lag_cols].isna().sum().sum() == 0
 
@@ -218,6 +226,7 @@ class TestLagFeatures:
 
 # Group 7: Interactions
 class TestInteractionFeatures:
+
     def _prepare(self, sample_df, empty_report):
         df = create_temporal_features(sample_df.copy(), empty_report)
         df = create_holiday_features(df, empty_report)
@@ -255,6 +264,7 @@ class TestInteractionFeatures:
 
 # Group 8: Cyclical
 class TestCyclicalFeatures:
+
     def test_columns_created(self, sample_df, empty_report):
         df = create_temporal_features(sample_df.copy(), empty_report)
         df = create_cyclical_features(df, empty_report)
@@ -270,6 +280,7 @@ class TestCyclicalFeatures:
 
 # Full Pipeline
 class TestFullPipeline:
+
     def test_no_rows_dropped(self, sample_df):
         result = run_feature_engineering(sample_df.copy())
         assert len(result) == len(sample_df)
