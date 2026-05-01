@@ -207,9 +207,7 @@ class TestLagFeatures:
 
     def test_no_nulls_after_fill(self, sample_df, empty_report):
         df = create_lag_features(sample_df.copy(), empty_report)
-        lag_cols = [
-            c for c in df.columns if c.startswith(("Lag_", "Rolling_", "Sales"))
-        ]
+        lag_cols = [c for c in df.columns if c.startswith(("Lag_", "Rolling_", "Sales"))]
         lag_cols = [c for c in lag_cols if c != "Sales_Class" and c != "Weekly_Sales"]
         assert df[lag_cols].isna().sum().sum() == 0
 

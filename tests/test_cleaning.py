@@ -36,21 +36,11 @@ def sample_df():
             "Size": np.random.randint(34000, 220000, size=n),
             "Temperature": np.random.normal(60, 18, n),
             "Fuel_Price": np.random.uniform(2.5, 4.5, n),
-            "MarkDown1": np.where(
-                np.random.random(n) > 0.65, np.random.uniform(100, 30000, n), np.nan
-            ),
-            "MarkDown2": np.where(
-                np.random.random(n) > 0.74, np.random.uniform(10, 20000, n), np.nan
-            ),
-            "MarkDown3": np.where(
-                np.random.random(n) > 0.68, np.random.uniform(1, 5000, n), np.nan
-            ),
-            "MarkDown4": np.where(
-                np.random.random(n) > 0.68, np.random.uniform(1, 10000, n), np.nan
-            ),
-            "MarkDown5": np.where(
-                np.random.random(n) > 0.64, np.random.uniform(100, 40000, n), np.nan
-            ),
+            "MarkDown1": np.where(np.random.random(n) > 0.65, np.random.uniform(100, 30000, n), np.nan),
+            "MarkDown2": np.where(np.random.random(n) > 0.74, np.random.uniform(10, 20000, n), np.nan),
+            "MarkDown3": np.where(np.random.random(n) > 0.68, np.random.uniform(1, 5000, n), np.nan),
+            "MarkDown4": np.where(np.random.random(n) > 0.68, np.random.uniform(1, 10000, n), np.nan),
+            "MarkDown5": np.where(np.random.random(n) > 0.64, np.random.uniform(100, 40000, n), np.nan),
             "CPI": np.random.uniform(126, 228, n),
             "Unemployment": np.random.uniform(4, 14, n),
             "UMCSENT": np.random.uniform(55, 83, n),

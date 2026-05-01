@@ -61,9 +61,7 @@ def _log_standard_merge(
             null_introduced_by_column[col] = null_count
 
     if right_added_cols:
-        rows_with_any_new_nulls = int(
-            merged_df[right_added_cols].isna().any(axis=1).sum()
-        )
+        rows_with_any_new_nulls = int(merged_df[right_added_cols].isna().any(axis=1).sum())
 
     logger.info(
         "{} — rows before: {:,}, rows after: {:,}, delta: {:+,}",
@@ -161,9 +159,7 @@ def load_walmart_data(merge_report: dict[str, Any] | None = None) -> pd.DataFram
     for name, path in required_files.items():
         if not path.exists():
             raise FileNotFoundError(
-                f"Missing required file: {path}\n"
-                f"Download from: https://www.kaggle.com/competitions/"
-                f"walmart-recruiting-store-sales-forecasting/data"
+                f"Missing required file: {path}\nDownload from: https://www.kaggle.com/competitions/walmart-recruiting-store-sales-forecasting/data"
             )
 
     train_df = pd.read_csv(required_files["train"], parse_dates=["Date"])
@@ -210,9 +206,7 @@ def load_walmart_data(merge_report: dict[str, Any] | None = None) -> pd.DataFram
 
     logger.info("After merging features: {} rows, {} columns", *df.shape)
 
-    feature_added_cols = [
-        col for col in features_df.columns if col not in {"Store", "Date", "IsHoliday"}
-    ]
+    feature_added_cols = [col for col in features_df.columns if col not in {"Store", "Date", "IsHoliday"}]
     feature_merge_stats = _log_standard_merge(
         train_stores_df,
         features_df,
@@ -227,9 +221,7 @@ def load_walmart_data(merge_report: dict[str, Any] | None = None) -> pd.DataFram
     _save_intermediate(df, "walmart_internal_merged.csv")
 
     if merge_report is not None:
-        merge_report.setdefault("merge_steps", []).extend(
-            [store_merge_stats, feature_merge_stats]
-        )
+        merge_report.setdefault("merge_steps", []).extend([store_merge_stats, feature_merge_stats])
 
     return df
 
@@ -237,8 +229,7 @@ def load_walmart_data(merge_report: dict[str, Any] | None = None) -> pd.DataFram
 def fetch_fred_series(series_id: str, retries: int = 3) -> pd.DataFrame:
     if not FRED_API_KEY or FRED_API_KEY == "your_fred_api_key_here":
         raise EnvironmentError(
-            "FRED_API_KEY is not set. Please add it to your .env file.\n"
-            "Get a free key at: https://fred.stlouisfed.org/docs/api/api_key.html"
+            "FRED_API_KEY is not set. Please add it to your .env file.\nGet a free key at: https://fred.stlouisfed.org/docs/api/api_key.html"
         )
 
     params = {
@@ -249,9 +240,7 @@ def fetch_fred_series(series_id: str, retries: int = 3) -> pd.DataFrame:
         "observation_end": WALMART_DATE_END,
     }
 
-    logger.info(
-        "Fetching FRED series: {} ({})", series_id, FRED_SERIES.get(series_id, "")
-    )
+    logger.info("Fetching FRED series: {} ({})", series_id, FRED_SERIES.get(series_id, ""))
 
     for attempt in range(1, retries + 1):
         try:
@@ -259,9 +248,7 @@ def fetch_fred_series(series_id: str, retries: int = 3) -> pd.DataFrame:
             response.raise_for_status()
             break
         except requests.RequestException as exc:
-            logger.warning(
-                "Attempt {}/{} failed for {}: {}", attempt, retries, series_id, exc
-            )
+            logger.warning("Attempt {}/{} failed for {}: {}", attempt, retries, series_id, exc)
             if attempt == retries:
                 raise
             time.sleep(2**attempt)
@@ -288,9 +275,7 @@ def fetch_fred_series(series_id: str, retries: int = 3) -> pd.DataFrame:
 
 
 def fetch_all_fred_series() -> pd.DataFrame:
-    logger.info(
-        "Fetching {} FRED series: {}", len(FRED_SERIES), list(FRED_SERIES.keys())
-    )
+    logger.info("Fetching {} FRED series: {}", len(FRED_SERIES), list(FRED_SERIES.keys()))
 
     combined = None
     for series_id in FRED_SERIES:
@@ -341,12 +326,8 @@ def merge_walmart_fred(
 
     fred_cols = [c for c in fred_df.columns if c != "Date"]
     unmatched_rows = int(merged[fred_cols].isna().all(axis=1).sum()) if fred_cols else 0
-    rows_with_any_fred_null = (
-        int(merged[fred_cols].isna().any(axis=1).sum()) if fred_cols else 0
-    )
-    null_introduced_by_column = {
-        col: int(merged[col].isna().sum()) for col in fred_cols if col in merged.columns
-    }
+    rows_with_any_fred_null = int(merged[fred_cols].isna().any(axis=1).sum()) if fred_cols else 0
+    null_introduced_by_column = {col: int(merged[col].isna().sum()) for col in fred_cols if col in merged.columns}
 
     logger.info(
         "Merge 3 — unmatched Walmart rows (no FRED match): {:,}",
@@ -407,9 +388,7 @@ def run_acquisition_pipeline() -> pd.DataFrame:
     report: dict[str, Any] = {"merge_steps": [], "artifacts": []}
 
     walmart_df = load_walmart_data(merge_report=report)
-    report["artifacts"].append(
-        str(INTERMEDIATE_DIR / "walmart_train_stores_merged.csv")
-    )
+    report["artifacts"].append(str(INTERMEDIATE_DIR / "walmart_train_stores_merged.csv"))
     report["artifacts"].append(str(INTERMEDIATE_DIR / "walmart_internal_merged.csv"))
 
     fred_df = fetch_all_fred_series()

@@ -88,9 +88,7 @@ def check_distribution_profile(df: pd.DataFrame) -> dict[str, Any]:
                     "check": "Class imbalance ratio < 2.0",
                     "imbalance_ratio": imbalance,
                     "class_counts": dist.to_dict(),
-                    "class_pct": (df["Sales_Class"].value_counts(normalize=True) * 100)
-                    .round(2)
-                    .to_dict(),
+                    "class_pct": (df["Sales_Class"].value_counts(normalize=True) * 100).round(2).to_dict(),
                     "is_balanced": imbalance < 1.5,
                     "status": _pf(imbalance < 2.0),
                 }
@@ -142,7 +140,5 @@ def check_distribution_profile(df: pd.DataFrame) -> dict[str, Any]:
         "checks": sanity_checks,
     }
 
-    logger.info(
-        "  Distribution Profile: {}/{} sanity checks passed", passed, len(sanity_checks)
-    )
+    logger.info("  Distribution Profile: {}/{} sanity checks passed", passed, len(sanity_checks))
     return report

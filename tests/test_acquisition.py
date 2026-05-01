@@ -77,9 +77,7 @@ def sample_fred_df():
 @pytest.fixture
 def sample_walmart_df(sample_train_df, sample_stores_df, sample_features_df):
     df = sample_train_df.merge(sample_stores_df, on="Store", how="left")
-    df = df.merge(
-        sample_features_df, on=["Store", "Date"], how="left", suffixes=("", "_feat")
-    )
+    df = df.merge(sample_features_df, on=["Store", "Date"], how="left", suffixes=("", "_feat"))
     df.drop(columns=["IsHoliday_feat"], inplace=True, errors="ignore")
     return df
 

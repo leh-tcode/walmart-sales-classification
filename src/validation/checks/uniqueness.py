@@ -57,7 +57,5 @@ def check_uniqueness(df: pd.DataFrame) -> dict[str, Any]:
         )
 
     report = _dimension_summary("Uniqueness", checks)
-    logger.info(
-        "  Uniqueness: {}/{} checks passed", report["passed"], report["total_checks"]
-    )
+    logger.info("  Uniqueness: {}/{} checks passed", report["passed"], report["total_checks"])
     return report

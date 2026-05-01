@@ -104,19 +104,12 @@ def handle_negative_sales(df: pd.DataFrame, report: dict) -> pd.DataFrame:
 
     step_report = {
         "step": "Handle Negative Weekly_Sales",
-        "reason": (
-            "Negative values represent product returns/refunds — "
-            "a normal part of retail operations."
-        ),
+        "reason": ("Negative values represent product returns/refunds — a normal part of retail operations."),
         "strategy": "Keep as-is + create binary 'is_return' flag",
         "negative_rows": neg_count,
         "negative_pct": neg_pct,
         "min_value": round(float(df["Weekly_Sales"].min()), 2),
-        "max_negative": (
-            round(float(df.loc[negative_mask, "Weekly_Sales"].max()), 2)
-            if neg_count > 0
-            else None
-        ),
+        "max_negative": (round(float(df.loc[negative_mask, "Weekly_Sales"].max()), 2) if neg_count > 0 else None),
         "action_taken": "No values modified — domain-valid negative sales retained",
         "flag_column_created": "is_return",
     }
@@ -197,8 +190,7 @@ def clip_outliers(df: pd.DataFrame, report: dict) -> pd.DataFrame:
         }
 
         logger.info(
-            "  {} — clipped {:,} values | skew: {:.2f} → {:.2f} | "
-            "range: [{:.0f}, {:.0f}] → [{:.0f}, {:.0f}]",
+            "  {} — clipped {:,} values | skew: {:.2f} → {:.2f} | range: [{:.0f}, {:.0f}] → [{:.0f}, {:.0f}]",
             col,
             total_clipped,
             skew_before,
@@ -226,11 +218,7 @@ def post_cleaning_validation(df: pd.DataFrame, report: dict) -> pd.DataFrame:
             "check": "No remaining null values",
             "total_nulls": total_nulls,
             "status": "PASS" if total_nulls == 0 else "WARN",
-            "columns_with_nulls": {
-                col: int(df[col].isna().sum())
-                for col in df.columns
-                if df[col].isna().sum() > 0
-            },
+            "columns_with_nulls": {col: int(df[col].isna().sum()) for col in df.columns if df[col].isna().sum() > 0},
         }
     )
 
@@ -338,8 +326,7 @@ def _generate_cleaning_summary(
             "new_columns": sorted(set(df_after.columns) - set(df_before.columns)),
             "null_cells_resolved": null_before - null_after,
             "completeness_improvement_pct": round(
-                (1 - null_after / df_after.size) * 100
-                - (1 - null_before / df_before.size) * 100,
+                (1 - null_after / df_after.size) * 100 - (1 - null_before / df_before.size) * 100,
                 2,
             ),
         },
@@ -375,8 +362,7 @@ def _save_text_report(report: dict) -> None:
             f"Nulls: {after.get('total_null_cells', '?'):,}  |  "
             f"Completeness: {after.get('completeness_pct', '?')}%",
             f"  Rows removed: {changes.get('rows_removed', 0)}",
-            f"  Columns added: {changes.get('columns_added', 0)} "
-            f"({changes.get('new_columns', [])})",
+            f"  Columns added: {changes.get('columns_added', 0)} ({changes.get('new_columns', [])})",
             f"  Null cells resolved: {changes.get('null_cells_resolved', 0):,}",
             "",
         ]

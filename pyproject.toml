@@ -31,7 +31,18 @@ pytest-cov = "^5.0.0"
 black = "^24.0.0"
 flake8 = "^7.0.0"
 isort = "^5.13.0"
+pre-commit = "^4.6.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 150
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]  # errors, flakes, import sorting
+
+[tool.ruff.format]
+quote-style = "double"
