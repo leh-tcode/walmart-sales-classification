@@ -17,7 +17,7 @@ python = ">=3.10,<3.14"
 [tool.poetry.group.dashboard.dependencies]
 streamlit = "^1.56.0"
 pandas = "^2.2.0"
-numpy = "^2.1.0"
+numpy = "^2.1"
 plotly = "^6.7.0"
 
 [tool.poetry.group.training.dependencies]
