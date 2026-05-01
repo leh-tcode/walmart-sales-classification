@@ -85,13 +85,9 @@ class TestHandleMarkdownNulls:
         df = handle_markdown_nulls(sample_df.copy(), empty_report)
         for col in MARKDOWN_COLS:
             was_null = original[col].isna()
-            assert (df.loc[was_null, f"has_{col}"] == 0).all(), (
-                f"has_{col} should be 0 where original was null"
-            )
+            assert (df.loc[was_null, f"has_{col}"] == 0).all(), f"has_{col} should be 0 where original was null"
             was_present = original[col].notna()
-            assert (df.loc[was_present, f"has_{col}"] == 1).all(), (
-                f"has_{col} should be 1 where original had data"
-            )
+            assert (df.loc[was_present, f"has_{col}"] == 1).all(), f"has_{col} should be 1 where original had data"
 
     def test_filled_value_is_zero(self, sample_df, empty_report):
         original = sample_df.copy()
@@ -99,9 +95,7 @@ class TestHandleMarkdownNulls:
         for col in MARKDOWN_COLS:
             was_null = original[col].isna()
             filled_values = df.loc[was_null, col]
-            assert (filled_values == 0.0).all(), (
-                f"{col}: nulls should be filled with 0, not {filled_values.unique()}"
-            )
+            assert (filled_values == 0.0).all(), f"{col}: nulls should be filled with 0, not {filled_values.unique()}"
 
     def test_existing_values_untouched(self, sample_df, empty_report):
         original = sample_df.copy()
@@ -169,12 +163,8 @@ class TestClipOutliers:
         for col in CLIP_COLS:
             if col not in df.columns:
                 continue
-            assert df[col].max() <= original[col].max(), (
-                f"{col}: max should not increase after clipping"
-            )
-            assert df[col].min() >= original[col].min(), (
-                f"{col}: min should not decrease after clipping"
-            )
+            assert df[col].max() <= original[col].max(), f"{col}: max should not increase after clipping"
+            assert df[col].min() >= original[col].min(), f"{col}: min should not decrease after clipping"
 
     def test_row_count_preserved(self, sample_df, empty_report):
         df = handle_markdown_nulls(sample_df.copy(), empty_report)
@@ -212,9 +202,7 @@ class TestClipOutliers:
                 continue
             skew_before = abs(original[col].skew())
             skew_after = abs(df[col].skew())
-            assert skew_after <= skew_before + 0.01, (
-                f"{col}: skewness should not increase after clipping"
-            )
+            assert skew_after <= skew_before + 0.01, f"{col}: skewness should not increase after clipping"
 
     def test_report_has_clip_bounds(self, sample_df, empty_report):
         df = handle_markdown_nulls(sample_df.copy(), empty_report)

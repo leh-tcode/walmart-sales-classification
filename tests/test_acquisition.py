@@ -87,9 +87,7 @@ class TestCreateTargetVariable:
         from src.data.acquisition import create_target_variable
 
         df = create_target_variable(sample_walmart_df.copy())
-        assert set(df["Sales_Class"].unique()).issubset({0, 1}), (
-            "Sales_Class must only contain 0 or 1"
-        )
+        assert set(df["Sales_Class"].unique()).issubset({0, 1}), "Sales_Class must only contain 0 or 1"
 
     def test_store_specific_median(self, sample_walmart_df):
         from src.data.acquisition import create_target_variable
@@ -125,9 +123,7 @@ class TestMergeWalmartFred:
         from src.data.acquisition import merge_walmart_fred
 
         merged = merge_walmart_fred(sample_walmart_df, sample_fred_df)
-        assert len(merged) == len(sample_walmart_df), (
-            "merge_asof must not drop any Walmart rows"
-        )
+        assert len(merged) == len(sample_walmart_df), "merge_asof must not drop any Walmart rows"
 
     def test_fred_columns_present(self, sample_walmart_df, sample_fred_df):
         from src.data.acquisition import merge_walmart_fred
@@ -141,9 +137,7 @@ class TestMergeWalmartFred:
 
         merged = merge_walmart_fred(sample_walmart_df, sample_fred_df)
         feb_5_row = merged[merged["Date"] == pd.Timestamp("2010-02-05")].iloc[0]
-        assert feb_5_row["UMCSENT"] == 73.6, (
-            "Backward merge should assign February FRED value to Feb 5 Walmart row"
-        )
+        assert feb_5_row["UMCSENT"] == 73.6, "Backward merge should assign February FRED value to Feb 5 Walmart row"
 
     def test_no_future_fred_values(self, sample_walmart_df, sample_fred_df):
         from src.data.acquisition import merge_walmart_fred
@@ -200,6 +194,4 @@ class TestFetchFredSeries:
         with patch("requests.get", return_value=mock_response):
             result = acq.fetch_fred_series("UMCSENT")
 
-        assert pd.isna(result["UMCSENT"].iloc[0]), (
-            "FRED '.' missing value must be converted to NaN"
-        )
+        assert pd.isna(result["UMCSENT"].iloc[0]), "FRED '.' missing value must be converted to NaN"

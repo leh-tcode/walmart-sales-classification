@@ -168,55 +168,8 @@ def load_model_results():
     if MODEL_RESULTS_PATH.exists():
         with open(MODEL_RESULTS_PATH) as f:
             return json.load(f)
-    return {
-        "models": {
-            "Random Forest": {
-                "accuracy": 0.923,
-                "precision": 0.918,
-                "recall": 0.930,
-                "f1": 0.924,
-                "roc_auc": 0.974,
-                "train_time_seconds": 45.2,
-            },
-            "XGBoost": {
-                "accuracy": 0.935,
-                "precision": 0.931,
-                "recall": 0.940,
-                "f1": 0.935,
-                "roc_auc": 0.981,
-                "train_time_seconds": 32.1,
-            },
-            "Logistic Regression": {
-                "accuracy": 0.782,
-                "precision": 0.775,
-                "recall": 0.795,
-                "f1": 0.785,
-                "roc_auc": 0.862,
-                "train_time_seconds": 3.4,
-            },
-            "LightGBM": {
-                "accuracy": 0.938,
-                "precision": 0.934,
-                "recall": 0.943,
-                "f1": 0.938,
-                "roc_auc": 0.983,
-                "train_time_seconds": 18.7,
-            },
-        },
-        "best_model": "LightGBM",
-        "feature_importance": {
-            "Size": 0.142,
-            "Lag_Sales_1w": 0.128,
-            "Rolling_Mean_4w": 0.095,
-            "TotalMarkDown": 0.067,
-            "Temperature": 0.058,
-            "Dept": 0.055,
-            "EconIndex": 0.048,
-            "Unemployment": 0.042,
-            "Month": 0.038,
-            "HolidayProximity": 0.035,
-        },
-    }
+    st.error(f"Model results file not found at {MODEL_RESULTS_PATH}")
+    return {}
 
 
 # Component Helpers
@@ -284,8 +237,7 @@ def render_sidebar(df):
     """Render sidebar with filters."""
     with st.sidebar:
         st.image(
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/"
-            "Walmart_logo.svg/1280px-Walmart_logo.svg.png",
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Walmart_logo.svg/1280px-Walmart_logo.svg.png",
             width=180,
         )
         st.markdown("---")
@@ -331,8 +283,7 @@ def render_sidebar(df):
 
         st.markdown("---")
         st.markdown(
-            "<p style='text-align:center; color:#94A3B8; font-size:0.75rem;'>"
-            "Built with Streamlit • 2024</p>",
+            "<p style='text-align:center; color:#94A3B8; font-size:0.75rem;'>Built with Streamlit • 2024</p>",
             unsafe_allow_html=True,
         )
 
@@ -340,9 +291,7 @@ def render_sidebar(df):
     mask = pd.Series(True, index=df.index)
 
     if len(date_range) == 2:
-        mask &= (df["Date"].dt.date >= date_range[0]) & (
-            df["Date"].dt.date <= date_range[1]
-        )
+        mask &= (df["Date"].dt.date >= date_range[0]) & (df["Date"].dt.date <= date_range[1])
 
     if store_types:
         mask &= df["Type"].isin(store_types)
@@ -389,9 +338,7 @@ def render_executive_summary(df, model_results):
         )
     with c4:
         best_model = model_results.get("best_model", "N/A")
-        best_acc = (
-            model_results.get("models", {}).get(best_model, {}).get("accuracy", 0)
-        )
+        best_acc = model_results.get("models", {}).get(best_model, {}).get("accuracy", 0)
         kpi_card(
             "Best Model Accuracy",
             f"{best_acc:.1%}",
@@ -413,17 +360,13 @@ def render_executive_summary(df, model_results):
     with c1:
         kpi_card(
             "Holiday Sales Lift",
-            f"+{((df[df['IsHoliday']]['Weekly_Sales'].mean() / df[not df['IsHoliday']]['Weekly_Sales'].mean()) - 1) * 100:.1f}%",
+            f"+{((df[df['IsHoliday']]['Weekly_Sales'].mean() / df[~df['IsHoliday']]['Weekly_Sales'].mean()) - 1) * 100:.1f}%",
             "vs Non-Holiday",
             COLORS["danger"],
         )
     with c2:
         if "HasAnyMarkDown" in df.columns:
-            promo_lift = (
-                df[df["HasAnyMarkDown"] == 1]["Weekly_Sales"].mean()
-                / df[df["HasAnyMarkDown"] == 0]["Weekly_Sales"].mean()
-                - 1
-            ) * 100
+            promo_lift = (df[df["HasAnyMarkDown"] == 1]["Weekly_Sales"].mean() / df[df["HasAnyMarkDown"] == 0]["Weekly_Sales"].mean() - 1) * 100
             kpi_card(
                 "Promotion Lift",
                 f"+{promo_lift:.1f}%",
@@ -460,9 +403,7 @@ def render_executive_summary(df, model_results):
 def render_sales_overview(df):
     section_header("Sales Overview & Trends", "📈")
 
-    tab1, tab2, tab3 = st.tabs(
-        ["📈 Time Series", "📅 Seasonality", "🎄 Holiday Impact"]
-    )
+    tab1, tab2, tab3 = st.tabs(["📈 Time Series", "📅 Seasonality", "🎄 Holiday Impact"])
 
     with tab1:
         # Weekly sales trend
@@ -522,9 +463,7 @@ def render_sales_overview(df):
             col=1,
         )
 
-        fig.add_hline(
-            y=50, line_dash="dash", line_color="gray", opacity=0.5, row=2, col=1
-        )
+        fig.add_hline(y=50, line_dash="dash", line_color="gray", opacity=0.5, row=2, col=1)
 
         fig = clean_layout(fig, height=550)
         fig.update_yaxes(title_text="Sales ($)", row=1, col=1)
@@ -532,8 +471,7 @@ def render_sales_overview(df):
         st.plotly_chart(fig, use_container_width=True, config=plotly_config())
 
         insight_box(
-            "Red dotted lines indicate holiday weeks. Notice the consistent spikes "
-            "around Thanksgiving (Nov) and the end-of-year holiday season."
+            "Red dotted lines indicate holiday weeks. Notice the consistent spikes around Thanksgiving (Nov) and the end-of-year holiday season."
         )
 
     with tab2:
@@ -554,10 +492,7 @@ def render_sales_overview(df):
                 go.Bar(
                     x=monthly["Month"],
                     y=monthly["avg_sales"],
-                    marker_color=[
-                        COLORS["danger"] if m in [11, 12] else COLORS["primary"]
-                        for m in monthly["Month"]
-                    ],
+                    marker_color=[COLORS["danger"] if m in [11, 12] else COLORS["primary"] for m in monthly["Month"]],
                     text=[f"${v:,.0f}" for v in monthly["avg_sales"]],
                     textposition="outside",
                     name="Avg Sales",
@@ -648,10 +583,7 @@ def render_sales_overview(df):
                         x=holiday_data["avg_sales"],
                         y=holiday_data["HolidayName"],
                         orientation="h",
-                        marker_color=[
-                            COLORS["danger"] if n != "None" else COLORS["light"]
-                            for n in holiday_data["HolidayName"]
-                        ],
+                        marker_color=[COLORS["danger"] if n != "None" else COLORS["light"] for n in holiday_data["HolidayName"]],
                         text=[f"${v:,.0f}" for v in holiday_data["avg_sales"]],
                         textposition="outside",
                     )
@@ -663,18 +595,12 @@ def render_sales_overview(df):
         with c2:
             # Pre / During / Post holiday
             period_data = {
-                "Pre-Holiday": df[df.get("IsPreHoliday", pd.Series(0)) == 1][
-                    "Weekly_Sales"
-                ].mean(),
+                "Pre-Holiday": df[df.get("IsPreHoliday", pd.Series(0)) == 1]["Weekly_Sales"].mean(),
                 "Holiday": df[df["IsHoliday"]]["Weekly_Sales"].mean(),
-                "Post-Holiday": df[df.get("IsPostHoliday", pd.Series(0)) == 1][
+                "Post-Holiday": df[df.get("IsPostHoliday", pd.Series(0)) == 1]["Weekly_Sales"].mean(),
+                "Regular": df[(not df["IsHoliday"]) & (df.get("IsPreHoliday", pd.Series(0)) == 0) & (df.get("IsPostHoliday", pd.Series(0)) == 0)][
                     "Weekly_Sales"
                 ].mean(),
-                "Regular": df[
-                    (not df["IsHoliday"])
-                    & (df.get("IsPreHoliday", pd.Series(0)) == 0)
-                    & (df.get("IsPostHoliday", pd.Series(0)) == 0)
-                ]["Weekly_Sales"].mean(),
             }
             period_data = {k: v for k, v in period_data.items() if pd.notna(v)}
 
@@ -692,9 +618,7 @@ def render_sales_overview(df):
                     textposition="outside",
                 )
             )
-            fig.update_layout(
-                title="Sales by Holiday Period Phase", yaxis_title="Avg Sales ($)"
-            )
+            fig.update_layout(title="Sales by Holiday Period Phase", yaxis_title="Avg Sales ($)")
             fig = clean_layout(fig)
             st.plotly_chart(fig, use_container_width=True, config=plotly_config())
 
@@ -773,15 +697,9 @@ def render_store_performance(df):
             .round(2)
         )
         type_table["Avg_Sales"] = type_table["Avg_Sales"].apply(lambda x: f"${x:,.0f}")
-        type_table["Median_Sales"] = type_table["Median_Sales"].apply(
-            lambda x: f"${x:,.0f}"
-        )
-        type_table["Avg_Size"] = type_table["Avg_Size"].apply(
-            lambda x: f"{x:,.0f} sqft"
-        )
-        type_table["High_Sales_Pct"] = type_table["High_Sales_Pct"].apply(
-            lambda x: f"{x * 100:.1f}%"
-        )
+        type_table["Median_Sales"] = type_table["Median_Sales"].apply(lambda x: f"${x:,.0f}")
+        type_table["Avg_Size"] = type_table["Avg_Size"].apply(lambda x: f"{x:,.0f} sqft")
+        type_table["High_Sales_Pct"] = type_table["High_Sales_Pct"].apply(lambda x: f"{x * 100:.1f}%")
         st.dataframe(type_table, use_container_width=True)
 
     with tab2:
@@ -881,9 +799,7 @@ def render_promotion_analysis(df):
                 )
                 .reset_index()
             )
-            promo_data["Label"] = promo_data["HasAnyMarkDown"].map(
-                {0: "No Promotion", 1: "Has Promotion"}
-            )
+            promo_data["Label"] = promo_data["HasAnyMarkDown"].map({0: "No Promotion", 1: "Has Promotion"})
 
             fig = go.Figure(
                 go.Bar(
@@ -894,17 +810,13 @@ def render_promotion_analysis(df):
                     textposition="outside",
                 )
             )
-            fig.update_layout(
-                title="Average Sales: Promotion vs None", yaxis_title="Avg Sales ($)"
-            )
+            fig.update_layout(title="Average Sales: Promotion vs None", yaxis_title="Avg Sales ($)")
             fig = clean_layout(fig)
             st.plotly_chart(fig, use_container_width=True, config=plotly_config())
 
     with c2:
         if "ActiveMarkDownCount" in df.columns:
-            md_count = (
-                df.groupby("ActiveMarkDownCount")["Weekly_Sales"].mean().reset_index()
-            )
+            md_count = df.groupby("ActiveMarkDownCount")["Weekly_Sales"].mean().reset_index()
             fig = go.Figure(
                 go.Bar(
                     x=md_count["ActiveMarkDownCount"],
@@ -939,17 +851,13 @@ def render_promotion_analysis(df):
                 )
             )
             fig.add_hline(y=0, line_color="black", line_width=1)
-            fig.update_layout(
-                title="MarkDown Correlation with Sales", yaxis_title="Pearson r"
-            )
+            fig.update_layout(title="MarkDown Correlation with Sales", yaxis_title="Pearson r")
             fig = clean_layout(fig)
             st.plotly_chart(fig, use_container_width=True, config=plotly_config())
 
     with c2:
         if "HasAnyMarkDown" in df.columns:
-            promo_type = (
-                df.groupby(["Type", "HasAnyMarkDown"])["Weekly_Sales"].mean().unstack()
-            )
+            promo_type = df.groupby(["Type", "HasAnyMarkDown"])["Weekly_Sales"].mean().unstack()
             promo_type.columns = ["No Promo", "Has Promo"]
 
             fig = go.Figure()
@@ -993,13 +901,7 @@ def render_feature_analysis(df):
 
     with tab1:
         # Feature selector
-        numeric_cols = sorted(
-            [
-                c
-                for c in df.select_dtypes(include=[np.number]).columns
-                if c not in ["Store", "Dept", "Sales_Class"]
-            ]
-        )
+        numeric_cols = sorted([c for c in df.select_dtypes(include=[np.number]).columns if c not in ["Store", "Dept", "Sales_Class"]])
 
         selected_feature = st.selectbox("Select Feature", numeric_cols, index=0)
 
@@ -1070,9 +972,7 @@ def render_feature_analysis(df):
 
         # Target correlation ranking
         st.markdown("##### Feature Correlation with Target (Sales_Class)")
-        target_corr = (
-            df[numeric_cols + ["Sales_Class"]].corr()["Sales_Class"].drop("Sales_Class")
-        )
+        target_corr = df[numeric_cols + ["Sales_Class"]].corr()["Sales_Class"].drop("Sales_Class")
         target_corr = target_corr.sort_values(ascending=False)
 
         fig = go.Figure(
@@ -1080,10 +980,7 @@ def render_feature_analysis(df):
                 x=target_corr.values,
                 y=target_corr.index,
                 orientation="h",
-                marker_color=[
-                    COLORS["success"] if v > 0 else COLORS["danger"]
-                    for v in target_corr
-                ],
+                marker_color=[COLORS["success"] if v > 0 else COLORS["danger"] for v in target_corr],
             )
         )
         fig.update_layout(title="All Features vs Target Correlation")
@@ -1135,20 +1032,8 @@ def render_model_performance(model_results):
         st.markdown("##### 🏆 Model Rankings")
         rankings = sorted(models.items(), key=lambda x: x[1].get("f1", 0), reverse=True)
         for rank, (name, data) in enumerate(rankings, 1):
-            medal = (
-                "🥇"
-                if rank == 1
-                else "🥈"
-                if rank == 2
-                else "🥉"
-                if rank == 3
-                else "  "
-            )
-            st.markdown(
-                f"{medal} **{name}**  \n"
-                f"F1: `{data.get('f1', 0):.3f}` | "
-                f"AUC: `{data.get('roc_auc', 0):.3f}`"
-            )
+            medal = "🥇" if rank == 1 else "🥈" if rank == 2 else "🥉" if rank == 3 else "  "
+            st.markdown(f"{medal} **{name}**  \nF1: `{data.get('f1', 0):.3f}` | AUC: `{data.get('roc_auc', 0):.3f}`")
             st.progress(data.get("f1", 0))
 
     # Detailed metrics table
@@ -1179,43 +1064,37 @@ def render_model_performance(model_results):
         )
         .format(
             "{:.1f}s",
-            subset=(
-                ["Train Time Seconds"]
-                if "Train Time Seconds" in metrics_df.columns
-                else []
-            ),
+            subset=(["Train Time Seconds"] if "Train Time Seconds" in metrics_df.columns else []),
         ),
         use_container_width=True,
     )
 
     # Feature importance
-    feat_imp = model_results.get("feature_importance", {})
-    if feat_imp:
-        st.markdown("##### Feature Importance (Best Model)")
-        imp_sorted = dict(sorted(feat_imp.items(), key=lambda x: x[1], reverse=True))
+    feat_imp_all_models = model_results.get("feature_importance", {})
+    if feat_imp_all_models and best_model and best_model in feat_imp_all_models:
+        feat_imp = feat_imp_all_models.get(best_model, {})
+        if feat_imp:
+            st.markdown(f"##### Feature Importance ({best_model})")
+            imp_sorted = dict(sorted(feat_imp.items(), key=lambda x: x[1], reverse=True))
 
-        fig = go.Figure(
-            go.Bar(
-                x=list(imp_sorted.values()),
-                y=list(imp_sorted.keys()),
-                orientation="h",
-                marker_color=COLORS["primary"],
-                text=[f"{v:.3f}" for v in imp_sorted.values()],
-                textposition="outside",
+            fig = go.Figure(
+                go.Bar(
+                    x=list(imp_sorted.values()),
+                    y=list(imp_sorted.keys()),
+                    orientation="h",
+                    marker_color=COLORS["primary"],
+                    text=[f"{v:.3f}" for v in imp_sorted.values()],
+                    textposition="outside",
+                )
             )
-        )
-        fig.update_layout(
-            title=f"Top Features — {best_model}",
-            xaxis_title="Importance Score",
-        )
-        fig = clean_layout(fig, height=max(300, 30 * len(imp_sorted)))
-        st.plotly_chart(fig, use_container_width=True, config=plotly_config())
+            fig.update_layout(title=f"Top Features — {best_model}", xaxis_title="Importance Score", yaxis={"categoryorder": "total ascending"})
+            fig = clean_layout(fig, height=max(300, 30 * len(imp_sorted)))
+            st.plotly_chart(fig, use_container_width=True, config=plotly_config())
 
     insight_box(
         f"<b>{best_model}</b> achieves the highest F1 score of "
         f"<b>{models.get(best_model, {}).get('f1', 0):.3f}</b>. "
-        f"Store Size and recent sales history (lag features) are the most "
-        f"important predictors, confirming our EDA findings.",
+        f"Feature importance analysis shows which factors are most predictive for the best model.",
         type="success",
     )
 
@@ -1245,24 +1124,8 @@ def render_recommendations(df, model_results):
                 "title": "Holiday Planning is Critical",
                 "detail": (
                     f"Holiday weeks see a "
-                    f"{((df[df['IsHoliday']]['Weekly_Sales'].mean() / df[not df['IsHoliday']]['Weekly_Sales'].mean()) - 1) * 100:.0f}% "
+                    f"{((df[df['IsHoliday']]['Weekly_Sales'].mean() / df[~df['IsHoliday']]['Weekly_Sales'].mean()) - 1) * 100:.0f}% "
                     f"sales increase. Pre-holiday weeks also show elevated demand."
-                ),
-            },
-            {
-                "icon": "🏷️",
-                "title": "Promotions Work — With Limits",
-                "detail": (
-                    "Promotional markdowns boost sales, but running more than 3 "
-                    "simultaneous promotions shows diminishing returns."
-                ),
-            },
-            {
-                "icon": "📈",
-                "title": "Past Sales Predict Future Sales",
-                "detail": (
-                    "Last week's sales (Lag_Sales_1w) and 4-week rolling average "
-                    "are among the strongest predictors of current performance."
                 ),
             },
         ]
@@ -1307,7 +1170,8 @@ def render_recommendations(df, model_results):
                 "action": "Deploy Predictive Model",
                 "detail": (
                     f"The {model_results.get('best_model', 'best')} model can predict "
-                    f"high/low sales weeks with {model_results.get('models', {}).get(model_results.get('best_model', ''), {}).get('accuracy', 0):.0%} accuracy."
+                    f"""high/low sales weeks with {
+                        model_results.get("models", {}).get(model_results.get("best_model", ""), {}).get("accuracy", 0):.0%} accuracy."""
                 ),
             },
             {
@@ -1364,10 +1228,7 @@ def main():
 
     # Show filter status
     if len(filtered_df) < len(df):
-        st.info(
-            f"🔍 Showing {len(filtered_df):,} of {len(df):,} records "
-            f"({len(filtered_df) / len(df) * 100:.1f}%) based on filters"
-        )
+        st.info(f"🔍 Showing {len(filtered_df):,} of {len(df):,} records ({len(filtered_df) / len(df) * 100:.1f}%) based on filters")
 
     # Navigation
     page = st.radio(

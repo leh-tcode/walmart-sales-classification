@@ -129,9 +129,7 @@ def plot_target_analysis(df: pd.DataFrame, report: dict) -> list[Path]:
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
     counts = df["Sales_Label"].value_counts()
-    bars = axes[0].bar(
-        counts.index, counts.values, color=CLASS_PALETTE, edgecolor="white"
-    )
+    bars = axes[0].bar(counts.index, counts.values, color=CLASS_PALETTE, edgecolor="white")
     axes[0].set_title("Target Class Distribution", fontweight="bold")
     axes[0].set_ylabel("Count")
     for bar, val in zip(bars, counts.values):
@@ -171,9 +169,7 @@ def plot_target_analysis(df: pd.DataFrame, report: dict) -> list[Path]:
     # ── 1b. Sales by class — box + violin ──
     fig, axes = plt.subplots(1, 2, figsize=FIGSIZE_WIDE)
 
-    sns.boxplot(
-        data=df, x="Sales_Label", y="Weekly_Sales", palette=CLASS_COLORS, ax=axes[0]
-    )
+    sns.boxplot(data=df, x="Sales_Label", y="Weekly_Sales", palette=CLASS_COLORS, ax=axes[0])
     axes[0].set_title("Sales by Class (Box Plot)", fontweight="bold")
     axes[0].set_ylabel("Weekly Sales ($)")
     axes[0].set_ylim(-5000, 80000)
@@ -213,11 +209,7 @@ def plot_target_analysis(df: pd.DataFrame, report: dict) -> list[Path]:
 
     # ── 1d. Sales statistics table as heatmap ──
     fig, ax = plt.subplots(figsize=(10, 4))
-    stats_df = (
-        df.groupby("Sales_Label")["Weekly_Sales"]
-        .agg(["count", "mean", "median", "std", "min", "max"])
-        .round(0)
-    )
+    stats_df = df.groupby("Sales_Label")["Weekly_Sales"].agg(["count", "mean", "median", "std", "min", "max"]).round(0)
     stats_df.columns = ["Count", "Mean", "Median", "Std Dev", "Min", "Max"]
     ax.axis("off")
     table = ax.table(
@@ -237,10 +229,7 @@ def plot_target_analysis(df: pd.DataFrame, report: dict) -> list[Path]:
     report["target_analysis"] = {
         "class_counts": counts.to_dict(),
         "class_pct": (counts / len(df) * 100).round(2).to_dict(),
-        "sales_by_class": df.groupby("Sales_Label")["Weekly_Sales"]
-        .agg(["mean", "median", "std"])
-        .round(2)
-        .to_dict(),
+        "sales_by_class": df.groupby("Sales_Label")["Weekly_Sales"].agg(["mean", "median", "std"]).round(2).to_dict(),
     }
 
     return paths
@@ -264,12 +253,8 @@ def plot_temporal_patterns(df: pd.DataFrame, report: dict) -> list[Path]:
         .reset_index()
     )
 
-    axes[0].plot(
-        weekly["Date"], weekly["Avg_Sales"], color=PALETTE["primary"], linewidth=1.5
-    )
-    axes[0].fill_between(
-        weekly["Date"], weekly["Avg_Sales"], alpha=0.15, color=PALETTE["primary"]
-    )
+    axes[0].plot(weekly["Date"], weekly["Avg_Sales"], color=PALETTE["primary"], linewidth=1.5)
+    axes[0].fill_between(weekly["Date"], weekly["Avg_Sales"], alpha=0.15, color=PALETTE["primary"])
     axes[0].set_title("Average Weekly Sales Over Time", fontweight="bold")
     axes[0].set_ylabel("Avg Weekly Sales ($)")
 
@@ -284,9 +269,7 @@ def plot_temporal_patterns(df: pd.DataFrame, report: dict) -> list[Path]:
         color=PALETTE["secondary"],
         linewidth=1.5,
     )
-    axes[1].fill_between(
-        weekly["Date"], weekly["High_Pct"] * 100, alpha=0.15, color=PALETTE["secondary"]
-    )
+    axes[1].fill_between(weekly["Date"], weekly["High_Pct"] * 100, alpha=0.15, color=PALETTE["secondary"])
     axes[1].set_title("% High-Sales Class Over Time", fontweight="bold")
     axes[1].set_ylabel("High Class %")
     axes[1].set_xlabel("Date")
@@ -300,9 +283,7 @@ def plot_temporal_patterns(df: pd.DataFrame, report: dict) -> list[Path]:
 
     monthly = df.groupby("Month")["Weekly_Sales"].agg(["mean", "median"]).reset_index()
     x = monthly["Month"]
-    axes[0].bar(
-        x - 0.2, monthly["mean"], width=0.4, label="Mean", color=PALETTE["primary"]
-    )
+    axes[0].bar(x - 0.2, monthly["mean"], width=0.4, label="Mean", color=PALETTE["primary"])
     axes[0].bar(
         x + 0.2,
         monthly["median"],
@@ -317,9 +298,7 @@ def plot_temporal_patterns(df: pd.DataFrame, report: dict) -> list[Path]:
     axes[0].legend()
 
     monthly_class = df.groupby("Month")["Sales_Class"].mean() * 100
-    colors = [
-        PALETTE["danger"] if v > 50 else PALETTE["primary"] for v in monthly_class
-    ]
+    colors = [PALETTE["danger"] if v > 50 else PALETTE["primary"] for v in monthly_class]
     axes[1].bar(monthly_class.index, monthly_class.values, color=colors)
     axes[1].axhline(50, color="gray", linestyle="--", alpha=0.5)
     axes[1].set_title("% High-Sales by Month", fontweight="bold")
@@ -334,16 +313,9 @@ def plot_temporal_patterns(df: pd.DataFrame, report: dict) -> list[Path]:
     fig, axes = plt.subplots(1, 2, figsize=FIGSIZE_WIDE)
 
     if "HolidayName" in df.columns:
-        holiday_sales = (
-            df.groupby("HolidayName")["Weekly_Sales"]
-            .agg(["mean", "count"])
-            .reset_index()
-        )
+        holiday_sales = df.groupby("HolidayName")["Weekly_Sales"].agg(["mean", "count"]).reset_index()
         holiday_sales = holiday_sales.sort_values("mean", ascending=True)
-        colors = [
-            PALETTE["danger"] if n != "None" else PALETTE["light"]
-            for n in holiday_sales["HolidayName"]
-        ]
+        colors = [PALETTE["danger"] if n != "None" else PALETTE["light"] for n in holiday_sales["HolidayName"]]
         axes[0].barh(
             holiday_sales["HolidayName"],
             holiday_sales["mean"],
@@ -355,12 +327,8 @@ def plot_temporal_patterns(df: pd.DataFrame, report: dict) -> list[Path]:
 
         holiday_class = df.groupby("HolidayName")["Sales_Class"].mean() * 100
         holiday_class = holiday_class.sort_values()
-        colors2 = [
-            PALETTE["danger"] if v > 50 else PALETTE["primary"] for v in holiday_class
-        ]
-        axes[1].barh(
-            holiday_class.index, holiday_class.values, color=colors2, edgecolor="white"
-        )
+        colors2 = [PALETTE["danger"] if v > 50 else PALETTE["primary"] for v in holiday_class]
+        axes[1].barh(holiday_class.index, holiday_class.values, color=colors2, edgecolor="white")
         axes[1].axvline(50, color="gray", linestyle="--", alpha=0.5)
         axes[1].set_title("% High-Sales by Holiday", fontweight="bold")
         axes[1].set_xlabel("High Class %")
@@ -370,9 +338,7 @@ def plot_temporal_patterns(df: pd.DataFrame, report: dict) -> list[Path]:
 
     # ── 2d. Day-of-year heatmap (Store × Week) ──
     fig, ax = plt.subplots(figsize=(18, 8))
-    pivot = df.pivot_table(
-        values="Weekly_Sales", index="Store", columns="Week", aggfunc="mean"
-    )
+    pivot = df.pivot_table(values="Weekly_Sales", index="Store", columns="Week", aggfunc="mean")
     sns.heatmap(
         pivot,
         cmap="YlOrRd",
@@ -402,18 +368,10 @@ def plot_temporal_patterns(df: pd.DataFrame, report: dict) -> list[Path]:
 
     if period_data:
         period_df = pd.DataFrame(period_data)
-        period_df = period_df[
-            period_df["Period"].isin(
-                ["Pre-Holiday", "Holiday", "Post-Holiday", "Non-Holiday"]
-            )
-        ]
+        period_df = period_df[period_df["Period"].isin(["Pre-Holiday", "Holiday", "Post-Holiday", "Non-Holiday"])]
         if len(period_df) > 0:
-            sns.barplot(
-                data=period_df, x="Period", y="Avg Sales", palette="Set2", ax=ax
-            )
-            ax.set_title(
-                "Sales: Pre-Holiday → Holiday → Post-Holiday", fontweight="bold"
-            )
+            sns.barplot(data=period_df, x="Period", y="Avg Sales", palette="Set2", ax=ax)
+            ax.set_title("Sales: Pre-Holiday → Holiday → Post-Holiday", fontweight="bold")
             ax.set_ylabel("Average Weekly Sales ($)")
     fig.tight_layout()
     paths.append(_save_fig(fig, "02_holiday_period_effect"))
@@ -432,11 +390,7 @@ def plot_temporal_patterns(df: pd.DataFrame, report: dict) -> list[Path]:
 
     report["temporal_patterns"] = {
         "monthly_avg_sales": monthly["mean"].to_dict(),
-        "holiday_avg_sales": (
-            df.groupby("HolidayName")["Weekly_Sales"].mean().round(2).to_dict()
-            if "HolidayName" in df.columns
-            else {}
-        ),
+        "holiday_avg_sales": (df.groupby("HolidayName")["Weekly_Sales"].mean().round(2).to_dict() if "HolidayName" in df.columns else {}),
         "years_covered": sorted(df["Year"].unique().tolist()),
     }
 
@@ -515,9 +469,7 @@ def plot_store_analysis(df: pd.DataFrame, report: dict) -> list[Path]:
             ha="center",
             va="bottom",
         )
-    ax.set_title(
-        "Store Size vs Average Sales (colored by High-Sales %)", fontweight="bold"
-    )
+    ax.set_title("Store Size vs Average Sales (colored by High-Sales %)", fontweight="bold")
     ax.set_xlabel("Store Size (sq ft)")
     ax.set_ylabel("Average Weekly Sales ($)")
     fig.tight_layout()
@@ -543,13 +495,8 @@ def plot_store_analysis(df: pd.DataFrame, report: dict) -> list[Path]:
 
     # ── 3d. Department analysis ──
     fig, ax = plt.subplots(figsize=(16, 6))
-    dept_avg = (
-        df.groupby("Dept")["Weekly_Sales"].mean().sort_values(ascending=False).head(20)
-    )
-    colors = [
-        PALETTE["primary"] if v > df["Weekly_Sales"].mean() else PALETTE["light"]
-        for v in dept_avg.values
-    ]
+    dept_avg = df.groupby("Dept")["Weekly_Sales"].mean().sort_values(ascending=False).head(20)
+    colors = [PALETTE["primary"] if v > df["Weekly_Sales"].mean() else PALETTE["light"] for v in dept_avg.values]
     ax.bar(dept_avg.index.astype(str), dept_avg.values, color=colors, edgecolor="white")
     ax.axhline(
         df["Weekly_Sales"].mean(),
@@ -589,10 +536,7 @@ def plot_store_analysis(df: pd.DataFrame, report: dict) -> list[Path]:
 
     report["store_analysis"] = {
         "stores_per_type": df.groupby("Type")["Store"].nunique().to_dict(),
-        "avg_sales_by_type": df.groupby("Type")["Weekly_Sales"]
-        .mean()
-        .round(2)
-        .to_dict(),
+        "avg_sales_by_type": df.groupby("Type")["Weekly_Sales"].mean().round(2).to_dict(),
         "top_5_stores": store_avg.tail(5).round(2).to_dict(),
         "bottom_5_stores": store_avg.head(5).round(2).to_dict(),
     }
@@ -662,18 +606,12 @@ def plot_feature_distributions(df: pd.DataFrame, report: dict) -> list[Path]:
     for j in range(i + 1, len(axes)):
         axes[j].set_visible(False)
 
-    fig.suptitle(
-        "FEATURE DISTRIBUTIONS BY TARGET CLASS", fontsize=16, fontweight="bold", y=1.01
-    )
+    fig.suptitle("FEATURE DISTRIBUTIONS BY TARGET CLASS", fontsize=16, fontweight="bold", y=1.01)
     fig.tight_layout()
     paths.append(_save_fig(fig, "04_distribution_by_class"))
 
     # ── 4c. QQ plots for normality check ──
-    qq_features = [
-        c
-        for c in ["Weekly_Sales", "Temperature", "CPI", "Unemployment"]
-        if c in df.columns
-    ]
+    qq_features = [c for c in ["Weekly_Sales", "Temperature", "CPI", "Unemployment"] if c in df.columns]
     fig, axes = plt.subplots(1, len(qq_features), figsize=(5 * len(qq_features), 5))
     if len(qq_features) == 1:
         axes = [axes]
@@ -689,17 +627,12 @@ def plot_feature_distributions(df: pd.DataFrame, report: dict) -> list[Path]:
     # ── 4d. Skewness summary ──
     fig, ax = plt.subplots(figsize=FIGSIZE_WIDE)
     skew_data = df[plot_features].skew().sort_values()
-    colors = [
-        "#EF4444" if abs(v) > 2 else "#F59E0B" if abs(v) > 1 else "#10B981"
-        for v in skew_data.values
-    ]
+    colors = ["#EF4444" if abs(v) > 2 else "#F59E0B" if abs(v) > 1 else "#10B981" for v in skew_data.values]
     ax.barh(skew_data.index, skew_data.values, color=colors, edgecolor="white")
     ax.axvline(0, color="black", linewidth=0.8)
     ax.axvline(-1, color="gray", linestyle="--", alpha=0.3)
     ax.axvline(1, color="gray", linestyle="--", alpha=0.3)
-    ax.set_title(
-        "Feature Skewness (|>2|=Red, |>1|=Yellow, else=Green)", fontweight="bold"
-    )
+    ax.set_title("Feature Skewness (|>2|=Red, |>1|=Yellow, else=Green)", fontweight="bold")
     ax.set_xlabel("Skewness")
     fig.tight_layout()
     paths.append(_save_fig(fig, "04_skewness_summary"))
@@ -717,11 +650,7 @@ def plot_correlation_analysis(df: pd.DataFrame, report: dict) -> list[Path]:
     logger.info("Group 5: Correlation Analysis …")
     paths = []
 
-    numeric_cols = [
-        c
-        for c in df.select_dtypes(include=[np.number]).columns
-        if c not in ["Store", "Dept", "Sales_Class"]
-    ]
+    numeric_cols = [c for c in df.select_dtypes(include=[np.number]).columns if c not in ["Store", "Dept", "Sales_Class"]]
     corr_cols = [c for c in numeric_cols if c in df.columns][:25]
 
     # ── 5a. Full correlation heatmap ──
@@ -747,13 +676,9 @@ def plot_correlation_analysis(df: pd.DataFrame, report: dict) -> list[Path]:
 
     # ── 5b. Target correlation ranking ──
     fig, ax = plt.subplots(figsize=(12, 10))
-    target_corr = (
-        df[corr_cols + ["Sales_Class"]].corr()["Sales_Class"].drop("Sales_Class")
-    )
+    target_corr = df[corr_cols + ["Sales_Class"]].corr()["Sales_Class"].drop("Sales_Class")
     target_corr = target_corr.sort_values()
-    colors = [
-        PALETTE["danger"] if v < 0 else PALETTE["success"] for v in target_corr.values
-    ]
+    colors = [PALETTE["danger"] if v < 0 else PALETTE["success"] for v in target_corr.values]
     ax.barh(target_corr.index, target_corr.values, color=colors, edgecolor="white")
     ax.axvline(0, color="black", linewidth=0.8)
     ax.set_title("Feature Correlation with Target (Sales_Class)", fontweight="bold")
@@ -778,10 +703,7 @@ def plot_correlation_analysis(df: pd.DataFrame, report: dict) -> list[Path]:
     pairs_df["abs_r"] = pairs_df["r"].abs()
     top_pairs = pairs_df.nlargest(15, "abs_r")
 
-    colors = [
-        "#EF4444" if abs(r) > 0.7 else "#F59E0B" if abs(r) > 0.5 else "#10B981"
-        for r in top_pairs["r"]
-    ]
+    colors = ["#EF4444" if abs(r) > 0.7 else "#F59E0B" if abs(r) > 0.5 else "#10B981" for r in top_pairs["r"]]
     ax.barh(top_pairs["pair"], top_pairs["r"], color=colors, edgecolor="white")
     ax.axvline(0.7, color="red", linestyle="--", alpha=0.3, label="|r| > 0.7 (high)")
     ax.axvline(-0.7, color="red", linestyle="--", alpha=0.3)
@@ -792,11 +714,7 @@ def plot_correlation_analysis(df: pd.DataFrame, report: dict) -> list[Path]:
     paths.append(_save_fig(fig, "05_top_correlated_pairs"))
 
     # ── 5d. Key feature scatter matrix ──
-    scatter_features = [
-        c
-        for c in ["Size", "Temperature", "Unemployment", "TotalMarkDown", "EconIndex"]
-        if c in df.columns
-    ]
+    scatter_features = [c for c in ["Size", "Temperature", "Unemployment", "TotalMarkDown", "EconIndex"] if c in df.columns]
     if len(scatter_features) >= 3:
         sample = df.sample(min(5000, len(df)), random_state=42)
         fig = sns.pairplot(
@@ -814,9 +732,7 @@ def plot_correlation_analysis(df: pd.DataFrame, report: dict) -> list[Path]:
     report["correlations"] = {
         "top_target_positive": target_corr.nlargest(5).round(4).to_dict(),
         "top_target_negative": target_corr.nsmallest(5).round(4).to_dict(),
-        "high_collinearity_pairs": (
-            top_pairs[top_pairs["abs_r"] > 0.7][["pair", "r"]].to_dict(orient="records")
-        ),
+        "high_collinearity_pairs": (top_pairs[top_pairs["abs_r"] > 0.7][["pair", "r"]].to_dict(orient="records")),
     }
 
     return paths
@@ -908,9 +824,7 @@ def plot_promotion_impact(df: pd.DataFrame, report: dict) -> list[Path]:
     # ── 6c. Promotion effectiveness by store type ──
     fig, ax = plt.subplots(figsize=FIGSIZE_WIDE)
     if "HasAnyMarkDown" in df.columns:
-        promo_type = (
-            df.groupby(["Type", "HasAnyMarkDown"])["Weekly_Sales"].mean().unstack()
-        )
+        promo_type = df.groupby(["Type", "HasAnyMarkDown"])["Weekly_Sales"].mean().unstack()
         promo_type.columns = ["No Promo", "Has Promo"]
         promo_type.plot(
             kind="bar",
@@ -929,9 +843,7 @@ def plot_promotion_impact(df: pd.DataFrame, report: dict) -> list[Path]:
     # ── 6d. Total markdown vs sales ──
     fig, ax = plt.subplots(figsize=FIGSIZE_WIDE)
     if "TotalMarkDown" in df.columns:
-        promo_only = df[df["TotalMarkDown"] > 0].sample(
-            min(5000, len(df)), random_state=42
-        )
+        promo_only = df[df["TotalMarkDown"] > 0].sample(min(5000, len(df)), random_state=42)
         scatter = ax.scatter(
             promo_only["TotalMarkDown"],
             promo_only["Weekly_Sales"],
@@ -950,9 +862,7 @@ def plot_promotion_impact(df: pd.DataFrame, report: dict) -> list[Path]:
 
     report["promotions"] = {
         "promo_vs_no_promo_avg_sales": (
-            df.groupby("HasAnyMarkDown")["Weekly_Sales"].mean().round(2).to_dict()
-            if "HasAnyMarkDown" in df.columns
-            else {}
+            df.groupby("HasAnyMarkDown")["Weekly_Sales"].mean().round(2).to_dict() if "HasAnyMarkDown" in df.columns else {}
         ),
     }
 
@@ -965,24 +875,16 @@ def plot_economic_indicators(df: pd.DataFrame, report: dict) -> list[Path]:
     paths = []
 
     # ── 7a. Economic trends over time ──
-    econ_cols = [
-        c
-        for c in ["UMCSENT", "RSXFS", "PCE", "Unemployment", "CPI", "Fuel_Price"]
-        if c in df.columns
-    ]
+    econ_cols = [c for c in ["UMCSENT", "RSXFS", "PCE", "Unemployment", "CPI", "Fuel_Price"] if c in df.columns]
 
-    fig, axes = plt.subplots(
-        len(econ_cols), 1, figsize=(16, 3 * len(econ_cols)), sharex=True
-    )
+    fig, axes = plt.subplots(len(econ_cols), 1, figsize=(16, 3 * len(econ_cols)), sharex=True)
     if len(econ_cols) == 1:
         axes = [axes]
 
     econ_ts = df.groupby("Date")[econ_cols].mean().reset_index()
     for ax, col in zip(axes, econ_cols):
         ax.plot(econ_ts["Date"], econ_ts[col], color=PALETTE["primary"], linewidth=1.5)
-        ax.fill_between(
-            econ_ts["Date"], econ_ts[col], alpha=0.1, color=PALETTE["primary"]
-        )
+        ax.fill_between(econ_ts["Date"], econ_ts[col], alpha=0.1, color=PALETTE["primary"])
         ax.set_ylabel(col, fontsize=10)
         ax.tick_params(labelsize=8)
 
@@ -992,11 +894,7 @@ def plot_economic_indicators(df: pd.DataFrame, report: dict) -> list[Path]:
     paths.append(_save_fig(fig, "07_economic_trends"))
 
     # ── 7b. Economic features vs target ──
-    econ_feats = [
-        c
-        for c in ["EconIndex", "ConsumerConfRatio", "FuelBurden", "PurchasingPower"]
-        if c in df.columns
-    ]
+    econ_feats = [c for c in ["EconIndex", "ConsumerConfRatio", "FuelBurden", "PurchasingPower"] if c in df.columns]
 
     if econ_feats:
         fig, axes = plt.subplots(1, len(econ_feats), figsize=(5 * len(econ_feats), 5))
@@ -1007,9 +905,7 @@ def plot_economic_indicators(df: pd.DataFrame, report: dict) -> list[Path]:
             sns.boxplot(data=df, x="Sales_Label", y=col, palette=CLASS_COLORS, ax=ax)
             ax.set_title(f"{col} by Class", fontweight="bold", fontsize=10)
 
-        fig.suptitle(
-            "Economic Features by Target Class", fontsize=14, fontweight="bold", y=1.02
-        )
+        fig.suptitle("Economic Features by Target Class", fontsize=14, fontweight="bold", y=1.02)
         fig.tight_layout()
         paths.append(_save_fig(fig, "07_economic_vs_target"))
 
@@ -1037,9 +933,7 @@ def plot_economic_indicators(df: pd.DataFrame, report: dict) -> list[Path]:
     fig, ax = plt.subplots(figsize=FIGSIZE_WIDE)
     if "Unemployment" in df.columns:
         for type_val, color in TYPE_COLORS.items():
-            sub = df[df["Type"] == type_val].sample(
-                min(2000, len(df[df["Type"] == type_val])), random_state=42
-            )
+            sub = df[df["Type"] == type_val].sample(min(2000, len(df[df["Type"] == type_val])), random_state=42)
             ax.scatter(
                 sub["Unemployment"],
                 sub["Weekly_Sales"],
@@ -1064,11 +958,7 @@ def plot_feature_importance(df: pd.DataFrame, report: dict) -> list[Path]:
     logger.info("Group 8: Feature Importance (Preliminary) …")
     paths = []
 
-    numeric_cols = [
-        c
-        for c in df.select_dtypes(include=[np.number]).columns
-        if c not in ["Sales_Class", "Store", "Dept"]
-    ]
+    numeric_cols = [c for c in df.select_dtypes(include=[np.number]).columns if c not in ["Sales_Class", "Store", "Dept"]]
 
     # ── 8a. Mutual information / point-biserial correlation ──
     importance = {}
@@ -1087,14 +977,10 @@ def plot_feature_importance(df: pd.DataFrame, report: dict) -> list[Path]:
     imp_df = imp_df.tail(25)
 
     fig, ax = plt.subplots(figsize=(12, 10))
-    colors = [
-        PALETTE["success"] if d == "+" else PALETTE["danger"]
-        for d in imp_df["direction"]
-    ]
+    colors = [PALETTE["success"] if d == "+" else PALETTE["danger"] for d in imp_df["direction"]]
     ax.barh(imp_df.index, imp_df["correlation"], color=colors, edgecolor="white")
     ax.set_title(
-        "Top 25 Features by |Point-Biserial Correlation| with Target\n"
-        "(Green=Positive, Red=Negative)",
+        "Top 25 Features by |Point-Biserial Correlation| with Target\n(Green=Positive, Red=Negative)",
         fontweight="bold",
     )
     ax.set_xlabel("|Correlation|")
@@ -1117,14 +1003,10 @@ def plot_feature_importance(df: pd.DataFrame, report: dict) -> list[Path]:
     sig_df = sig_df.sort_values("neg_log_p", ascending=True).tail(25)
 
     fig, ax = plt.subplots(figsize=(12, 10))
-    colors = [
-        PALETTE["danger"] if s else PALETTE["light"] for s in sig_df["significant"]
-    ]
+    colors = [PALETTE["danger"] if s else PALETTE["light"] for s in sig_df["significant"]]
     ax.barh(sig_df.index, sig_df["neg_log_p"], color=colors, edgecolor="white")
     ax.axvline(-np.log10(0.05), color="black", linestyle="--", label="p=0.05 threshold")
-    ax.set_title(
-        "Top 25 Features by Statistical Significance (T-test)", fontweight="bold"
-    )
+    ax.set_title("Top 25 Features by Statistical Significance (T-test)", fontweight="bold")
     ax.set_xlabel("-log₁₀(p-value)")
     ax.legend()
     fig.tight_layout()
@@ -1145,10 +1027,7 @@ def plot_feature_importance(df: pd.DataFrame, report: dict) -> list[Path]:
     cd_series = pd.Series(cohens_d).sort_values(ascending=True).tail(25)
 
     fig, ax = plt.subplots(figsize=(12, 10))
-    colors = [
-        "#EF4444" if v > 0.8 else "#F59E0B" if v > 0.5 else "#10B981"
-        for v in cd_series.values
-    ]
+    colors = ["#EF4444" if v > 0.8 else "#F59E0B" if v > 0.5 else "#10B981" for v in cd_series.values]
     ax.barh(cd_series.index, cd_series.values, color=colors, edgecolor="white")
     ax.axvline(0.2, color="gray", linestyle="--", alpha=0.3, label="Small (0.2)")
     ax.axvline(0.5, color="gray", linestyle="-.", alpha=0.3, label="Medium (0.5)")
@@ -1160,15 +1039,9 @@ def plot_feature_importance(df: pd.DataFrame, report: dict) -> list[Path]:
     paths.append(_save_fig(fig, "08_effect_size_cohens_d"))
 
     report["feature_importance"] = {
-        "top_10_correlation": pd.to_numeric(
-            imp_df.tail(10)["correlation"], errors="coerce"
-        )
-        .round(4)
-        .to_dict(),
+        "top_10_correlation": pd.to_numeric(imp_df.tail(10)["correlation"], errors="coerce").round(4).to_dict(),
         "top_10_cohens_d": cd_series.tail(10).round(4).to_dict(),
-        "significant_features_count": sum(
-            1 for v in ttest_results.values() if v["significant"]
-        ),
+        "significant_features_count": sum(1 for v in ttest_results.values() if v["significant"]),
         "total_features_tested": len(ttest_results),
     }
 
@@ -1202,10 +1075,7 @@ def plot_segmentation(df: pd.DataFrame, report: dict) -> list[Path]:
     # ── 9b. Size quartile × Season ──
     if "SizeQuartile" in df.columns:
         fig, ax = plt.subplots(figsize=FIGSIZE_WIDE)
-        seg2 = (
-            df.groupby(["SizeQuartile", "Quarter"])["Sales_Class"].mean().unstack()
-            * 100
-        )
+        seg2 = df.groupby(["SizeQuartile", "Quarter"])["Sales_Class"].mean().unstack() * 100
         seg2.plot(kind="bar", ax=ax, colormap="Set2", edgecolor="white")
         ax.set_title("% High-Sales by Store Size Quartile & Quarter", fontweight="bold")
         ax.set_ylabel("High Class %")
@@ -1219,9 +1089,7 @@ def plot_segmentation(df: pd.DataFrame, report: dict) -> list[Path]:
     # ── 9c. Promotion × Holiday × Sales ──
     if "HasAnyMarkDown" in df.columns:
         fig, ax = plt.subplots(figsize=FIGSIZE_WIDE)
-        seg3 = (
-            df.groupby(["HasAnyMarkDown", "IsHoliday"])["Weekly_Sales"].mean().unstack()
-        )
+        seg3 = df.groupby(["HasAnyMarkDown", "IsHoliday"])["Weekly_Sales"].mean().unstack()
         seg3.index = ["No Promo", "Has Promo"]
         seg3.columns = ["Non-Holiday", "Holiday"]
         seg3.plot(
@@ -1371,11 +1239,7 @@ def export_dashboard_data(df: pd.DataFrame, report: dict) -> None:
         "avg_temperature": round(float(df["Temperature"].mean()), 2),
         "avg_unemployment": round(float(df["Unemployment"].mean()), 2),
         "avg_fuel_price": round(float(df["Fuel_Price"].mean()), 2),
-        "promo_pct": (
-            round(float(df["HasAnyMarkDown"].mean() * 100), 2)
-            if "HasAnyMarkDown" in df.columns
-            else 0.0
-        ),
+        "promo_pct": (round(float(df["HasAnyMarkDown"].mean() * 100), 2) if "HasAnyMarkDown" in df.columns else 0.0),
     }
 
     feature_stats = {}
@@ -1393,18 +1257,9 @@ def export_dashboard_data(df: pd.DataFrame, report: dict) -> None:
         }
     dashboard["feature_statistics"] = feature_stats
 
-    numeric_cols = [
-        c
-        for c in df.select_dtypes(include=[np.number]).columns
-        if c not in ["Sales_Class", "Store", "Dept"]
-    ]
-    target_corr = (
-        df[numeric_cols + ["Sales_Class"]].corr()["Sales_Class"].drop("Sales_Class")
-    )
-    dashboard["target_correlations"] = {
-        k: round(float(v), 4)
-        for k, v in target_corr.sort_values(ascending=False).items()
-    }
+    numeric_cols = [c for c in df.select_dtypes(include=[np.number]).columns if c not in ["Sales_Class", "Store", "Dept"]]
+    target_corr = df[numeric_cols + ["Sales_Class"]].corr()["Sales_Class"].drop("Sales_Class")
+    dashboard["target_correlations"] = {k: round(float(v), 4) for k, v in target_corr.sort_values(ascending=False).items()}
 
     dashboard["store_type_breakdown"] = (
         df.groupby("Type")
@@ -1435,9 +1290,7 @@ def export_dashboard_data(df: pd.DataFrame, report: dict) -> None:
     with open(DASHBOARD_DATA_PATH, "w") as f:
         json.dump(dashboard, f, indent=2, default=_safe_json)
 
-    logger.info(
-        "Dashboard data saved to: {} ({} sections)", DASHBOARD_DATA_PATH, len(dashboard)
-    )
+    logger.info("Dashboard data saved to: {} ({} sections)", DASHBOARD_DATA_PATH, len(dashboard))
     report["dashboard_data"] = {
         "path": str(DASHBOARD_DATA_PATH),
         "sections": list(dashboard.keys()),
@@ -1455,21 +1308,14 @@ def compute_summary_statistics(df: pd.DataFrame, report: dict) -> dict:
             "columns": len(df.columns),
             "memory_mb": round(df.memory_usage(deep=True).sum() / 1e6, 2),
             "date_range": {
-                "start": (
-                    str(df["Date"].min().date()) if "Date" in df.columns else "N/A"
-                ),
+                "start": (str(df["Date"].min().date()) if "Date" in df.columns else "N/A"),
                 "end": str(df["Date"].max().date()) if "Date" in df.columns else "N/A",
             },
         },
         "target": {
-            "class_counts": (
-                df["Sales_Label"].value_counts().to_dict()
-                if "Sales_Label" in df.columns
-                else {}
-            ),
+            "class_counts": (df["Sales_Label"].value_counts().to_dict() if "Sales_Label" in df.columns else {}),
             "balance_ratio": round(
-                df["Sales_Class"].value_counts().max()
-                / df["Sales_Class"].value_counts().min(),
+                df["Sales_Class"].value_counts().max() / df["Sales_Class"].value_counts().min(),
                 4,
             ),
         },
@@ -1507,10 +1353,7 @@ def compute_summary_statistics(df: pd.DataFrame, report: dict) -> dict:
 
     missing = df.isna().sum()
     if missing.sum() > 0:
-        summary["missing_summary"] = {
-            col: {"count": int(v), "pct": round(float(v / len(df) * 100), 2)}
-            for col, v in missing[missing > 0].items()
-        }
+        summary["missing_summary"] = {col: {"count": int(v), "pct": round(float(v / len(df) * 100), 2)} for col, v in missing[missing > 0].items()}
     else:
         summary["missing_summary"] = {"status": "No missing values"}
 

@@ -338,9 +338,7 @@ def merge_walmart_fred(
         rows_with_any_fred_null,
     )
 
-    assert rows_after == rows_before, (
-        f"Row count mismatch after merge: expected {rows_before}, got {rows_after}"
-    )
+    assert rows_after == rows_before, f"Row count mismatch after merge: expected {rows_before}, got {rows_after}"
 
     if merge_report is not None:
         merge_report.setdefault("merge_steps", []).append(

@@ -37,13 +37,7 @@ def check_distribution_profile(df: pd.DataFrame) -> dict[str, Any]:
             "distribution_shape": (
                 "heavily_right_skewed"
                 if s.skew() > 2
-                else (
-                    "right_skewed"
-                    if s.skew() > 1
-                    else "left_skewed"
-                    if s.skew() < -1
-                    else "approximately_symmetric"
-                )
+                else ("right_skewed" if s.skew() > 1 else "left_skewed" if s.skew() < -1 else "approximately_symmetric")
             ),
             "iqr_outlier_count": iqr_out,
             "iqr_outlier_pct": _pct(iqr_out, len(s)),
@@ -60,13 +54,7 @@ def check_distribution_profile(df: pd.DataFrame) -> dict[str, Any]:
             "unique_values": int(df[col].nunique(dropna=True)),
             "top_10_values": {str(k): int(v) for k, v in vc.head(10).items()},
             "dominant_value_pct": top_pct,
-            "balance_flag": (
-                "highly_imbalanced"
-                if top_pct > 70
-                else "imbalanced"
-                if top_pct > 50
-                else "balanced"
-            ),
+            "balance_flag": ("highly_imbalanced" if top_pct > 70 else "imbalanced" if top_pct > 50 else "balanced"),
         }
 
     if "Weekly_Sales" in df.columns:
