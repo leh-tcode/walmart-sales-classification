@@ -36,7 +36,7 @@ test:
 
 ## Lint check
 lint:
-	poetry run ruff check src/ tests/ 
+	poetry run ruff check src/ tests/
 
 ## Auto-format code
 format:
