@@ -1,7 +1,7 @@
 import json
+import warnings
 from pathlib import Path
 from typing import Any
-import warnings
 
 import numpy as np
 import pandas as pd
