@@ -2,15 +2,21 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.cleaning.cleaning import (CLIP_COLS, CLIP_LOWER_PERCENTILE,
-                                   CLIP_UPPER_PERCENTILE, MARKDOWN_COLS,
-                                   clip_outliers, handle_markdown_nulls,
-                                   handle_negative_sales)
+from src.cleaning.cleaning import (
+    handle_markdown_nulls,
+    handle_negative_sales,
+    clip_outliers,
+    MARKDOWN_COLS,
+    CLIP_COLS,
+    CLIP_LOWER_PERCENTILE,
+    CLIP_UPPER_PERCENTILE,
+)
 
 
 # Fixtures
 @pytest.fixture
 def sample_df():
+    """Minimal DataFrame that mimics the real dataset structure."""
     np.random.seed(42)
     n = 1000
 
@@ -192,6 +198,7 @@ class TestClipOutliers:
         assert len(df) == len(sample_df)
 
     def test_middle_values_untouched(self, sample_df, empty_report):
+        """Values between P1 and P99 should not be modified."""
         df = handle_markdown_nulls(sample_df.copy(), empty_report)
         original = df.copy()
         report2 = {"steps": []}

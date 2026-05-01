@@ -48,6 +48,8 @@ def _find_check(report: dict, substring: str) -> dict | None:
     return None
 
 
+
+# ══════════════════════════════════════════════════════════════
 # 1 ─ ACCURACY
 
 
