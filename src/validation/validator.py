@@ -118,8 +118,7 @@ def _save_text_report(report: dict) -> None:
         "=" * 70,
         "  WALMART SALES CLASSIFICATION — DATA VALIDATION REPORT",
         "=" * 70,
-        f"  Dataset shape : {report['dataset_shape']['rows']:,} rows x "
-        f"{report['dataset_shape']['columns']} columns",
+        f"  Dataset shape : {report['dataset_shape']['rows']:,} rows x {report['dataset_shape']['columns']} columns",
         f"  Total checks  : {report['summary']['total_checks']}",
         f"  PASS          : {report['summary']['passed']}",
         f"  WARN          : {report['summary']['warnings']}",

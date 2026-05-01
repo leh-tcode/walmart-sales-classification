@@ -110,7 +110,5 @@ def check_consistency(df: pd.DataFrame) -> dict[str, Any]:
         )
 
     report = _dimension_summary("Consistency", checks)
-    logger.info(
-        "  Consistency: {}/{} checks passed", report["passed"], report["total_checks"]
-    )
+    logger.info("  Consistency: {}/{} checks passed", report["passed"], report["total_checks"])
     return report

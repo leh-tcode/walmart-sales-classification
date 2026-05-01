@@ -29,11 +29,10 @@ jobs:
       - name: Install dependencies
         run: poetry install --with dev
 
-      - name: Lint
-        run: make lint
-
-      - name: Format check
-        run: poetry run black --check src/ tests/
+      - name: Lint and Format Check
+        run: |
+          poetry run ruff check src/ tests/
+          poetry run ruff format --check src/ tests/
 
       - name: Tests
         run: make test

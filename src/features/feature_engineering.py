@@ -1,7 +1,7 @@
 import json
+import warnings
 from pathlib import Path
 from typing import Any
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -117,9 +117,7 @@ def create_holiday_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     def _min_holiday_distance(week: int) -> int:
         if not holiday_week_list:
             return 26
-        distances = [
-            min(abs(week - hw), 52 - abs(week - hw)) for hw in holiday_week_list
-        ]
+        distances = [min(abs(week - hw), 52 - abs(week - hw)) for hw in holiday_week_list]
         return min(distances)
 
     df["HolidayProximity"] = df["Week"].apply(_min_holiday_distance)
@@ -140,10 +138,7 @@ def create_holiday_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
                 "IsPeakSeason",
                 "IsBackToSchool",
             ],
-            "rationale": (
-                "Differentiate holiday types and capture pre/post-holiday "
-                "effects that a binary IsHoliday flag misses"
-            ),
+            "rationale": ("Differentiate holiday types and capture pre/post-holiday effects that a binary IsHoliday flag misses"),
         }
     )
 
@@ -184,11 +179,7 @@ def create_promotion_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
                 "MaxMarkDown",
                 "HasAnyMarkDown",
             ],
-            "rationale": (
-                "Individual MarkDown columns are sparse and skewed — "
-                "aggregates capture overall promotional intensity "
-                "with less noise"
-            ),
+            "rationale": ("Individual MarkDown columns are sparse and skewed — aggregates capture overall promotional intensity with less noise"),
         }
     )
 
@@ -226,10 +217,7 @@ def create_store_dept_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
                 "DeptFrequency",
                 "SizeQuartile",
             ],
-            "rationale": (
-                "Encode store structure beyond raw Type/Size — "
-                "captures store complexity and relative positioning"
-            ),
+            "rationale": ("Encode store structure beyond raw Type/Size — captures store complexity and relative positioning"),
             "leakage_risk": "None — based on store metadata only",
         }
     )
@@ -287,9 +275,7 @@ def create_economic_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
                 "composites reduce multicollinearity while ratios "
                 "capture divergences between economic indicators"
             ),
-            "correlation_note": (
-                "UMCSENT↔RSXFS: r=0.83, RSXFS↔PCE: r=0.88, UMCSENT↔PCE: r=0.79"
-            ),
+            "correlation_note": ("UMCSENT↔RSXFS: r=0.83, RSXFS↔PCE: r=0.88, UMCSENT↔PCE: r=0.79"),
         }
     )
 
@@ -315,14 +301,10 @@ def create_lag_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
         for window in ROLLING_WINDOWS:
             # Rolling mean (shifted by 1 to exclude current row)
             mean_col = f"Rolling_Mean_{window}w"
-            df[mean_col] = group.transform(
-                lambda x: x.shift(1).rolling(window=window, min_periods=1).mean()
-            )
+            df[mean_col] = group.transform(lambda x: x.shift(1).rolling(window=window, min_periods=1).mean())
             logger.info("  Created {}", mean_col)
 
-        df["Rolling_Std_4w"] = group.transform(
-            lambda x: x.shift(1).rolling(window=4, min_periods=2).std()
-        )
+        df["Rolling_Std_4w"] = group.transform(lambda x: x.shift(1).rolling(window=4, min_periods=2).std())
 
     if "Lag_Sales_1w" in df.columns and "Lag_Sales_4w" in df.columns:
         df["SalesTrend_4w"] = (df["Lag_Sales_1w"] - df["Lag_Sales_4w"]) / 3.0
@@ -330,12 +312,8 @@ def create_lag_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     if "SalesTrend_4w" in df.columns:
         df["SalesAcceleration"] = df.groupby(["Store", "Dept"])["SalesTrend_4w"].diff()
 
-    lag_rolling_cols = [
-        c for c in df.columns if c.startswith(("Lag_", "Rolling_", "Sales"))
-    ]
-    lag_rolling_cols = [
-        c for c in lag_rolling_cols if c in df.columns and c not in ["Sales_Class"]
-    ]
+    lag_rolling_cols = [c for c in df.columns if c.startswith(("Lag_", "Rolling_", "Sales"))]
+    lag_rolling_cols = [c for c in lag_rolling_cols if c in df.columns and c not in ["Sales_Class"]]
 
     nulls_before = int(df[lag_rolling_cols].isna().sum().sum())
 
@@ -366,18 +344,9 @@ def create_lag_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
             ],
             "lag_periods": LAG_PERIODS,
             "rolling_windows": ROLLING_WINDOWS,
-            "null_handling": (
-                f"Filled {nulls_before - nulls_after:,} NaN values "
-                f"with Store-Dept group median (fallback: global median → 0)"
-            ),
-            "leakage_policy": (
-                "All lags use .shift() — only past data used. "
-                "Current row's Weekly_Sales is NEVER in its own features."
-            ),
-            "rationale": (
-                "Past sales are the strongest predictor of future sales. "
-                "Rolling windows capture momentum at different time horizons."
-            ),
+            "null_handling": (f"Filled {nulls_before - nulls_after:,} NaN values with Store-Dept group median (fallback: global median → 0)"),
+            "leakage_policy": ("All lags use .shift() — only past data used. Current row's Weekly_Sales is NEVER in its own features."),
+            "rationale": ("Past sales are the strongest predictor of future sales. Rolling windows capture momentum at different time horizons."),
         }
     )
 
@@ -450,10 +419,7 @@ def create_cyclical_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
             "group": "Cyclical Encoding",
             "features_created": n_created,
             "features": ["Month_sin", "Month_cos", "Week_sin", "Week_cos"],
-            "rationale": (
-                "Sin/cos encoding preserves cyclical adjacency — "
-                "December is next to January, not 11 units away"
-            ),
+            "rationale": ("Sin/cos encoding preserves cyclical adjacency — December is next to January, not 11 units away"),
         }
     )
 
@@ -472,9 +438,7 @@ def validate_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     checks.append(
         {
             "check": "No NaN values in engineered features",
-            "columns_with_nulls": (
-                cols_with_nulls.to_dict() if len(cols_with_nulls) > 0 else {}
-            ),
+            "columns_with_nulls": (cols_with_nulls.to_dict() if len(cols_with_nulls) > 0 else {}),
             "status": "PASS" if len(cols_with_nulls) == 0 else "WARN",
         }
     )
@@ -515,9 +479,7 @@ def validate_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
                     "check": f"{col} in [-1, 1]",
                     "min": round(float(col_min), 4),
                     "max": round(float(col_max), 4),
-                    "status": (
-                        "PASS" if -1.01 <= col_min and col_max <= 1.01 else "FAIL"
-                    ),
+                    "status": ("PASS" if -1.01 <= col_min and col_max <= 1.01 else "FAIL"),
                 }
             )
 
@@ -525,20 +487,14 @@ def validate_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
 
     if constant_cols:
         df = df.drop(columns=constant_cols)
-        logger.info(
-            "  Dropped {} zero-variance columns: {}", len(constant_cols), constant_cols
-        )
+        logger.info("  Dropped {} zero-variance columns: {}", len(constant_cols), constant_cols)
 
     checks.append(
         {
             "check": "No zero-variance features",
             "constant_columns_dropped": constant_cols,
             "status": "PASS",
-            "note": (
-                f"Dropped {len(constant_cols)} constant columns"
-                if constant_cols
-                else "None found"
-            ),
+            "note": (f"Dropped {len(constant_cols)} constant columns" if constant_cols else "None found"),
         }
     )
 
@@ -566,9 +522,7 @@ def _generate_summary(
 
     all_new_features = sorted(set(df_after.columns) - set(df_before.columns))
 
-    numeric_new = [
-        c for c in all_new_features if pd.api.types.is_numeric_dtype(df_after[c])
-    ]
+    numeric_new = [c for c in all_new_features if pd.api.types.is_numeric_dtype(df_after[c])]
 
     report["summary"] = {
         "before": {
@@ -583,9 +537,7 @@ def _generate_summary(
         "new_features": all_new_features,
         "numeric_features_added": len(numeric_new),
         "feature_groups": len(report.get("groups", [])),
-        "group_breakdown": {
-            g["group"]: g["features_created"] for g in report.get("groups", [])
-        },
+        "group_breakdown": {g["group"]: g["features_created"] for g in report.get("groups", [])},
     }
 
     return report
@@ -647,9 +599,7 @@ def _save_text_report(report: dict) -> None:
     with open(FEATURES_TEXT_REPORT_PATH, "w") as f:
         f.write("\n".join(lines))
 
-    logger.info(
-        "Feature engineering text report saved to: {}", FEATURES_TEXT_REPORT_PATH
-    )
+    logger.info("Feature engineering text report saved to: {}", FEATURES_TEXT_REPORT_PATH)
 
 
 # ORCHESTRATOR
@@ -690,14 +640,10 @@ def run_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     logger.info("=" * 60)
     logger.info("  Before: {}", _shape_str(df_before))
     logger.info("  After:  {}", _shape_str(df))
-    logger.info(
-        "  Total features created: {}", report["summary"]["total_features_created"]
-    )
+    logger.info("  Total features created: {}", report["summary"]["total_features_created"])
     logger.info("")
     for group in report["groups"]:
-        logger.info(
-            "    {:30s}  +{} features", group["group"], group["features_created"]
-        )
+        logger.info("    {:30s}  +{} features", group["group"], group["features_created"])
     logger.info("")
     logger.info("  Validation: {}", report.get("validation", {}).get("status", "?"))
     logger.info("=" * 60)

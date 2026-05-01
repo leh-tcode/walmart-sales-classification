@@ -51,9 +51,7 @@ def check_accuracy(df: pd.DataFrame) -> dict[str, Any]:
 
     if "IsHoliday" in df.columns:
         unique_vals = set(df["IsHoliday"].dropna().unique())
-        invalid_bool = sorted(
-            [v for v in unique_vals if v not in {True, False}], key=str
-        )
+        invalid_bool = sorted([v for v in unique_vals if v not in {True, False}], key=str)
         checks.append(
             {
                 "check": "IsHoliday in {True, False}",
@@ -117,7 +115,5 @@ def check_accuracy(df: pd.DataFrame) -> dict[str, Any]:
         )
 
     report = _dimension_summary("Accuracy", checks)
-    logger.info(
-        "  Accuracy: {}/{} checks passed", report["passed"], report["total_checks"]
-    )
+    logger.info("  Accuracy: {}/{} checks passed", report["passed"], report["total_checks"])
     return report
