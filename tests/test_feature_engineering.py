@@ -161,6 +161,7 @@ class TestStoreDeptFeatures:
         df = create_store_dept_features(sample_df.copy(), empty_report)
         assert set(df["SizeQuartile"].unique()) <= {1, 2, 3, 4}
 
+
 # Group 7: Interactions
 class TestInteractionFeatures:
     def _prepare(self, sample_df, empty_report):

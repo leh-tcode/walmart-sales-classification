@@ -259,7 +259,7 @@ def plot_temporal_patterns(df: pd.DataFrame, report: dict) -> list[Path]:
     axes[0].set_ylabel("Avg Weekly Sales ($)")
 
     # Highlight holidays
-    holidays = df[df["IsHoliday"] is True]["Date"].unique()
+    holidays = df[df["IsHoliday"]]["Date"].unique()
     for h in holidays:
         axes[0].axvline(h, color=PALETTE["danger"], alpha=0.2, linewidth=0.8)
 

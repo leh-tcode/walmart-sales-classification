@@ -1,5 +1,4 @@
 import json
-import warnings
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +26,7 @@ HOLIDAY_WINDOWS = {
 }
 
 FRED_COLS = ["UMCSENT", "RSXFS", "PCE"]
+
 
 # Helpers
 def _shape_str(df: pd.DataFrame) -> str:
@@ -87,7 +87,7 @@ def create_holiday_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     logger.info("Group 2: Creating holiday features …")
     n_before = len(df.columns)
 
-    df["HolidayType"] = 0 
+    df["HolidayType"] = 0
     for i, (name, info) in enumerate(HOLIDAY_WINDOWS.items(), 1):
         week_lo, week_hi = info["week_range"]
         mask = df["Week"].between(week_lo, week_hi)
@@ -258,6 +258,44 @@ def create_interaction_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     logger.info("  Interactions: {} features created", n_created)
     return df
 
+def create_economic_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
+    logger.info("Group 5: Creating economic features …")
+    n_before = len(df.columns)
+
+    for col in FRED_COLS:
+        col_min = df[col].min()
+        col_max = df[col].max()
+        col_range = col_max - col_min
+        if col_range > 0:
+            df[f"_{col}_norm"] = (df[col] - col_min) / col_range
+        else:
+            df[f"_{col}_norm"] = 0.0
+
+    norm_cols = [f"_{c}_norm" for c in FRED_COLS]
+
+    df.drop(columns=norm_cols, inplace=True)
+
+    df["ConsumerConfRatio"] = df["UMCSENT"] / (df["Unemployment"] + 1e-6)
+
+    n_created = len(df.columns) - n_before
+    report["groups"].append(
+        {
+            "group": "Economic Features",
+            "features_created": n_created,
+            "features": [
+                "ConsumerConfRatio",
+            ],
+            "rationale": (
+                "FRED macro series are highly correlated (r > 0.78) — "
+                "composites reduce multicollinearity while ratios "
+                "capture divergences between economic indicators"
+            ),
+            "correlation_note": ("UMCSENT↔RSXFS: r=0.83, RSXFS↔PCE: r=0.88, UMCSENT↔PCE: r=0.79"),
+        }
+    )
+
+    logger.info("  Economic: {} features created", n_created)
+    return df
 
 # GROUP 8: CYCLICAL ENCODING
 def create_cyclical_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
@@ -476,6 +514,7 @@ def run_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     df = create_holiday_features(df, report)
     df = create_promotion_features(df, report)
     df = create_store_dept_features(df, report)
+    df = create_economic_features(df, report)
     df = create_interaction_features(df, report)
     df = create_cyclical_features(df, report)
     df = validate_features(df, report)

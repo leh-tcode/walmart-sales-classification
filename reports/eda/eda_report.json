@@ -128,7 +128,6 @@
       "RSXFS": -0.2905,
       "PCE": -0.2243,
       "TotalMarkDown": 2.3947,
-      "EconIndex": 0.2292,
       "ConsumerConfRatio": 1.1388
     },
     "kurtosis": {
@@ -142,7 +141,6 @@
       "RSXFS": -1.2363,
       "PCE": -1.2179,
       "TotalMarkDown": 6.0988,
-      "EconIndex": -1.1271,
       "ConsumerConfRatio": 2.7532
     }
   },
@@ -168,7 +166,7 @@
       },
       {
         "pair": "has_MarkDown1 \u2194 has_MarkDown5",
-        "r": 0.9961335623620822
+        "r": 0.9961335623620823
       },
       {
         "pair": "Month \u2194 DayOfYear",
@@ -204,23 +202,23 @@
       },
       {
         "pair": "has_MarkDown3 \u2194 has_MarkDown5",
-        "r": 0.9271785522166119
+        "r": 0.9271785522166076
       },
       {
         "pair": "has_MarkDown1 \u2194 has_MarkDown3",
-        "r": 0.9249765495868452
+        "r": 0.9249765495868494
       },
       {
         "pair": "has_MarkDown1 \u2194 has_MarkDown4",
-        "r": 0.9201102513995265
+        "r": 0.9201102513995058
       },
       {
         "pair": "has_MarkDown4 \u2194 has_MarkDown5",
-        "r": 0.9165527024924376
+        "r": 0.9165527024924385
       },
       {
         "pair": "has_MarkDown3 \u2194 has_MarkDown4",
-        "r": 0.8860244678261041
+        "r": 0.8860244678261329
       }
     ]
   },
@@ -232,31 +230,31 @@
   },
   "feature_importance": {
     "top_10_correlation": {
+      "YearProgress": 0.0195,
+      "Month": 0.0199,
+      "IsPreHoliday": 0.0203,
+      "IsYearStart": 0.0246,
+      "HolidayType": 0.0263,
+      "IsPeakSeason": 0.0279,
+      "IsYearEnd": 0.0286,
       "is_return": 0.0553,
       "DeptFrequency": 0.2949,
-      "Rolling_Std_4w": 0.333,
-      "Lag_Sales_4w": 0.5835,
-      "Lag_Sales_2w": 0.5894,
-      "Rolling_Mean_12w": 0.5927,
-      "Lag_Sales_1w": 0.5937,
-      "Rolling_Mean_8w": 0.5938,
-      "Rolling_Mean_4w": 0.5952,
       "Weekly_Sales": 0.6006
     },
     "top_10_cohens_d": {
+      "YearProgress": 0.0391,
+      "Month": 0.0398,
+      "IsPreHoliday": 0.0406,
+      "IsYearStart": 0.0492,
+      "HolidayType": 0.0527,
+      "IsPeakSeason": 0.0558,
+      "IsYearEnd": 0.0572,
       "is_return": 0.1108,
       "DeptFrequency": 0.6172,
-      "Rolling_Std_4w": 0.7062,
-      "Lag_Sales_4w": 1.4369,
-      "Lag_Sales_2w": 1.4593,
-      "Rolling_Mean_12w": 1.4716,
-      "Lag_Sales_1w": 1.4757,
-      "Rolling_Mean_8w": 1.4761,
-      "Rolling_Mean_4w": 1.4815,
       "Weekly_Sales": 1.5023
     },
-    "significant_features_count": 51,
-    "total_features_tested": 73
+    "significant_features_count": 37,
+    "total_features_tested": 58
   },
   "dashboard_data": {
     "path": "reports/eda/dashboard_data.json",
@@ -279,8 +277,8 @@
   "summary_statistics": {
     "dataset": {
       "rows": 421570,
-      "columns": 85,
-      "memory_mb": 416.77,
+      "columns": 70,
+      "memory_mb": 366.18,
       "date_range": {
         "start": "2010-02-05",
         "end": "2012-10-26"
@@ -931,19 +929,6 @@
         "skewness": 0.0563,
         "kurtosis": -1.3706
       },
-      "EconIndex": {
-        "count": 421570,
-        "null_pct": 0.0,
-        "mean": 0.5642,
-        "std": 0.222,
-        "min": 0.2214,
-        "p25": 0.3394,
-        "median": 0.535,
-        "p75": 0.7762,
-        "max": 1.0,
-        "skewness": 0.2292,
-        "kurtosis": -1.1271
-      },
       "ConsumerConfRatio": {
         "count": 421570,
         "null_pct": 0.0,
@@ -956,175 +941,6 @@
         "max": 21.2941,
         "skewness": 1.1388,
         "kurtosis": 2.7532
-      },
-      "RealSpendingPerCapita": {
-        "count": 421570,
-        "null_pct": 0.0,
-        "mean": 0.0321,
-        "std": 0.0006,
-        "min": 0.0313,
-        "p25": 0.0315,
-        "median": 0.032,
-        "p75": 0.0326,
-        "max": 0.0334,
-        "skewness": 0.4943,
-        "kurtosis": -0.9677
-      },
-      "EconMomentum": {
-        "count": 421570,
-        "null_pct": 0.0,
-        "mean": 0.0058,
-        "std": 0.0297,
-        "min": -0.1877,
-        "p25": 0.0,
-        "median": 0.0,
-        "p75": 0.0,
-        "max": 0.6403,
-        "skewness": 0.6391,
-        "kurtosis": 11.7461
-      },
-      "FuelBurden": {
-        "count": 421570,
-        "null_pct": 0.0,
-        "mean": 2.0806,
-        "std": 0.5886,
-        "min": 1.1701,
-        "p25": 1.5593,
-        "median": 2.0314,
-        "p75": 2.6448,
-        "max": 3.4079,
-        "skewness": 0.2269,
-        "kurtosis": -1.291
-      },
-      "PurchasingPower": {
-        "count": 421570,
-        "null_pct": 0.0,
-        "mean": 22.8328,
-        "std": 7.6123,
-        "min": 8.8196,
-        "p25": 16.3662,
-        "median": 22.2967,
-        "p75": 28.9529,
-        "max": 45.8685,
-        "skewness": 0.1714,
-        "kurtosis": -0.8162
-      },
-      "Lag_Sales_1w": {
-        "count": 421570,
-        "null_pct": 0.0,
-        "mean": 15653.3441,
-        "std": 20781.8901,
-        "min": 5.0,
-        "p25": 2080.5725,
-        "median": 7611.22,
-        "p75": 20199.4925,
-        "max": 106479.586,
-        "skewness": 2.2011,
-        "kurtosis": 5.1548
-      },
-      "Lag_Sales_2w": {
-        "count": 421570,
-        "null_pct": 0.0,
-        "mean": 15653.6594,
-        "std": 20781.303,
-        "min": 5.0,
-        "p25": 2082.8875,
-        "median": 7612.01,
-        "p75": 20197.8125,
-        "max": 106479.586,
-        "skewness": 2.2014,
-        "kurtosis": 5.1564
-      },
-      "Lag_Sales_4w": {
-        "count": 421570,
-        "null_pct": 0.0,
-        "mean": 15647.0536,
-        "std": 20769.0147,
-        "min": 5.0,
-        "p25": 2086.5275,
-        "median": 7611.145,
-        "p75": 20183.13,
-        "max": 106479.586,
-        "skewness": 2.2024,
-        "kurtosis": 5.1636
-      },
-      "Rolling_Mean_4w": {
-        "count": 421570,
-        "null_pct": 0.0,
-        "mean": 15664.6874,
-        "std": 20555.4854,
-        "min": 5.0,
-        "p25": 2146.5,
-        "median": 7725.0,
-        "p75": 20302.8669,
-        "max": 106479.586,
-        "skewness": 2.1644,
-        "kurtosis": 4.9713
-      },
-      "Rolling_Mean_8w": {
-        "count": 421570,
-        "null_pct": 0.0,
-        "mean": 15677.1743,
-        "std": 20450.3169,
-        "min": 5.0,
-        "p25": 2190.1716,
-        "median": 7793.5275,
-        "p75": 20394.2744,
-        "max": 106479.586,
-        "skewness": 2.1605,
-        "kurtosis": 4.9817
-      },
-      "Rolling_Mean_12w": {
-        "count": 421570,
-        "null_pct": 0.0,
-        "mean": 15681.2998,
-        "std": 20383.632,
-        "min": 5.0,
-        "p25": 2220.3175,
-        "median": 7848.4308,
-        "p75": 20432.926,
-        "max": 106479.586,
-        "skewness": 2.1628,
-        "kurtosis": 5.015
-      },
-      "Rolling_Std_4w": {
-        "count": 421570,
-        "null_pct": 0.0,
-        "mean": 1752.2699,
-        "std": 3230.4317,
-        "min": 0.0,
-        "p25": 255.993,
-        "median": 736.3466,
-        "p75": 1856.6655,
-        "max": 55468.5465,
-        "skewness": 5.3666,
-        "kurtosis": 41.9065
-      },
-      "SalesTrend_4w": {
-        "count": 421570,
-        "null_pct": 0.0,
-        "mean": -4.8493,
-        "std": 2023.9399,
-        "min": -32697.5353,
-        "p25": -240.8725,
-        "median": 0.3033,
-        "p75": 271.0492,
-        "max": 28949.5487,
-        "skewness": -1.3227,
-        "kurtosis": 53.8963
-      },
-      "SalesAcceleration": {
-        "count": 421570,
-        "null_pct": 0.0,
-        "mean": 4.8985,
-        "std": 2280.4985,
-        "min": -42150.842,
-        "p25": -297.5858,
-        "median": 1.0,
-        "p75": 318.33,
-        "max": 39428.3653,
-        "skewness": -0.0725,
-        "kurtosis": 42.1558
       },
       "Holiday_Size": {
         "count": 421570,
@@ -1177,19 +993,6 @@
         "max": 365.8,
         "skewness": -0.1041,
         "kurtosis": -1.1731
-      },
-      "Econ_Size": {
-        "count": 421570,
-        "null_pct": 0.0,
-        "mean": 1.3856,
-        "std": 0.8714,
-        "min": 0.2214,
-        "p25": 0.6704,
-        "median": 1.1526,
-        "p75": 1.9494,
-        "max": 4.0,
-        "skewness": 0.9057,
-        "kurtosis": 0.1118
       },
       "MarkDown_Intensity": {
         "count": 421570,
