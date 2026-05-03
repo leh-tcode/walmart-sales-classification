@@ -26,6 +26,7 @@ plotly = "^6.7.0"
 streamlit = "^1.56.0"
 xgboost = "^3.2.0"
 ruff = "^0.15.12"
+attrs = "^26.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
@@ -36,6 +37,7 @@ isort = "^5.13.0"
 pre-commit = "^4.6.0"
 ipykernel = "^7.2.0"
 ruff = "^0.15.12"
+attrs = "^26.1.0"
 
 [build-system]
 requires = ["poetry-core"]

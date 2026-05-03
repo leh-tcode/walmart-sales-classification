@@ -26,14 +26,21 @@ preprocessing:
 eda:
 	poetry run python -m src.eda.eda
 
-## Run full Phase 1 pipeline
-full: acquire validate cleaning features preprocessing eda
+## Train
+train:
+	poetry run jupyter nbconvert --to notebook --execute --inplace src/models/*.ipynb
+
+## Run full Phase 1 
+full: acquire validate cleaning features preprocessing eda train
 	@echo "full pipeline complete."
 
 ## Run full Phase 1 pipeline without data acquisition
 full-no-acquire: validate cleaning features preprocessing eda
 	@echo "full pipeline complete (without acquisition)."
 
+## Run full Phase 1 pipeline without train
+full-no-train:  acquire validate cleaning features preprocessing eda 
+	@echo "full pipeline complete (without train)."
 ## Run tests with coverage
 test:
 	poetry run pytest tests/ --cov=src --cov-report=term-missing -v
