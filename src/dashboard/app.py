@@ -17,9 +17,9 @@ st.set_page_config(
 )
 
 # Paths
-EDA_DATA_PATH = Path("data/eda_ready/eda_dataset.csv")
+EDA_DATA_PATH = Path("data/eda_ready/eda_dataset.parquet")
 DASHBOARD_JSON_PATH = Path("reports/eda/dashboard_data.json")
-MODEL_RESULTS_PATH = Path("data/model_ready/model_results.json")
+MODEL_RESULTS_PATH = Path("model_results.json")
 FIGURES_DIR = Path("reports/eda/figures")
 
 # Theme & Colors
@@ -149,7 +149,9 @@ def inject_css():
 @st.cache_data
 def load_eda_data():
     """Load the EDA-ready dataset."""
-    df = pd.read_csv(EDA_DATA_PATH, parse_dates=["Date"])
+    df = pd.read_parquet(EDA_DATA_PATH)
+    if "Date" in df.columns and not pd.api.types.is_datetime64_any_dtype(df["Date"]):
+        df["Date"] = pd.to_datetime(df["Date"])
     return df
 
 
@@ -302,7 +304,7 @@ def render_sidebar(df):
     if holiday_filter == "Holiday Only":
         mask &= df["IsHoliday"]
     elif holiday_filter == "Non-Holiday Only":
-        mask &= not df["IsHoliday"]
+        mask &= ~df["IsHoliday"]
 
     return df[mask]
 
@@ -598,7 +600,7 @@ def render_sales_overview(df):
                 "Pre-Holiday": df[df.get("IsPreHoliday", pd.Series(0)) == 1]["Weekly_Sales"].mean(),
                 "Holiday": df[df["IsHoliday"]]["Weekly_Sales"].mean(),
                 "Post-Holiday": df[df.get("IsPostHoliday", pd.Series(0)) == 1]["Weekly_Sales"].mean(),
-                "Regular": df[(not df["IsHoliday"]) & (df.get("IsPreHoliday", pd.Series(0)) == 0) & (df.get("IsPostHoliday", pd.Series(0)) == 0)][
+                "Regular": df[(~df["IsHoliday"]) & (df.get("IsPreHoliday", pd.Series(0)) == 0) & (df.get("IsPostHoliday", pd.Series(0)) == 0)][
                     "Weekly_Sales"
                 ].mean(),
             }
@@ -999,42 +1001,194 @@ def render_model_performance(model_results):
         return
 
     best_model = model_results.get("best_model", "")
+    model_order = ["Random Forest", "XGBoost", "Logistic Regression"]
+    model_names = [m for m in model_order if m in models]
 
-    # Model comparison chart
-    c1, c2 = st.columns([2, 1])
+    model_colors = {
+        "Random Forest": "#378ADD",
+        "XGBoost": "#1D9E75",
+        "Logistic Regression": "#888780",
+    }
 
-    with c1:
-        metrics = ["accuracy", "precision", "recall", "f1", "roc_auc"]
-        fig = go.Figure()
+    st.markdown("### Core Metrics")
+    tab1, tab2, tab3, tab4 = st.tabs(["Metrics Comparison", "ROC-AUC", "Holiday vs Regular", "Radar Chart"])
 
-        for model_name, model_data in models.items():
-            values = [model_data.get(m, 0) for m in metrics]
-            fig.add_trace(
+    with tab1:
+        metric_keys = ["accuracy", "precision", "recall", "f1"]
+        metric_labels = ["Accuracy", "Precision", "Recall", "F1"]
+
+        fig1 = go.Figure()
+        for m in model_names:
+            vals = [models[m].get(k, 0) for k in metric_keys]
+            fig1.add_trace(
+                go.Bar(
+                    name=m,
+                    x=metric_labels,
+                    y=vals,
+                    marker_color=model_colors.get(m, COLORS["primary"]),
+                    text=[f"{v:.3f}" for v in vals],
+                    textposition="auto",
+                )
+            )
+        fig1.update_layout(
+            barmode="group",
+            title="Model performance — core metrics",
+            yaxis=dict(title="Score", range=[0.5, 1.05], tickformat=".0%"),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        )
+        fig1 = clean_layout(fig1)
+        st.plotly_chart(fig1, use_container_width=True, config=plotly_config())
+
+    with tab2:
+        vals = [models[m].get("roc_auc", 0) for m in model_names]
+        colors = [model_colors.get(m, COLORS["primary"]) for m in model_names]
+
+        fig2 = go.Figure(go.Bar(x=vals, y=model_names, orientation="h", marker_color=colors, text=[f"{v:.4f}" for v in vals], textposition="auto"))
+        fig2.update_layout(
+            title="ROC-AUC comparison",
+            xaxis=dict(range=[0.5, 1.05], tickformat=".0%"),
+        )
+        fig2 = clean_layout(fig2)
+        st.plotly_chart(fig2, use_container_width=True, config=plotly_config())
+
+    with tab3:
+        fig3 = go.Figure()
+        hol = [models[m].get("holiday_accuracy", 0) for m in model_names]
+        reg = [models[m].get("regular_accuracy", 0) for m in model_names]
+
+        fig3.add_trace(
+            go.Bar(
+                name="Regular weeks",
+                x=model_names,
+                y=reg,
+                marker_color=[model_colors.get(m) for m in model_names],
+                opacity=0.9,
+                text=[f"{v:.3f}" for v in reg],
+                textposition="auto",
+            )
+        )
+        fig3.add_trace(
+            go.Bar(
+                name="Holiday weeks",
+                x=model_names,
+                y=hol,
+                marker_color=[model_colors.get(m) for m in model_names],
+                opacity=0.5,
+                marker_pattern_shape="/",
+                text=[f"{v:.3f}" for v in hol],
+                textposition="auto",
+            )
+        )
+        fig3.update_layout(
+            barmode="group",
+            title="Holiday vs regular week accuracy",
+            yaxis=dict(range=[0.5, 1.05], tickformat=".0%"),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        )
+        fig3 = clean_layout(fig3)
+        st.plotly_chart(fig3, use_container_width=True, config=plotly_config())
+
+    with tab4:
+        radar_metrics = ["accuracy", "precision", "recall", "f1", "roc_auc"]
+        radar_labels = ["Accuracy", "Precision", "Recall", "F1", "ROC-AUC"]
+        fig7 = go.Figure()
+
+        for m in model_names:
+            vals = [models[m].get(k, 0) for k in radar_metrics]
+            # close the loop
+            vals.append(vals[0])
+            labels = radar_labels + [radar_labels[0]]
+
+            fig7.add_trace(
                 go.Scatterpolar(
-                    r=values,
-                    theta=[m.replace("_", " ").title() for m in metrics],
-                    fill="toself",
-                    name=model_name,
-                    line=dict(width=2),
-                    opacity=0.7,
+                    r=vals, theta=labels, fill="toself", name=m, marker_color=model_colors.get(m, COLORS["primary"]), line=dict(width=2), opacity=0.7
                 )
             )
 
-        fig.update_layout(
-            title="Model Performance Radar Chart",
-            polar=dict(radialaxis=dict(visible=True, range=[0.5, 1.0])),
+        fig7.update_layout(
+            title="Model comparison — radar view",
+            polar=dict(radialaxis=dict(visible=True, range=[0.4, 1.0], tickformat=".0%")),
             showlegend=True,
+            height=500,
         )
-        fig = clean_layout(fig, height=500)
-        st.plotly_chart(fig, use_container_width=True, config=plotly_config())
+        fig7 = clean_layout(fig7, height=500)
+        st.plotly_chart(fig7, use_container_width=True, config=plotly_config())
 
-    with c2:
-        st.markdown("##### 🏆 Model Rankings")
-        rankings = sorted(models.items(), key=lambda x: x[1].get("f1", 0), reverse=True)
-        for rank, (name, data) in enumerate(rankings, 1):
-            medal = "🥇" if rank == 1 else "🥈" if rank == 2 else "🥉" if rank == 3 else "  "
-            st.markdown(f"{medal} **{name}**  \nF1: `{data.get('f1', 0):.3f}` | AUC: `{data.get('roc_auc', 0):.3f}`")
-            st.progress(data.get("f1", 0))
+    st.markdown("### Error & Feature Importance")
+    tab5, tab6, tab7 = st.tabs(["Classification Error", "Grouped Feature Importance", "Per-model Feature Importance"])
+
+    # Weighted Classification Error
+    wce_vals = [models[m].get("weighted_classification_error", 0) for m in model_names]
+    with tab5:
+        fig4 = go.Figure(
+            go.Bar(
+                x=model_names,
+                y=wce_vals,
+                marker_color=[model_colors.get(m) for m in model_names],
+                text=[f"{v:.4f}" for v in wce_vals],
+                textposition="auto",
+            )
+        )
+        fig4.update_layout(
+            title="Weighted classification error (lower = better)",
+            yaxis=dict(range=[0, max(wce_vals + [0]) * 1.5], tickformat=".0%") if wce_vals else {},
+        )
+        fig4 = clean_layout(fig4)
+        st.plotly_chart(fig4, use_container_width=True, config=plotly_config())
+
+    feat_imp_all_models = model_results.get("feature_importance", {})
+    features = []
+    if "Random Forest" in feat_imp_all_models:
+        features = list(feat_imp_all_models["Random Forest"].keys())
+
+    with tab6:
+        if features and feat_imp_all_models:
+            fig5 = go.Figure()
+            for m in model_names:
+                if m in feat_imp_all_models:
+                    vals = [feat_imp_all_models[m].get(f, 0) for f in features]
+                    fig5.add_trace(go.Bar(name=m, y=features, x=vals, orientation="h", marker_color=model_colors.get(m, COLORS["primary"])))
+            fig5.update_layout(
+                barmode="group",
+                title="Feature importance — all models",
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                height=max(400, 30 * len(features)),
+                yaxis=dict(autorange="reversed"),
+            )
+            fig5 = clean_layout(fig5, height=max(400, 30 * len(features)))
+            st.plotly_chart(fig5, use_container_width=True, config=plotly_config())
+        else:
+            st.info("Feature importance data not found.")
+
+    with tab7:
+        if features and feat_imp_all_models:
+            fig6 = make_subplots(rows=1, cols=len(model_names), subplot_titles=model_names, shared_yaxes=False)
+
+            for i, m in enumerate(model_names):
+                if m in feat_imp_all_models:
+                    m_imp = feat_imp_all_models[m]
+                    imp_sorted = dict(sorted(m_imp.items(), key=lambda x: x[1], reverse=True))
+
+                    fig6.add_trace(
+                        go.Bar(
+                            y=list(imp_sorted.keys())[::-1],
+                            x=list(imp_sorted.values())[::-1],
+                            orientation="h",
+                            name=m,
+                            marker_color=model_colors.get(m, COLORS["primary"]),
+                            text=[f"{v:.3f}" for v in list(imp_sorted.values())[::-1]],
+                            textposition="auto",
+                            showlegend=False,
+                        ),
+                        row=1,
+                        col=i + 1,
+                    )
+
+            fig6.update_layout(title="Feature importance by model (sorted)", height=max(400, 30 * len(features)))
+            fig6 = clean_layout(fig6, height=max(400, 30 * len(features)))
+            st.plotly_chart(fig6, use_container_width=True, config=plotly_config())
+        else:
+            st.info("Feature importance data not found.")
 
     # Detailed metrics table
     st.markdown("##### Detailed Metrics Comparison")
@@ -1068,28 +1222,6 @@ def render_model_performance(model_results):
         ),
         use_container_width=True,
     )
-
-    # Feature importance
-    feat_imp_all_models = model_results.get("feature_importance", {})
-    if feat_imp_all_models and best_model and best_model in feat_imp_all_models:
-        feat_imp = feat_imp_all_models.get(best_model, {})
-        if feat_imp:
-            st.markdown(f"##### Feature Importance ({best_model})")
-            imp_sorted = dict(sorted(feat_imp.items(), key=lambda x: x[1], reverse=True))
-
-            fig = go.Figure(
-                go.Bar(
-                    x=list(imp_sorted.values()),
-                    y=list(imp_sorted.keys()),
-                    orientation="h",
-                    marker_color=COLORS["primary"],
-                    text=[f"{v:.3f}" for v in imp_sorted.values()],
-                    textposition="outside",
-                )
-            )
-            fig.update_layout(title=f"Top Features — {best_model}", xaxis_title="Importance Score", yaxis={"categoryorder": "total ascending"})
-            fig = clean_layout(fig, height=max(300, 30 * len(imp_sorted)))
-            st.plotly_chart(fig, use_container_width=True, config=plotly_config())
 
     insight_box(
         f"<b>{best_model}</b> achieves the highest F1 score of "

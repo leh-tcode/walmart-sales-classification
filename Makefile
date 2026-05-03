@@ -1,6 +1,6 @@
 #  Walmart Sales Classification — Makefile
 
-.PHONY: acquire validate cleaning features preprocessing full full-no-acquire test lint format clean
+.PHONY: acquire validate cleaning features preprocessing eda full full-no-acquire test lint format clean
 
 ## Run data acquisition + FRED merge
 acquire:
@@ -22,14 +22,25 @@ features:
 preprocessing:
 	poetry run python -m src.features.preprocessing
 
-## Run full Phase 1 pipeline
-full: acquire validate cleaning features preprocessing
+## Run exploratory data analysis
+eda:
+	poetry run python -m src.eda.eda
+
+## Train
+train:
+	poetry run jupyter nbconvert --to notebook --execute --inplace src/models/*.ipynb
+
+## Run full Phase 1 
+full: acquire validate cleaning features preprocessing eda train
 	@echo "full pipeline complete."
 
 ## Run full Phase 1 pipeline without data acquisition
-full-no-acquire: validate cleaning features preprocessing
+full-no-acquire: validate cleaning features preprocessing eda
 	@echo "full pipeline complete (without acquisition)."
 
+## Run full Phase 1 pipeline without train
+full-no-train:  acquire validate cleaning features preprocessing eda 
+	@echo "full pipeline complete (without train)."
 ## Run tests with coverage
 test:
 	poetry run pytest tests/ --cov=src --cov-report=term-missing -v

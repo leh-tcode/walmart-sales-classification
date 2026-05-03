@@ -10,7 +10,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 # Paths (adjust as needed)
 MODEL_DIR = Path("src/models/")
 DATA_DIR = Path("data/model_ready/")
-RESULTS_PATH = DATA_DIR / "model_results.json"
+RESULTS_PATH = Path("model_results.json")
 
 # List your model files and names here
 MODEL_FILES = {

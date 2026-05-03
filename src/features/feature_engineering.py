@@ -1,5 +1,4 @@
 import json
-import warnings
 from pathlib import Path
 from typing import Any
 
@@ -28,17 +27,10 @@ HOLIDAY_WINDOWS = {
 
 FRED_COLS = ["UMCSENT", "RSXFS", "PCE"]
 
-LAG_PERIODS = [1, 2, 4]
-ROLLING_WINDOWS = [4, 8, 12]
-
 
 # Helpers
 def _shape_str(df: pd.DataFrame) -> str:
     return f"{len(df):,} rows × {len(df.columns)} cols"
-
-
-def _count_new(before: int, after: int) -> str:
-    return f"+{after - before} features"
 
 
 # GROUP 1: TEMPORAL FEATURES
@@ -95,7 +87,7 @@ def create_holiday_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     logger.info("Group 2: Creating holiday features …")
     n_before = len(df.columns)
 
-    df["HolidayType"] = 0  # 0 = not a holiday period
+    df["HolidayType"] = 0
     for i, (name, info) in enumerate(HOLIDAY_WINDOWS.items(), 1):
         week_lo, week_hi = info["week_range"]
         mask = df["Week"].between(week_lo, week_hi)
@@ -226,139 +218,6 @@ def create_store_dept_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     return df
 
 
-# GROUP 5: ECONOMIC / MACRO FEATURES
-def create_economic_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
-    logger.info("Group 5: Creating economic features …")
-    n_before = len(df.columns)
-
-    for col in FRED_COLS:
-        col_min = df[col].min()
-        col_max = df[col].max()
-        col_range = col_max - col_min
-        if col_range > 0:
-            df[f"_{col}_norm"] = (df[col] - col_min) / col_range
-        else:
-            df[f"_{col}_norm"] = 0.0
-
-    norm_cols = [f"_{c}_norm" for c in FRED_COLS]
-    df["EconIndex"] = df[norm_cols].mean(axis=1)
-
-    df.drop(columns=norm_cols, inplace=True)
-
-    df["ConsumerConfRatio"] = df["UMCSENT"] / (df["Unemployment"] + 1e-6)
-
-    df["RealSpendingPerCapita"] = df["PCE"] / (df["RSXFS"] + 1e-6)
-
-    df = df.sort_values("Date")
-    df["EconMomentum"] = df.groupby(["Store", "Dept"])["EconIndex"].diff()
-    df["EconMomentum"] = df["EconMomentum"].fillna(0.0)
-
-    df["FuelBurden"] = (df["Fuel_Price"] / df["CPI"]) * 100
-
-    df["PurchasingPower"] = df["CPI"] / (df["Unemployment"] + 1e-6)
-
-    n_created = len(df.columns) - n_before
-    report["groups"].append(
-        {
-            "group": "Economic Features",
-            "features_created": n_created,
-            "features": [
-                "EconIndex",
-                "ConsumerConfRatio",
-                "RealSpendingPerCapita",
-                "EconMomentum",
-                "FuelBurden",
-                "PurchasingPower",
-            ],
-            "rationale": (
-                "FRED macro series are highly correlated (r > 0.78) — "
-                "composites reduce multicollinearity while ratios "
-                "capture divergences between economic indicators"
-            ),
-            "correlation_note": ("UMCSENT↔RSXFS: r=0.83, RSXFS↔PCE: r=0.88, UMCSENT↔PCE: r=0.79"),
-        }
-    )
-
-    logger.info("  Economic: {} features created", n_created)
-    return df
-
-
-# GROUP 6: LAG / ROLLING FEATURES
-def create_lag_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
-    logger.info("Group 6: Creating lag & rolling features …")
-    n_before = len(df.columns)
-
-    df = df.sort_values(["Store", "Dept", "Date"]).reset_index(drop=True)
-    group = df.groupby(["Store", "Dept"])["Weekly_Sales"]
-
-    for lag in LAG_PERIODS:
-        col_name = f"Lag_Sales_{lag}w"
-        df[col_name] = group.shift(lag)
-        logger.info("  Created {}", col_name)
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=FutureWarning)
-        for window in ROLLING_WINDOWS:
-            # Rolling mean (shifted by 1 to exclude current row)
-            mean_col = f"Rolling_Mean_{window}w"
-            df[mean_col] = group.transform(lambda x: x.shift(1).rolling(window=window, min_periods=1).mean())
-            logger.info("  Created {}", mean_col)
-
-        df["Rolling_Std_4w"] = group.transform(lambda x: x.shift(1).rolling(window=4, min_periods=2).std())
-
-    if "Lag_Sales_1w" in df.columns and "Lag_Sales_4w" in df.columns:
-        df["SalesTrend_4w"] = (df["Lag_Sales_1w"] - df["Lag_Sales_4w"]) / 3.0
-
-    if "SalesTrend_4w" in df.columns:
-        df["SalesAcceleration"] = df.groupby(["Store", "Dept"])["SalesTrend_4w"].diff()
-
-    lag_rolling_cols = [c for c in df.columns if c.startswith(("Lag_", "Rolling_", "Sales"))]
-    lag_rolling_cols = [c for c in lag_rolling_cols if c in df.columns and c not in ["Sales_Class"]]
-
-    nulls_before = int(df[lag_rolling_cols].isna().sum().sum())
-
-    for col in lag_rolling_cols:
-        if df[col].isna().any():
-            group_median = df.groupby(["Store", "Dept"])[col].transform("median")
-            df[col] = df[col].fillna(group_median)
-            df[col] = df[col].fillna(df[col].median())
-            df[col] = df[col].fillna(0.0)
-
-    nulls_after = int(df[lag_rolling_cols].isna().sum().sum())
-
-    n_created = len(df.columns) - n_before
-    report["groups"].append(
-        {
-            "group": "Lag & Rolling Features",
-            "features_created": n_created,
-            "features": [
-                "Lag_Sales_1w",
-                "Lag_Sales_2w",
-                "Lag_Sales_4w",
-                "Rolling_Mean_4w",
-                "Rolling_Mean_8w",
-                "Rolling_Mean_12w",
-                "Rolling_Std_4w",
-                "SalesTrend_4w",
-                "SalesAcceleration",
-            ],
-            "lag_periods": LAG_PERIODS,
-            "rolling_windows": ROLLING_WINDOWS,
-            "null_handling": (f"Filled {nulls_before - nulls_after:,} NaN values with Store-Dept group median (fallback: global median → 0)"),
-            "leakage_policy": ("All lags use .shift() — only past data used. Current row's Weekly_Sales is NEVER in its own features."),
-            "rationale": ("Past sales are the strongest predictor of future sales. Rolling windows capture momentum at different time horizons."),
-        }
-    )
-
-    logger.info(
-        "  Lag & Rolling: {} features created | NaN filled: {:,} → {:,}",
-        n_created,
-        nulls_before,
-        nulls_after,
-    )
-    return df
-
-
 # GROUP 7: INTERACTION FEATURES
 def create_interaction_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     logger.info("Group 7: Creating interaction features …")
@@ -371,8 +230,6 @@ def create_interaction_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     df["Promo_Holiday"] = df["HasAnyMarkDown"] * df["IsHoliday"].astype(int)
 
     df["Temp_Season"] = df["Temperature"] * df["Quarter"]
-
-    df["Econ_Size"] = df["EconIndex"] * df["SizeQuartile"]
 
     df["MarkDown_Intensity"] = df["TotalMarkDown"] / (df["Size"] + 1e-6)
 
@@ -399,6 +256,46 @@ def create_interaction_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     )
 
     logger.info("  Interactions: {} features created", n_created)
+    return df
+
+
+def create_economic_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
+    logger.info("Group 5: Creating economic features …")
+    n_before = len(df.columns)
+
+    for col in FRED_COLS:
+        col_min = df[col].min()
+        col_max = df[col].max()
+        col_range = col_max - col_min
+        if col_range > 0:
+            df[f"_{col}_norm"] = (df[col] - col_min) / col_range
+        else:
+            df[f"_{col}_norm"] = 0.0
+
+    norm_cols = [f"_{c}_norm" for c in FRED_COLS]
+
+    df.drop(columns=norm_cols, inplace=True)
+
+    df["ConsumerConfRatio"] = df["UMCSENT"] / (df["Unemployment"] + 1e-6)
+
+    n_created = len(df.columns) - n_before
+    report["groups"].append(
+        {
+            "group": "Economic Features",
+            "features_created": n_created,
+            "features": [
+                "ConsumerConfRatio",
+            ],
+            "rationale": (
+                "FRED macro series are highly correlated (r > 0.78) — "
+                "composites reduce multicollinearity while ratios "
+                "capture divergences between economic indicators"
+            ),
+            "correlation_note": ("UMCSENT↔RSXFS: r=0.83, RSXFS↔PCE: r=0.88, UMCSENT↔PCE: r=0.79"),
+        }
+    )
+
+    logger.info("  Economic: {} features created", n_created)
     return df
 
 
@@ -620,7 +517,6 @@ def run_feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     df = create_promotion_features(df, report)
     df = create_store_dept_features(df, report)
     df = create_economic_features(df, report)
-    df = create_lag_features(df, report)
     df = create_interaction_features(df, report)
     df = create_cyclical_features(df, report)
     df = validate_features(df, report)
