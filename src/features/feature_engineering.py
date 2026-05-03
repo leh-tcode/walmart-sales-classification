@@ -258,6 +258,7 @@ def create_interaction_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     logger.info("  Interactions: {} features created", n_created)
     return df
 
+
 def create_economic_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     logger.info("Group 5: Creating economic features …")
     n_before = len(df.columns)
@@ -296,6 +297,7 @@ def create_economic_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
 
     logger.info("  Economic: {} features created", n_created)
     return df
+
 
 # GROUP 8: CYCLICAL ENCODING
 def create_cyclical_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
