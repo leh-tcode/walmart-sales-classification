@@ -1,0 +1,76 @@
+{
+  "models": {
+    "Random Forest": {
+      "accuracy": 0.9296795312759447,
+      "precision": 0.9338443113772456,
+      "recall": 0.9248724943660301,
+      "f1": 0.9293367498957154,
+      "roc_auc": 0.9813952693882617,
+      "holiday_accuracy": 0.8988973706530958,
+      "weighted_classification_error": 0.09558660412607146,
+      "regular_accuracy": 0.931993521978092
+    },
+    "XGBoost": {
+      "accuracy": 0.9309604573380459,
+      "precision": 0.8936511375947995,
+      "recall": 0.9783418337089314,
+      "f1": 0.9340807428797916,
+      "roc_auc": 0.9897545746417981,
+      "holiday_accuracy": 0.934351145038168,
+      "weighted_classification_error": 0.0662564510009469,
+      "regular_accuracy": 0.9307055688034788
+    },
+    "Logistic Regression": {
+      "accuracy": 0.6592973883340845,
+      "precision": 0.6025662567784312,
+      "recall": 0.9357608824575969,
+      "f1": 0.7330793532800595,
+      "roc_auc": 0.6900834379332249,
+      "holiday_accuracy": 0.6697201017811705,
+      "weighted_classification_error": 0.33214760175491476,
+      "regular_accuracy": 0.6585138805646591
+    }
+  },
+  "feature_importance": {
+    "Random Forest": {
+      "Size": 0.0524250585974503,
+      "Store": 0.029478729365630087,
+      "Dept": 0.6428607589179258,
+      "CPI": 0.029506584987918017,
+      "DeptFrequency": 0.15764868831315082,
+      "Week_cos": 0.01827500054001641,
+      "IsPreHoliday": 0.001738426061362614,
+      "Week_sin": 0.01723502721101444,
+      "Fuel_Price": 0.021487396875934074,
+      "ConsumerConfRatio": 0.019281507213946388,
+      "AvgMarkDownAmount": 0.010062821915651096
+    },
+    "XGBoost": {
+      "Size": 0.06223331391811371,
+      "Store": 0.03142429143190384,
+      "Dept": 0.1314164400100708,
+      "CPI": 0.011839782819151878,
+      "DeptFrequency": 0.6938613653182983,
+      "Week_cos": 0.015645677223801613,
+      "IsPreHoliday": 0.018665434792637825,
+      "Week_sin": 0.018919531255960464,
+      "Fuel_Price": 0.004188999999314547,
+      "ConsumerConfRatio": 0.0071718511171638966,
+      "AvgMarkDownAmount": 0.004633376840502024
+    },
+    "Logistic Regression": {
+      "Size": 0.15928492760119756,
+      "Store": 0.0038100403720712503,
+      "Dept": 0.0033876621240229486,
+      "CPI": 0.05487225845232168,
+      "DeptFrequency": 0.6069400905023664,
+      "Week_cos": 0.03636342970108048,
+      "IsPreHoliday": 0.1390016189358681,
+      "Week_sin": 0.038705616865565874,
+      "Fuel_Price": 0.060754678585510445,
+      "ConsumerConfRatio": 0.012354234108872736,
+      "AvgMarkDownAmount": 0.003693119801605768
+    }
+  },
+  "best_model": "XGBoost"
+}

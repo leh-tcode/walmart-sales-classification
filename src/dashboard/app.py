@@ -19,7 +19,7 @@ st.set_page_config(
 # Paths
 EDA_DATA_PATH = Path("data/eda_ready/eda_dataset.csv")
 DASHBOARD_JSON_PATH = Path("reports/eda/dashboard_data.json")
-MODEL_RESULTS_PATH = Path("data/model_ready/model_results.json")
+MODEL_RESULTS_PATH = Path("model_results.json")
 FIGURES_DIR = Path("reports/eda/figures")
 
 # Theme & Colors
@@ -302,7 +302,7 @@ def render_sidebar(df):
     if holiday_filter == "Holiday Only":
         mask &= df["IsHoliday"]
     elif holiday_filter == "Non-Holiday Only":
-        mask &= not df["IsHoliday"]
+        mask &= ~ df["IsHoliday"]
 
     return df[mask]
 
@@ -598,7 +598,7 @@ def render_sales_overview(df):
                 "Pre-Holiday": df[df.get("IsPreHoliday", pd.Series(0)) == 1]["Weekly_Sales"].mean(),
                 "Holiday": df[df["IsHoliday"]]["Weekly_Sales"].mean(),
                 "Post-Holiday": df[df.get("IsPostHoliday", pd.Series(0)) == 1]["Weekly_Sales"].mean(),
-                "Regular": df[(not df["IsHoliday"]) & (df.get("IsPreHoliday", pd.Series(0)) == 0) & (df.get("IsPostHoliday", pd.Series(0)) == 0)][
+                "Regular": df[(~ df["IsHoliday"]) & (df.get("IsPreHoliday", pd.Series(0)) == 0) & (df.get("IsPostHoliday", pd.Series(0)) == 0)][
                     "Weekly_Sales"
                 ].mean(),
             }
