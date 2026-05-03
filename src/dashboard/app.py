@@ -302,7 +302,7 @@ def render_sidebar(df):
     if holiday_filter == "Holiday Only":
         mask &= df["IsHoliday"]
     elif holiday_filter == "Non-Holiday Only":
-        mask &= ~ df["IsHoliday"]
+        mask &= ~df["IsHoliday"]
 
     return df[mask]
 
@@ -598,7 +598,7 @@ def render_sales_overview(df):
                 "Pre-Holiday": df[df.get("IsPreHoliday", pd.Series(0)) == 1]["Weekly_Sales"].mean(),
                 "Holiday": df[df["IsHoliday"]]["Weekly_Sales"].mean(),
                 "Post-Holiday": df[df.get("IsPostHoliday", pd.Series(0)) == 1]["Weekly_Sales"].mean(),
-                "Regular": df[(~ df["IsHoliday"]) & (df.get("IsPreHoliday", pd.Series(0)) == 0) & (df.get("IsPostHoliday", pd.Series(0)) == 0)][
+                "Regular": df[(~df["IsHoliday"]) & (df.get("IsPreHoliday", pd.Series(0)) == 0) & (df.get("IsPostHoliday", pd.Series(0)) == 0)][
                     "Weekly_Sales"
                 ].mean(),
             }
