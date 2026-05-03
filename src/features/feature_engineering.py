@@ -1,5 +1,4 @@
 import json
-import warnings
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +26,7 @@ HOLIDAY_WINDOWS = {
 }
 
 FRED_COLS = ["UMCSENT", "RSXFS", "PCE"]
+
 
 # Helpers
 def _shape_str(df: pd.DataFrame) -> str:
@@ -87,7 +87,7 @@ def create_holiday_features(df: pd.DataFrame, report: dict) -> pd.DataFrame:
     logger.info("Group 2: Creating holiday features …")
     n_before = len(df.columns)
 
-    df["HolidayType"] = 0 
+    df["HolidayType"] = 0
     for i, (name, info) in enumerate(HOLIDAY_WINDOWS.items(), 1):
         week_lo, week_hi = info["week_range"]
         mask = df["Week"].between(week_lo, week_hi)
