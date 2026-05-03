@@ -28,6 +28,7 @@
     "reports/eda/figures/06_promo_by_store_type.png",
     "reports/eda/figures/06_markdown_vs_sales.png",
     "reports/eda/figures/07_economic_trends.png",
+    "reports/eda/figures/07_economic_vs_target.png",
     "reports/eda/figures/07_fred_multicollinearity.png",
     "reports/eda/figures/07_unemployment_vs_sales.png",
     "reports/eda/figures/08_feature_importance_correlation.png",
@@ -126,7 +127,8 @@
       "UMCSENT": -0.7653,
       "RSXFS": -0.2905,
       "PCE": -0.2243,
-      "TotalMarkDown": 2.3947
+      "TotalMarkDown": 2.3947,
+      "ConsumerConfRatio": 1.1388
     },
     "kurtosis": {
       "Weekly_Sales": 5.1517,
@@ -138,7 +140,8 @@
       "UMCSENT": 0.3988,
       "RSXFS": -1.2363,
       "PCE": -1.2179,
-      "TotalMarkDown": 6.0988
+      "TotalMarkDown": 6.0988,
+      "ConsumerConfRatio": 2.7532
     }
   },
   "correlations": {
@@ -227,7 +230,7 @@
   },
   "feature_importance": {
     "top_10_correlation": {
-      "DayOfYear": 0.0195,
+      "YearProgress": 0.0195,
       "Month": 0.0199,
       "IsPreHoliday": 0.0203,
       "IsYearStart": 0.0246,
@@ -251,7 +254,7 @@
       "Weekly_Sales": 1.5023
     },
     "significant_features_count": 37,
-    "total_features_tested": 57
+    "total_features_tested": 58
   },
   "dashboard_data": {
     "path": "reports/eda/dashboard_data.json",
@@ -274,8 +277,8 @@
   "summary_statistics": {
     "dataset": {
       "rows": 421570,
-      "columns": 69,
-      "memory_mb": 362.81,
+      "columns": 70,
+      "memory_mb": 366.18,
       "date_range": {
         "start": "2010-02-05",
         "end": "2012-10-26"
@@ -926,6 +929,19 @@
         "skewness": 0.0563,
         "kurtosis": -1.3706
       },
+      "ConsumerConfRatio": {
+        "count": 421570,
+        "null_pct": 0.0,
+        "mean": 9.4501,
+        "std": 2.4054,
+        "min": 4.1324,
+        "p25": 8.11,
+        "median": 9.046,
+        "p75": 10.5247,
+        "max": 21.2941,
+        "skewness": 1.1388,
+        "kurtosis": 2.7532
+      },
       "Holiday_Size": {
         "count": 421570,
         "null_pct": 0.0,
@@ -1100,5 +1116,5 @@
       }
     }
   },
-  "figure_count": 37
+  "figure_count": 38
 }

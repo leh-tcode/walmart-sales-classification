@@ -1,8 +1,8 @@
 {
   "dataset": {
     "rows": 421570,
-    "columns": 69,
-    "memory_mb": 362.81,
+    "columns": 70,
+    "memory_mb": 366.18,
     "date_range": {
       "start": "2010-02-05",
       "end": "2012-10-26"
@@ -652,6 +652,19 @@
       "max": 4.0,
       "skewness": 0.0563,
       "kurtosis": -1.3706
+    },
+    "ConsumerConfRatio": {
+      "count": 421570,
+      "null_pct": 0.0,
+      "mean": 9.4501,
+      "std": 2.4054,
+      "min": 4.1324,
+      "p25": 8.11,
+      "median": 9.046,
+      "p75": 10.5247,
+      "max": 21.2941,
+      "skewness": 1.1388,
+      "kurtosis": 2.7532
     },
     "Holiday_Size": {
       "count": 421570,
