@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 # Paths
-EDA_DATA_PATH = Path("data/eda_ready/eda_dataset.csv")
+EDA_DATA_PATH = Path("data/eda_ready/eda_dataset.parquet")
 DASHBOARD_JSON_PATH = Path("reports/eda/dashboard_data.json")
 MODEL_RESULTS_PATH = Path("model_results.json")
 FIGURES_DIR = Path("reports/eda/figures")
@@ -149,7 +149,9 @@ def inject_css():
 @st.cache_data
 def load_eda_data():
     """Load the EDA-ready dataset."""
-    df = pd.read_csv(EDA_DATA_PATH, parse_dates=["Date"])
+    df = pd.read_parquet(EDA_DATA_PATH)
+    if 'Date' in df.columns and not pd.api.types.is_datetime64_any_dtype(df['Date']):
+        df['Date'] = pd.to_datetime(df['Date'])
     return df
 
 
