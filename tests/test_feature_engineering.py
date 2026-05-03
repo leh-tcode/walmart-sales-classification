@@ -4,10 +4,8 @@ import pytest
 
 from src.features.feature_engineering import (
     create_cyclical_features,
-    create_economic_features,
     create_holiday_features,
     create_interaction_features,
-    create_lag_features,
     create_promotion_features,
     create_store_dept_features,
     create_temporal_features,
@@ -163,59 +161,6 @@ class TestStoreDeptFeatures:
         df = create_store_dept_features(sample_df.copy(), empty_report)
         assert set(df["SizeQuartile"].unique()) <= {1, 2, 3, 4}
 
-
-# Group 5: Economic
-class TestEconomicFeatures:
-    def test_columns_created(self, sample_df, empty_report):
-        df = create_economic_features(sample_df.copy(), empty_report)
-        expected = {
-            "EconIndex",
-            "ConsumerConfRatio",
-            "RealSpendingPerCapita",
-            "EconMomentum",
-            "FuelBurden",
-            "PurchasingPower",
-        }
-        assert expected <= set(df.columns)
-
-    def test_econ_index_range(self, sample_df, empty_report):
-        df = create_economic_features(sample_df.copy(), empty_report)
-        assert df["EconIndex"].between(-0.01, 1.01).all()
-
-    def test_no_temp_columns_left(self, sample_df, empty_report):
-        df = create_economic_features(sample_df.copy(), empty_report)
-        temp_cols = [c for c in df.columns if c.startswith("_") and c.endswith("_norm")]
-        assert len(temp_cols) == 0
-
-
-# Group 6: Lag & Rolling
-class TestLagFeatures:
-    def test_columns_created(self, sample_df, empty_report):
-        df = create_lag_features(sample_df.copy(), empty_report)
-        expected = {
-            "Lag_Sales_1w",
-            "Lag_Sales_2w",
-            "Lag_Sales_4w",
-            "Rolling_Mean_4w",
-            "Rolling_Mean_8w",
-            "Rolling_Mean_12w",
-            "Rolling_Std_4w",
-            "SalesTrend_4w",
-            "SalesAcceleration",
-        }
-        assert expected <= set(df.columns)
-
-    def test_no_nulls_after_fill(self, sample_df, empty_report):
-        df = create_lag_features(sample_df.copy(), empty_report)
-        lag_cols = [c for c in df.columns if c.startswith(("Lag_", "Rolling_", "Sales"))]
-        lag_cols = [c for c in lag_cols if c != "Sales_Class" and c != "Weekly_Sales"]
-        assert df[lag_cols].isna().sum().sum() == 0
-
-    def test_row_count_preserved(self, sample_df, empty_report):
-        df = create_lag_features(sample_df.copy(), empty_report)
-        assert len(df) == len(sample_df)
-
-
 # Group 7: Interactions
 class TestInteractionFeatures:
     def _prepare(self, sample_df, empty_report):
@@ -223,7 +168,6 @@ class TestInteractionFeatures:
         df = create_holiday_features(df, empty_report)
         df = create_promotion_features(df, empty_report)
         df = create_store_dept_features(df, empty_report)
-        df = create_economic_features(df, empty_report)
         return df
 
     def test_columns_created(self, sample_df, empty_report):
@@ -234,7 +178,6 @@ class TestInteractionFeatures:
             "Holiday_Type",
             "Promo_Holiday",
             "Temp_Season",
-            "Econ_Size",
             "MarkDown_Intensity",
         }
         assert expected <= set(df.columns)
@@ -247,7 +190,6 @@ class TestInteractionFeatures:
             "Holiday_Type",
             "Promo_Holiday",
             "Temp_Season",
-            "Econ_Size",
             "MarkDown_Intensity",
         ]
         assert df[interaction_cols].isna().sum().sum() == 0
