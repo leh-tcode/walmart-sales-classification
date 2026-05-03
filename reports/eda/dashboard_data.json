@@ -702,8 +702,8 @@
     },
     {
       "Date": "2012-01-06 00:00:00",
-      "avg_sales": 14811.681312478977,
-      "total_sales": 44035128.541999996,
+      "avg_sales": 14811.681312478979,
+      "total_sales": 44035128.542,
       "high_pct": 0.46417759838546924,
       "count": 2973
     },
@@ -982,8 +982,8 @@
     },
     {
       "Date": "2012-10-12 00:00:00",
-      "avg_sales": 15139.645362541805,
-      "total_sales": 45267539.633999996,
+      "avg_sales": 15139.645362541807,
+      "total_sales": 45267539.634,
       "high_pct": 0.4926421404682274,
       "count": 2990
     },
@@ -2397,126 +2397,6 @@
       "max": 4.0,
       "skewness": 0.0563
     },
-    "EconIndex": {
-      "mean": 0.5642,
-      "median": 0.535,
-      "std": 0.222,
-      "min": 0.2214,
-      "max": 1.0,
-      "skewness": 0.2292
-    },
-    "ConsumerConfRatio": {
-      "mean": 9.4501,
-      "median": 9.046,
-      "std": 2.4054,
-      "min": 4.1324,
-      "max": 21.2941,
-      "skewness": 1.1388
-    },
-    "RealSpendingPerCapita": {
-      "mean": 0.0321,
-      "median": 0.032,
-      "std": 0.0006,
-      "min": 0.0313,
-      "max": 0.0334,
-      "skewness": 0.4943
-    },
-    "EconMomentum": {
-      "mean": 0.0058,
-      "median": 0.0,
-      "std": 0.0297,
-      "min": -0.1877,
-      "max": 0.6403,
-      "skewness": 0.6391
-    },
-    "FuelBurden": {
-      "mean": 2.0806,
-      "median": 2.0314,
-      "std": 0.5886,
-      "min": 1.1701,
-      "max": 3.4079,
-      "skewness": 0.2269
-    },
-    "PurchasingPower": {
-      "mean": 22.8328,
-      "median": 22.2967,
-      "std": 7.6123,
-      "min": 8.8196,
-      "max": 45.8685,
-      "skewness": 0.1714
-    },
-    "Lag_Sales_1w": {
-      "mean": 15653.3441,
-      "median": 7611.22,
-      "std": 20781.8901,
-      "min": 5.0,
-      "max": 106479.586,
-      "skewness": 2.2011
-    },
-    "Lag_Sales_2w": {
-      "mean": 15653.6594,
-      "median": 7612.01,
-      "std": 20781.303,
-      "min": 5.0,
-      "max": 106479.586,
-      "skewness": 2.2014
-    },
-    "Lag_Sales_4w": {
-      "mean": 15647.0536,
-      "median": 7611.145,
-      "std": 20769.0147,
-      "min": 5.0,
-      "max": 106479.586,
-      "skewness": 2.2024
-    },
-    "Rolling_Mean_4w": {
-      "mean": 15664.6874,
-      "median": 7725.0,
-      "std": 20555.4854,
-      "min": 5.0,
-      "max": 106479.586,
-      "skewness": 2.1644
-    },
-    "Rolling_Mean_8w": {
-      "mean": 15677.1743,
-      "median": 7793.5275,
-      "std": 20450.3169,
-      "min": 5.0,
-      "max": 106479.586,
-      "skewness": 2.1605
-    },
-    "Rolling_Mean_12w": {
-      "mean": 15681.2998,
-      "median": 7848.4308,
-      "std": 20383.632,
-      "min": 5.0,
-      "max": 106479.586,
-      "skewness": 2.1628
-    },
-    "Rolling_Std_4w": {
-      "mean": 1752.2699,
-      "median": 736.3466,
-      "std": 3230.4317,
-      "min": 0.0,
-      "max": 55468.5465,
-      "skewness": 5.3666
-    },
-    "SalesTrend_4w": {
-      "mean": -4.8493,
-      "median": 0.3033,
-      "std": 2023.9399,
-      "min": -32697.5353,
-      "max": 28949.5487,
-      "skewness": -1.3227
-    },
-    "SalesAcceleration": {
-      "mean": 4.8985,
-      "median": 1.0,
-      "std": 2280.4985,
-      "min": -42150.842,
-      "max": 39428.3653,
-      "skewness": -0.0725
-    },
     "Holiday_Size": {
       "mean": 9629.2093,
       "median": 0.0,
@@ -2548,14 +2428,6 @@
       "min": -2.06,
       "max": 365.8,
       "skewness": -0.1041
-    },
-    "Econ_Size": {
-      "mean": 1.3856,
-      "median": 1.1526,
-      "std": 0.8714,
-      "min": 0.2214,
-      "max": 4.0,
-      "skewness": 0.9057
     },
     "MarkDown_Intensity": {
       "mean": 0.0413,
@@ -2600,33 +2472,23 @@
   },
   "target_correlations": {
     "Weekly_Sales": 0.6006,
-    "Rolling_Mean_4w": 0.5952,
-    "Rolling_Mean_8w": 0.5938,
-    "Lag_Sales_1w": 0.5937,
-    "Rolling_Mean_12w": 0.5927,
-    "Lag_Sales_2w": 0.5894,
-    "Lag_Sales_4w": 0.5835,
-    "Rolling_Std_4w": 0.333,
     "DeptFrequency": 0.2949,
-    "SalesTrend_4w": 0.0327,
     "IsYearEnd": 0.0286,
     "IsPeakSeason": 0.0279,
     "HolidayType": 0.0263,
     "IsPreHoliday": 0.0203,
     "Month": 0.0199,
-    "YearProgress": 0.0195,
     "DayOfYear": 0.0195,
+    "YearProgress": 0.0195,
     "Week": 0.0194,
     "MarkDown3": 0.0187,
     "Quarter": 0.0164,
     "IsPostHoliday": 0.016,
-    "RealSpendingPerCapita": 0.0113,
     "Holiday_Size": 0.0085,
     "Holiday_Type": 0.0084,
     "Promo_Holiday": 0.0062,
     "Week_cos": 0.0045,
     "Month_cos": 0.0037,
-    "SalesAcceleration": 0.0035,
     "Temp_Season": 0.0035,
     "Unemployment": 0.0027,
     "UMCSENT": 0.0026,
@@ -2642,14 +2504,12 @@
     "has_MarkDown3": -0.0004,
     "WeekOfMonth": -0.0006,
     "CPI": -0.0007,
-    "ConsumerConfRatio": -0.0013,
     "has_MarkDown4": -0.0013,
-    "PurchasingPower": -0.0017,
     "HolidayProximity": -0.0017,
     "ActiveMarkDownCount": -0.0023,
     "has_MarkDown1": -0.0027,
-    "HasAnyMarkDown": -0.0029,
     "has_MarkDown5": -0.0029,
+    "HasAnyMarkDown": -0.0029,
     "MarkDown4": -0.003,
     "has_MarkDown2": -0.0034,
     "Temperature": -0.0035,
@@ -2660,15 +2520,11 @@
     "MarkDown1": -0.0042,
     "MaxMarkDown": -0.0045,
     "IsMonthStart": -0.0048,
-    "Econ_Size": -0.0054,
-    "FuelBurden": -0.0057,
     "IsMonthEnd": -0.0059,
     "MarkDown2": -0.0074,
-    "EconIndex": -0.01,
     "RSXFS": -0.0119,
     "PCE": -0.0122,
     "Fuel_Price": -0.0122,
-    "EconMomentum": -0.0147,
     "Year": -0.0176,
     "IsYearStart": -0.0246,
     "is_return": -0.0553
